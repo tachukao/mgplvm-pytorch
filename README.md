@@ -1,5 +1,7 @@
 # PyTorch implementation of mGPLVM
 
+Implementation of the manifold Gaussian Process latent variable model described in [Jensen et al. (2020), NeurIPS](https://arxiv.org/abs/2006.07429).
+
 Examples can be found [here](examples).
 
 ## Setup
