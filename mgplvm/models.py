@@ -20,7 +20,8 @@ class Core(nn.Module):
                  kernel,
                  ref_dist,
                  sigma=None,
-                 z=None):
+                 z=None,
+                 lprior=None):
         """
         __init__ method for Vanilla model
 
@@ -41,7 +42,7 @@ class Core(nn.Module):
         sigma : Tensor option
             optional initialization of output noise standard deviation
             output variance is then sigma^2
-
+        lprior : lprior option
         """
         super().__init__()
         self.manif = manif
@@ -54,6 +55,7 @@ class Core(nn.Module):
         self.sgp = sgp.Sgp(self.kernel, n, m, self.z, sigma=sigma)  # sparse gp
         # reference distribution
         self.rdist = ref_dist
+        self.lprior = self.manif.lprior if lprior is None else lprior
 
     def forward(self, data, n_b, kmax=5):
         """
@@ -100,7 +102,7 @@ class Core(nn.Module):
         sgp_elbo = self.sgp.elbo(n_samples, n_b, data, g.permute(0, 2, 1))
 
         # KL(Q(G) || p(G)) ~ logQ - logp(G)
-        kl = lq.sum() - self.manif.lprior(g).sum()
+        kl = lq.sum() - self.lprior(g).sum()
         return (sgp_elbo / n_b), (kl / n_b)
 
     def predict(self, data, query, niter=100):
@@ -148,7 +150,7 @@ class Core(nn.Module):
         g = self.manif.transform(gtilde)
 
         # compute prior
-        lp = self.manif.lprior(g)  # n_b x m
+        lp = self.lprior(g)  # n_b x m
         lp = lp.sum(dim=1).to(lq.device)  # (n_b,)
 
         # sparse GP elbo summed over all conditions; (n_b,)
