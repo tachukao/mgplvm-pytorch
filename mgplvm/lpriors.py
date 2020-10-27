@@ -32,12 +32,23 @@ class AR1(Module):
         ar1_c = self.ar1_c
         return ar1_c, ar1_phi, ar1_eta
 
+    @property
+    def autocorr(self):
+        return torch.exp(self.log_ar1_tau)
+
+    @property
+    def process_var(self):
+        ar1_phi = torch.exp(- torch.exp(- self.log_ar1_tau))
+        log_ar1_sig = self.log_ar1_eta - torch.log(1 - ar1_phi) - torch.log(1 + ar1_phi)
+        return torch.exp(log_ar1_sig)
+
     def forward(self, g):
         ar1_c, ar1_phi, ar1_eta = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[...,0:-1,:],g[...,1:,:])
         dx = self.manif.logmap(dg)
         dy = dx[...,1:,:] - ((ar1_phi * dx[...,0:-1,:]) )
+        dy = torch.cat((dx[...,0:1,:], dy),-2)
         normal = dists.Normal(loc=ar1_c, scale = torch.sqrt(ar1_eta))
         diagn = dists.Independent(normal, 1)
         return self.manif.log_q(diagn.log_prob, dy, self.manif.d, kmax=self.kmax)
