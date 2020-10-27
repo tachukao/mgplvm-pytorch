@@ -9,7 +9,7 @@ from .kernels import Kernel, Combination
 from .inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
 
-jitter: float = 1E-6
+jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)
 
 
