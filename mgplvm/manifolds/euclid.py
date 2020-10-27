@@ -56,6 +56,10 @@ class Euclid(Manifold):
         return x
 
     @staticmethod
+    def inverse(x: Tensor) -> Tensor:
+        return -x
+
+    @staticmethod
     def gmul(x: Tensor, y: Tensor) -> Tensor:
         return x + y
 

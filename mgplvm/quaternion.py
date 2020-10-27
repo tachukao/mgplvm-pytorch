@@ -1,5 +1,8 @@
 import torch
 
+def conj(x):
+     a = torch.tensor([1, -1, -1, -1])
+     return a * x
 
 def product(x, y):
     x0 = x[..., 0]

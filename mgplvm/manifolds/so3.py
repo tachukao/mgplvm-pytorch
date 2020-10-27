@@ -92,6 +92,10 @@ class So3(Manifold):
         return theta * (q[..., 1:] / y)
 
     @staticmethod
+    def inverse(q: Tensor) -> Tensor:
+        return quaternion.conj(q)
+
+    @staticmethod
     def gmul(x: Tensor, y: Tensor) -> Tensor:
         return quaternion.product(x, y)
 

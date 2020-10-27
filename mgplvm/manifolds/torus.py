@@ -69,10 +69,12 @@ class Torus(Manifold):
         zs = torch.from_numpy(zs).float().to(
             x.device)  # meshgrid shape (2kmax+1)^n
         y = x + zs[:, None, None, ...]  # meshgrid x n_b x m x n_samples
-
         lp = torch.logsumexp(log_base_prob(y), dim=0)  # n_b x m
-
         return lp
+
+    @staticmethod
+    def inverse(x: Tensor) -> Tensor:
+        return -x
 
     @staticmethod
     def gmul(x: Tensor, y: Tensor) -> Tensor:
