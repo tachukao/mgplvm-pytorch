@@ -25,7 +25,7 @@ def fit_th1(nbatch=2, epoch='wake', manif=Torus, d=1, n_z=10, ell0=1.5, sig0=2):
     device = get_device()
     print(device)
 
-    data = pickle.load(open('./data/mouse/binned_data.pickled', 'rb'))
+    data = pickle.load(open('./binned_data.pickled', 'rb'))
     if epoch == 'wake':
         Y, zs = data['Y_wake'], data['hd_wake']
     else:
@@ -92,7 +92,7 @@ def fit_th1(nbatch=2, epoch='wake', manif=Torus, d=1, n_z=10, ell0=1.5, sig0=2):
         return
 
     # save model
-    trained_mod.store_model('trained_models/mouse_' + epoch,
+    trained_mod.store_model('mouse_' + epoch,
                             extra_params={
                                 'Y': Y,
                                 'zs': zs
