@@ -31,7 +31,7 @@ class Brownian(Module):
                  fixed_brownian_eta=False,
                  fixed_brownian_c=False):
         '''
-        x_t = c + phi x_{t-1} + w_t
+        x_t = c + w_t
         w_t = N(0, eta)
         '''
         super().__init__()
