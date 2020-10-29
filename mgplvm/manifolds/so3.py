@@ -77,7 +77,8 @@ class So3(Manifold):
     def expmap_old(x: Tensor, dim: int = -1) -> Tuple[Tensor, Tensor, Tensor]:
         theta = torch.norm(x, dim=dim, keepdim=True)
         v = x / theta
-        y = torch.cat((torch.cos(theta / 2), torch.sin(theta / 2) * v), dim=dim)
+        y = torch.cat((torch.cos(theta / 2), torch.sin(theta / 2) * v),
+                      dim=dim)
         return y  # , theta, v
 
     @staticmethod

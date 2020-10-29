@@ -11,7 +11,8 @@ class MVN(Module):
     """
     name = "MVN"
 
-    def __init__(self, m, d, with_mu=False, sigma=1.5, gammas=None, Tinds=None):
+    def __init__(self, m, d, with_mu=False, sigma=1.5, gammas=None,
+                 Tinds=None):
         '''
         gammas is the base distribution which is inverse transformed before storing
         since it's transformed by constraints.tril when used.
@@ -49,4 +50,3 @@ class MVN(Module):
             gamma = self.prms
             mu = torch.zeros(self.m, self.d).to(gamma.device)
         return MultivariateNormal(mu, scale_tril=gamma)
-

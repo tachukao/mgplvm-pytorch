@@ -7,8 +7,8 @@ def test_quad_exp_hyp_prms_dims():
     n = 10
     kernel = QuadExp(n, Euclid.distance)
     alpha, ell = kernel.prms
-    assert (alpha.shape == (n,))
-    assert (ell.shape == (n,))
+    assert (alpha.shape == (n, ))
+    assert (ell.shape == (n, ))
 
 
 def test_quad_expard_hyp_prms_dims():
@@ -16,7 +16,7 @@ def test_quad_expard_hyp_prms_dims():
     d = 3
     kernel = QuadExpARD(n, d, Euclid.distance_ard)
     alpha, ell = kernel.prms
-    assert (alpha.shape == (n,))
+    assert (alpha.shape == (n, ))
     assert (ell.shape == (n, d))
 
 

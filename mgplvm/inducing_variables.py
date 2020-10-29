@@ -4,7 +4,6 @@ from .base import Module
 
 
 class InducingPoints(Module):
-
     def __init__(self, n, d, n_z, parameterise=None, z=None):
         super().__init__()
         self.n = n  # neurons

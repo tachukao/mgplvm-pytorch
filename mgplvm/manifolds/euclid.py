@@ -8,7 +8,6 @@ from typing import Optional
 
 
 class Euclid(Manifold):
-
     def __init__(self,
                  m: int,
                  d: int,

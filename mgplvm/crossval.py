@@ -99,7 +99,6 @@ def train_cv(Y,
     manifs is a list of (manif, d)
     frac is the inverse fraction of neurons used in the test set
     '''
-
     def trainfunc(Y, mod, burnin, trainGP=True, Tfix=slice(0), callback=None):
         nbatch = 1
         nbatch_max = 100
@@ -196,7 +195,12 @@ def train_cv(Y,
                           sig0=sig0,
                           ell0=ell0)
         if frac == 2:
-            trainfunc(Y3, mod3, burn, trainGP=False, Tfix=T1, callback=callback)
+            trainfunc(Y3,
+                      mod3,
+                      burn,
+                      trainGP=False,
+                      Tfix=T1,
+                      callback=callback)
 
         mod3.store_model(outname + '/' + str(i) + '_mod3')
 
@@ -262,10 +266,10 @@ def calc_NLLs(fname, device=None, itermax='none', itermin=0, twoway=True):
 
         for i_manif in range(nmanif):
 
-            mod1, mod2, mod3, params = gen_cvmodels(fname + "/" + iterdir +
-                                                    '/' + str(i_manif) + '_mod',
-                                                    device,
-                                                    Type='LL')
+            mod1, mod2, mod3, params = gen_cvmodels(
+                fname + "/" + iterdir + '/' + str(i_manif) + '_mod',
+                device,
+                Type='LL')
             Y, N1, N2, T2 = [params[key] for key in ['Y', 'N1', 'N2', 'T2']]
             Y2, Y3 = Y[N1, :, :], Y[N2, :, :]
             data2, data3 = [

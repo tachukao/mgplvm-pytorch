@@ -10,13 +10,11 @@ class Kernel(Module, metaclass=abc.ABCMeta):
     """
     Base kernel class
     """
-
     def __init__(self):
         super().__init__()
 
 
 class Combination(Kernel):
-
     def __init__(self, kernels: List[Kernel]):
         """
         Combination Kernels
@@ -46,7 +44,6 @@ class Combination(Kernel):
 
 
 class Sum(Combination):
-
     def _reduce(self, x: List[Tensor]) -> Tensor:
         return torch.sum(torch.stack(x, dim=0), dim=0)
 
@@ -62,7 +59,6 @@ class Sum(Combination):
 
 
 class Product(Combination):
-
     def _reduce(self, x: List[Tensor]):
         return torch.prod(torch.stack(x, dim=0), dim=0)
 
@@ -78,15 +74,15 @@ class Product(Combination):
 
 
 class QuadExpBase(Kernel):
-
     def __init__(self, n: int, ell=None, alpha=None):
         super().__init__()
 
-        alpha = inv_softplus(torch.ones(n,)) if alpha is None else inv_softplus(
-            torch.tensor(alpha, dtype=torch.get_default_dtype()))
+        alpha = inv_softplus(torch.ones(
+            n, )) if alpha is None else inv_softplus(
+                torch.tensor(alpha, dtype=torch.get_default_dtype()))
         self.alpha = nn.Parameter(data=alpha, requires_grad=True)
 
-        ell = inv_softplus(torch.ones(n,)) if ell is None else inv_softplus(
+        ell = inv_softplus(torch.ones(n, )) if ell is None else inv_softplus(
             torch.tensor(ell, dtype=torch.get_default_dtype()))
         self.ell = nn.Parameter(data=ell, requires_grad=True)
 

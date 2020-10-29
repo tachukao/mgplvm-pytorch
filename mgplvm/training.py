@@ -23,7 +23,6 @@ def train(Y,
           nbatch=1,
           Tfix=slice(0),
           sigma_thresh=0.0001):
-
     def _Tlearn_hook(grad):
         ''' used to 'mask' some gradients for cv'''
         grad[Tfix, ...] *= 0
@@ -95,9 +94,9 @@ def print_progress(model, i, n, m, sgp_elbo, kl, loss):
         sigs = [np.concatenate([np.diag(s) for s in sig]) for sig in sigs]
         sig = np.median(np.concatenate(sigs))
         alpha_mag = torch.stack([p[0] for p in model.kernel.prms
-                                ]).mean().data.cpu().numpy()
+                                 ]).mean().data.cpu().numpy()
         ell_mag = torch.stack([p[1] for p in model.kernel.prms
-                              ]).mean().data.cpu().numpy()
+                               ]).mean().data.cpu().numpy()
     else:
         sig = np.median(
             np.concatenate(
@@ -106,13 +105,26 @@ def print_progress(model, i, n, m, sgp_elbo, kl, loss):
             val.mean().data.cpu().numpy() for val in model.kernel.prms
         ]
 
-    print(('\riter {:4d} | elbo {:.4f} | kl {:.4f} | loss {:.4f} ' +
-           '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} | sig {:.4f}').format(
-               i,
-               sgp_elbo.item() / (n * m),
-               kl.item() / (n * m),
-               loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag, sig),
-          end='\r')
+    if model.lprior.name == "Brownian":
+        brownian_c, brownian_eta = model.lprior.prms
+        print((
+            '\riter {:4d} | elbo {:.4f} | kl {:.4f} | loss {:.4f} ' +
+            '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} | sig {:.4f} | brownian_c {:.4f} | brownian_eta {:.4f}'
+        ).format(i,
+                 sgp_elbo.item() / (n * m),
+                 kl.item() / (n * m),
+                 loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag, sig,
+                 brownian_c.item(), brownian_eta.item()),
+              end='\r')
+    else:
+        print(('\riter {:4d} | elbo {:.4f} | kl {:.4f} | loss {:.4f} ' +
+               '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} | sig {:.8f}'
+               ).format(i,
+                        sgp_elbo.item() / (n * m),
+                        kl.item() / (n * m),
+                        loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag,
+                        sig),
+              end='\r')
 
 
 def sort_params(model, hook, trainGP):

@@ -16,7 +16,8 @@ np.random.seed(9310207)
 torch.manual_seed(9310207)
 
 
-def fit_th1(nbatch=2, epoch='wake', manif=Torus, d=1, n_z=10, ell0=1.5, sig0=2):
+def fit_th1(nbatch=2, epoch='wake', manif=Torus, d=1, n_z=10, ell0=1.5,
+            sig0=2):
     '''epoch is wake or sleep
     manif is the latent topology, d is the dimensionality.
     nbatch can be increased in case in case of insufficien RAM.
@@ -57,7 +58,8 @@ def fit_th1(nbatch=2, epoch='wake', manif=Torus, d=1, n_z=10, ell0=1.5, sig0=2):
     def callback(model, i):
         ''' plot progress during optimization '''
         if i % 10 == 0:
-            manifs = model.manif if type(model.manif) == list else [model.manif]
+            manifs = model.manif if type(
+                model.manif) == list else [model.manif]
             plt.figure()
             msize = 3
             g_mus = model.manif.prms.data.cpu().numpy()[:, 0]

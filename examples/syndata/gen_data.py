@@ -7,21 +7,21 @@ import subprocess
 import torch
 from torch.distributions import Bernoulli
 
+
 # %% base class
-def draw_GP(n, d, sig, ell, jitter  = 1e-6):
+def draw_GP(n, d, sig, ell, jitter=1e-6):
     '''draw RBF GP samples with N samples, ell = l (in units of samples)'''
     rep_ts = np.arange(n).reshape(-1, 1).repeat(n, 1)
     dts = rep_ts - rep_ts.T
-    K = sig**2 * np.exp(-dts**2 / (2*ell**2)) #nxn
-    L = np.linalg.cholesky(K + jitter * np.eye(n)) #nxn
+    K = sig**2 * np.exp(-dts**2 / (2 * ell**2))  #nxn
+    L = np.linalg.cholesky(K + jitter * np.eye(n))  #nxn
 
-    us = np.random.normal(size = (n, d)) #nxd
-    X = L @ us #nxd
+    us = np.random.normal(size=(n, d))  #nxd
+    X = L @ us  #nxd
     return X
-    
-    
-class Manif(metaclass=abc.ABCMeta):
 
+
+class Manif(metaclass=abc.ABCMeta):
     def __init__(self, d):
         self.d = d
 
@@ -42,7 +42,6 @@ class Manif(metaclass=abc.ABCMeta):
 
 
 class Euclid(Manif):
-
     def __init__(self, d):
         super().__init__(d)
 
@@ -50,7 +49,7 @@ class Euclid(Manif):
     def name(self):
         return "euclid(%i)" % self.d
 
-    def gen(self, n, ell = None, sig = 10):
+    def gen(self, n, ell=None, sig=10):
         if ell is None:
             #gs = np.random.uniform(0, 4, size=(n, self.d))
             gs = np.random.normal(2, 1, size=(n, self.d))
@@ -75,7 +74,6 @@ class Euclid(Manif):
 
 
 class Torus(Manif):
-
     def __init__(self, d):
         super().__init__(d)
 
@@ -86,14 +84,15 @@ class Torus(Manif):
     def norm(self, gs):
         return gs % (2 * np.pi)
 
-    def gen(self, n, ell = None, sig = 10):
+    def gen(self, n, ell=None, sig=10):
         """if l is none, draw random samples - otherwise draw from an RBF GP with ell = l"""
         if ell is None:
             gs = np.random.uniform(0, 2 * np.pi, size=(n, self.d))
         else:
             gs = draw_GP(n, self.d, sig, ell)
-            gs = (gs+np.ceil(10*sig)*2*np.pi) % (2*np.pi) #put back on the torus
-            
+            gs = (gs + np.ceil(10 * sig) * 2 * np.pi) % (
+                2 * np.pi)  #put back on the torus
+
         return gs
 
     def gen_ginit(self, n):
@@ -112,7 +111,6 @@ class Torus(Manif):
 
 
 class Sphere(Manif):
-
     def __init__(self, d):
         super().__init__(d)
 
@@ -128,7 +126,7 @@ class Sphere(Manif):
         gs = gs + np.random.normal(0, np.std(gs) * variability, size=gs.shape)
         return self.norm(gs)
 
-    def gen(self, n, ell = None, sig = None):
+    def gen(self, n, ell=None, sig=None):
         '''generate random points in spherical space according to the prior'''
         gs = np.random.normal(0, 1, size=(n, self.d + 1))
         return self.norm(gs)
@@ -147,7 +145,6 @@ class Sphere(Manif):
 
 
 class So3(Manif):
-
     def __init__(self):
         super().__init__(3)
 
@@ -160,7 +157,7 @@ class So3(Manif):
         gs = gs * np.sign(gs[:, 0]).reshape(-1, 1)
         return gs
 
-    def gen(self, n, ell = None, sig = None):
+    def gen(self, n, ell=None, sig=None):
         '''generate random points in spherical space according to the prior'''
         gs = np.random.normal(0, 1, size=(n, self.d + 1))
         return self.norm(gs)
@@ -185,7 +182,6 @@ class Product(Manif):
     """
     Does not support product of products at the moment
     """
-
     def __init__(self, manifs):
         self.ds = [m.d for m in manifs]
         self.d = sum(self.ds)
@@ -196,8 +192,8 @@ class Product(Manif):
         names = "x".join([m.name for m in self.manifs])
         return names
 
-    def gen(self, n, ell = None, sig = 10):
-        gs = [m.gen(n, ell = ell, sig = sig) for m in self.manifs]
+    def gen(self, n, ell=None, sig=10):
+        gs = [m.gen(n, ell=ell, sig=sig) for m in self.manifs]
         return gs
 
     def gen_ginit(self, n):
@@ -224,7 +220,6 @@ class Product(Manif):
 
 # %% generator class
 class Gen():
-
     def __init__(self,
                  manifold,
                  n,
@@ -284,9 +279,9 @@ class Gen():
         self.gprefs = self.manifold.gen(self.n)
         return self.gprefs
 
-    def gen_gconds(self, ell = None, sig = 10):
+    def gen_gconds(self, ell=None, sig=10):
         '''generate conditions for each neuron'''
-        self.gs = self.manifold.gen(self.m, ell = ell, sig = sig)
+        self.gs = self.manifold.gen(self.m, ell=ell, sig=sig)
         return self.gs
 
     def noisy_conds(self):
@@ -307,7 +302,8 @@ class Gen():
                  mode='Gaussian',
                  overwrite=True,
                  sigma=None,
-                ell = None, sig = 10):
+                 ell=None,
+                 sig=10):
         """
         tbin is time of each time step (by default each time step is 1 ms)
         gs_in is optional input latent signal, otherwise random points on manifold
@@ -320,7 +316,7 @@ class Gen():
         for i in range(n_samples):
             if gs_in is None:
                 if len(self.gs) == 0:
-                    self.gen_gconds(ell = ell, sig = sig)
+                    self.gen_gconds(ell=ell, sig=sig)
             else:
                 self.gs = gs_in
 
@@ -331,8 +327,8 @@ class Gen():
                 self.gprefs = gprefs_in
 
             ds_sqr = np.array(
-                self.manifold.distance_scaled(self.gprefs, self.gs,
-                                              self.params['l']))  # nman x n x m
+                self.manifold.distance_scaled(
+                    self.gprefs, self.gs, self.params['l']))  # nman x n x m
 
             Ks = np.exp(-0.5 * ds_sqr)  # nman x n x m
             K = np.prod(Ks, axis=0)  # n x m

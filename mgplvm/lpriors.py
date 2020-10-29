@@ -4,10 +4,32 @@ import torch.nn as nn
 import torch.distributions as dists
 from .base import Module
 
-class AR1(Module):
-    name = "AR1"
 
-    def __init__(self, manif, kmax=5, ar1_phi=None, ar1_eta=None, ar1_c=None):
+class Default(Module):
+    name = "default"
+
+    def __init__(self, manif):
+        super().__init__()
+        self.manif = manif
+
+    @property
+    def prms(self):
+        return None
+
+    def forward(self, g):
+        return self.manif.lprior(g)
+
+
+class Brownian(Module):
+    name = "Brownian"
+
+    def __init__(self,
+                 manif,
+                 kmax=5,
+                 brownian_eta=None,
+                 brownian_c=None,
+                 fixed_brownian_eta=False,
+                 fixed_brownian_c=False):
         '''
         x_t = c + phi x_{t-1} + w_t
         w_t = N(0, eta)
@@ -18,37 +40,28 @@ class AR1(Module):
         self.manif = manif
         self.kmax = kmax
 
-        ar1_phi = 0.5 * torch.ones(d) if ar1_phi is None else ar1_phi
-        ar1_eta = torch.ones(d) if ar1_eta is None else ar1_eta
-        ar1_c = torch.ones(d) if ar1_c is None else ar1_c
-        self.log_ar1_tau = nn.Parameter(data= - torch.log(- torch.log(ar1_phi)), requires_grad=True)
-        self.log_ar1_eta = nn.Parameter(data = torch.log(ar1_eta), requires_grad=True)
-        self.ar1_c = nn.Parameter(data=ar1_c, requires_grad=True)
+        brownian_eta = torch.ones(d) if brownian_eta is None else brownian_eta
+        brownian_c = torch.zeros(d) if brownian_c is None else brownian_c
+        self.log_brownian_eta = nn.Parameter(
+            data=torch.log(brownian_eta),
+            requires_grad=(not fixed_brownian_eta))
+        self.brownian_c = nn.Parameter(data=brownian_c,
+                                       requires_grad=(not fixed_brownian_c))
 
     @property
     def prms(self):
-        ar1_phi = torch.exp(- torch.exp(- self.log_ar1_tau))
-        ar1_eta = torch.exp(self.log_ar1_eta) + 1E-16
-        ar1_c = self.ar1_c
-        return ar1_c, ar1_phi, ar1_eta
-
-    @property
-    def autocorr(self):
-        return torch.exp(self.log_ar1_tau)
-
-    @property
-    def process_var(self):
-        ar1_phi = torch.exp(- torch.exp(- self.log_ar1_tau))
-        log_ar1_sig = self.log_ar1_eta - torch.log(1 - ar1_phi) - torch.log(1 + ar1_phi)
-        return torch.exp(log_ar1_sig)
+        brownian_eta = torch.exp(self.log_brownian_eta) + 1E-16
+        brownian_c = self.brownian_c
+        return brownian_c, brownian_eta
 
     def forward(self, g):
-        ar1_c, ar1_phi, ar1_eta = self.prms
+        brownian_c, brownian_eta = self.prms
         ginv = self.manif.inverse(g)
-        dg = self.manif.gmul(ginv[...,0:-1,:],g[...,1:,:])
+        dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
         dx = self.manif.logmap(dg)
-        dy = dx[...,1:,:] - ((ar1_phi * dx[...,0:-1,:]) )
-        dy = torch.cat((dx[...,0:1,:], dy),-2)
-        normal = dists.Normal(loc=ar1_c, scale = torch.sqrt(ar1_eta))
+        normal = dists.Normal(loc=brownian_c, scale=torch.sqrt(brownian_eta))
         diagn = dists.Independent(normal, 1)
-        return self.manif.log_q(diagn.log_prob, dy, self.manif.d, kmax=self.kmax)
+        return self.manif.log_q(diagn.log_prob,
+                                dx,
+                                self.manif.d,
+                                kmax=self.kmax)

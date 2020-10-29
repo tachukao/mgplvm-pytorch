@@ -45,8 +45,7 @@ ts_wake, ts_sleep = bins[1:][bin_wake], bins[1:][bin_sleep]
 zs_wake, zs_sleep = binangs[bin_wake], binangs[bin_sleep]
 
 Y_wake, Y_sleep = [
-    np.array([data[bins]
-              for data in bindata])
+    np.array([data[bins] for data in bindata])
     for bins in [bin_wake, bin_sleep]
 ]
 

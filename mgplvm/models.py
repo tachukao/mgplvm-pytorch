@@ -7,6 +7,7 @@ from torch import nn
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
+import mgplvm.lpriors as lpriors
 
 
 class Core(nn.Module):
@@ -55,7 +56,7 @@ class Core(nn.Module):
         self.sgp = sgp.Sgp(self.kernel, n, m, self.z, sigma=sigma)  # sparse gp
         # reference distribution
         self.rdist = ref_dist
-        self.lprior = self.manif.lprior if lprior is None else lprior
+        self.lprior = lpriors.Default(manif) if lprior is None else lprior
 
     def forward(self, data, n_b, kmax=5):
         """
@@ -141,7 +142,8 @@ class Core(nn.Module):
         x = q.rsample(torch.Size([n_b]))
 
         # compute entropy
-        lq = self.manif.log_q(q.log_prob, x, self.manif.d, kmax=kmax)  # n_b x m
+        lq = self.manif.log_q(q.log_prob, x, self.manif.d,
+                              kmax=kmax)  # n_b x m
         lq = lq.sum(dim=1)  # (n_b,)
 
         # transform x to group with dims (n_b x m x d)
@@ -252,7 +254,8 @@ class Product(nn.Module):
             # transform x to group with dims (1 x m x d)
             gtildes = [m.expmap(x) for (m, x) in zip(self.manif, xs)]
             gs = [
-                m.transform(gtilde) for (m, gtilde) in zip(self.manif, gtildes)
+                m.transform(gtilde)
+                for (m, gtilde) in zip(self.manif, gtildes)
             ]
 
             gs = [g.permute(0, 2, 1) for g in gs]  # (1 x d x m)
@@ -296,8 +299,8 @@ class Product(nn.Module):
         gs = [m.transform(gtilde) for (m, gtilde) in zip(self.manif, gtildes)]
 
         # compute prior
-        lps = [m.lprior(g).to(data.device) for (m, g) in zip(self.manif, gs)
-              ]  # (n_b, m)
+        lps = [m.lprior(g).to(data.device)
+               for (m, g) in zip(self.manif, gs)]  # (n_b, m)
         lps = [lp.sum(dim=1) for lp in lps]  # [(n_b,), ...]
         lp = torch.stack(lps).sum(dim=0)  # (n_b,)
 

@@ -8,11 +8,12 @@ def generate_binary_array(n, l):
         return l
     else:
         if len(l) == 0:
-            return generate_binary_array(n - 1, [np.array([-1]), np.array([1])])
+            return generate_binary_array(
+                n - 1, [np.array([-1]), np.array([1])])
         else:
             return generate_binary_array(
-                n - 1, ([np.concatenate([i, [-1]]) for i in l] +
-                        [np.concatenate([i, [1]]) for i in l]))
+                n - 1, ([np.concatenate([i, [-1]])
+                         for i in l] + [np.concatenate([i, [1]]) for i in l]))
 
 
 def align_torus(mod, target):
