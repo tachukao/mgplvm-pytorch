@@ -5,10 +5,8 @@ import torch
 from torch import optim
 
 import mgplvm
-from mgplvm import kernels, rdist
+from mgplvm import kernels, rdist, models, training
 from mgplvm.manifolds import Torus, Euclid, So3
-from mgplvm.models import Core
-from mgplvm.training import train
 from mgplvm.utils import get_device
 
 torch.set_default_dtype(torch.float64)
@@ -48,7 +46,8 @@ def fit_th1(nbatch=2, epoch='wake', manif=Torus, d=1, n_z=10, ell0=1.5,
                                     manif.distance,
                                     alpha=alpha,
                                     ell=np.ones(n) * ell0)
-    mod = Core(manif, n, m, n_z, kernel, ref_dist, sigma=sigma).to(device)
+    mod = models.Sgp(manif, n, m, n_z, kernel, ref_dist,
+                     sigma=sigma).to(device)
 
     Y = Y.reshape(n, m, 1).astype(np.float64)  # only one sample
 
@@ -78,17 +77,17 @@ def fit_th1(nbatch=2, epoch='wake', manif=Torus, d=1, n_z=10, ell0=1.5,
 
     try:
         # train model
-        trained_mod = train(Y,
-                            mod,
-                            device,
-                            optimizer=optim.Adam,
-                            outdir='none',
-                            max_steps=1000,
-                            burnin=200,
-                            n_b=128,
-                            lrate=5E-2,
-                            callback=callback,
-                            nbatch=nbatch)
+        trained_mod = training.sgp(Y,
+                                   mod,
+                                   device,
+                                   optimizer=optim.Adam,
+                                   outdir='none',
+                                   max_steps=1000,
+                                   burnin=200,
+                                   n_b=128,
+                                   lrate=5E-2,
+                                   callback=callback,
+                                   nbatch=nbatch)
     except RuntimeError:
         print('out of memory, consider increasing nbatch from', nbatch)
         return
