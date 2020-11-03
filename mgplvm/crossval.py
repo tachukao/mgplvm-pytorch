@@ -2,10 +2,8 @@ import os
 import numpy as np
 import mgplvm
 import torch
-from mgplvm import kernels, rdist
+from mgplvm import kernels, rdist, models, training
 from mgplvm.manifolds import Torus, Euclid, So3
-from mgplvm.models import Core
-from mgplvm.training import train
 import matplotlib.pyplot as plt
 import pickle
 from scipy.stats import ttest_1samp
@@ -56,7 +54,8 @@ def initialize(Y,
     manif = fit_manif(m, d, mu=mu, Tinds=Tfix)
     ref_dist = mgplvm.rdist.MVN(m, d, sigma=sig0, gammas=gammas, Tinds=Tfix)
     kernel = kernels.QuadExp(n, manif.distance, alpha=alpha, ell=ell)
-    mod = Core(manif, n, m, n_z, kernel, ref_dist, sigma=sigma, z=z).to(device)
+    mod = models.Sgp(manif, n, m, n_z, kernel, ref_dist, sigma=sigma,
+                     z=z).to(device)
 
     return mod
 
@@ -66,7 +65,7 @@ def recover_model(fname, device):
     manifdict = {'Torus': Torus, 'Euclid': Euclid, 'So3': So3}
     kerneldict = {'QuadExp': kernels.QuadExp}
     rdistdict = {'MVN': mgplvm.rdist.MVN}
-    moddict = {'Core': Core}
+    moddict = {'Sgp': models.Sgp}
     manif = params['manif'].split('(')[0]
     manif = 'So3' if manif == 'So' else manif
     m, n, d, n_z = [params[key] for key in ['m', 'n', 'd', 'n_z']]
@@ -106,17 +105,17 @@ def train_cv(Y,
             if nbatch > 1:
                 print('nbatch = ' + str(nbatch))
             try:
-                return train(Y,
-                             mod,
-                             device,
-                             trainGP=trainGP,
-                             Tfix=Tfix,
-                             max_steps=max_steps,
-                             n_b=n_b,
-                             callback=callback,
-                             lrate=lrate,
-                             burnin=burnin,
-                             nbatch=nbatch)
+                return training.sgp(Y,
+                                    mod,
+                                    device,
+                                    trainGP=trainGP,
+                                    Tfix=Tfix,
+                                    max_steps=max_steps,
+                                    n_b=n_b,
+                                    callback=callback,
+                                    lrate=lrate,
+                                    burnin=burnin,
+                                    nbatch=nbatch)
             except RuntimeError:
                 nbatch += 1
 

@@ -1,7 +1,7 @@
 from __future__ import print_function
 import numpy as np
 from mgplvm.utils import softplus
-from mgplvm import sgp, rdist, kernels
+from mgplvm import sgp, svgp, rdist, kernels
 import torch
 from torch import nn
 from torch.distributions.multivariate_normal import MultivariateNormal
@@ -10,8 +10,8 @@ import pickle
 import mgplvm.lpriors as lpriors
 
 
-class Core(nn.Module):
-    name = "Core"
+class Sgp(nn.Module):
+    name = "Sgp"
 
     def __init__(self,
                  manif,
@@ -186,8 +186,8 @@ class Core(nn.Module):
         pickle.dump(params, open(fname + '.pickled', 'wb'))
 
 
-class Product(nn.Module):
-    name = "Product"
+class SgpComb(nn.Module):
+    name = "SgpComb"
 
     def __init__(self,
                  manif,
@@ -358,3 +358,100 @@ class Product(nn.Module):
                        fname + '/inducing' + str(i) + '.torch')
             torch.save(self.rdist[i].state_dict(),
                        fname + '/rdist' + str(i) + '.torch')
+
+
+class Svgp(nn.Module):
+    def __init__(self,
+                 manif,
+                 n,
+                 m,
+                 n_z,
+                 kernel,
+                 likelihoods,
+                 ref_dist,
+                 lprior=None,
+                 whiten=True):
+        """
+        __init__ method for Vanilla model
+        Parameters
+        ----------
+        manif : Manifold
+            manifold object (e.g., Euclid(1), Torus(2), so3)
+        n : int
+            number of neurons
+        m : int
+            number of conditions
+        n_z : int
+            number of inducing points
+        kernel : Kernel
+            kernel used for GP regression
+        likelihoods : Likelihoods
+            likelihood p(y|f)
+        ref_dist : rdist
+            reference distribution
+        """
+        super().__init__()
+        self.manif = manif
+        self.d = manif.d
+        self.n = n
+        self.m = m
+        self.n_z = n_z
+        self.kernel = kernel
+        self.z = self.manif.inducing_points(n, n_z)
+        self.likelihoods = likelihoods
+        self.whiten = whiten
+        self.svgp = svgp.Svgp(self.kernel,
+                              n,
+                              m,
+                              self.z,
+                              likelihoods,
+                              whiten=whiten)
+        # reference distribution
+        self.rdist = ref_dist
+        self.lprior = lpriors.Default(manif) if lprior is None else lprior
+
+    def forward(self, data, n_b, kmax=5):
+        """
+        Parameters
+        ----------
+        data : Tensor
+            data with dimensionality (n x m x n_samples)
+        n_b : int
+            batch size
+        kmax : int
+            parameter for estimating entropy for several manifolds
+            (not used for some manifolds)
+        Returns
+        -------
+        svgp_elbo : Tensor
+            evidence lower bound of sparse GP per batch
+        kl : Tensor
+            estimated KL divergence per batch between variational distribution 
+            and a manifold-specific prior (uniform for all manifolds except 
+            Euclidean, for which we have a Gaussian N(0,I) prior)
+        Notes
+        ----
+        ELBO of the model per batch is [ svgp_elbo - kl ]
+        """
+        _, _, n_samples = data.shape
+        q = self.rdist()  # return reference distribution
+
+        # sample a batch with dims: (n_b x m x d)
+        x = q.rsample(torch.Size([n_b]))
+        # compute entropy (summed across batches)
+        lq = self.manif.log_q(q.log_prob, x, self.manif.d, kmax)
+
+        # transform x to group with dims (n_b x m x d)
+        gtilde = self.manif.expmap(x)
+
+        # apply g_mu with dims: (n_b x m x d)
+        g = self.manif.transform(gtilde)
+
+        # sparse GP elbo summed over all batches
+        # note that [ svgp.elbo ] recognizes inputs of dims (n_b x d x m)
+        # and so we need to permute [ g ] to have the right dimensions
+        svgp_lik, svgp_kl = self.svgp.elbo(n_samples, n_b, data,
+                                           g.permute(0, 2, 1))
+        # KL(Q(G) || p(G)) ~ logQ - logp(G)
+        kl = lq.sum() - self.lprior(g).sum()
+        return svgp_lik / n_b, svgp_kl / n_b, (kl / n_b)

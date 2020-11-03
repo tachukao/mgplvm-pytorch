@@ -8,21 +8,23 @@ from torch import nn, optim
 from torch.optim.lr_scheduler import LambdaLR
 
 
-def train(Y,
-          model,
-          device,
-          optimizer=optim.Adam,
-          outdir="results/vanilla",
-          max_steps=1000,
-          n_b=128,
-          burnin='default',
-          lrate=1e-3,
-          print_every=10,
-          callback=None,
-          trainGP=True,
-          nbatch=1,
-          Tfix=slice(0),
-          sigma_thresh=0.0001):
+
+def sgp(Y,
+        model,
+        device,
+        optimizer=optim.Adam,
+        outdir="results/vanilla",
+        max_steps=1000,
+        n_b=128,
+        burnin='default',
+        lrate=1e-3,
+        print_every=10,
+        callback=None,
+        trainGP=True,
+        nbatch=1,
+        Tfix=slice(0),
+        sigma_thresh=0.0001):
+
     def _Tlearn_hook(grad):
         ''' used to 'mask' some gradients for cv'''
         grad[Tfix, ...] *= 0
@@ -34,7 +36,7 @@ def train(Y,
     data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
 
     # parameters to be optimized
-    if type(model) == mgplvm.models.Product:
+    if type(model) == mgplvm.models.SgpComb:
         params = sort_params_prod(model, _Tlearn_hook, trainGP)
     else:
         params = sort_params(model, _Tlearn_hook, trainGP)
@@ -60,8 +62,6 @@ def train(Y,
 
         for _ in range(nbatch):
             sgp_elbo, kl = model(data, n_b)  # log p(Y|G), KL(Q(G), p(G))
-            sgp_elbo = sgp_elbo
-            kl = kl
             loss = (-sgp_elbo + (ramp * kl))  # -LL
             loss.backward()
 
@@ -89,7 +89,7 @@ def print_progress(model, i, n, m, sgp_elbo, kl, loss):
         mu_mag = np.mean(
             np.sqrt(np.sum(model.manif.prms.data.cpu().numpy()**2, axis=1)))
 
-    if type(model) == mgplvm.models.Product:
+    if type(model) == mgplvm.models.SgpComb:
         sigs = [r.prms.data.cpu().numpy() for r in model.rdist]
         sigs = [np.concatenate([np.diag(s) for s in sig]) for sig in sigs]
         sig = np.median(np.concatenate(sigs))
@@ -176,3 +176,51 @@ def sort_params_prod(model, hook, trainGP):
     params[0].append(model.sgp.sigma)  # noise variance
 
     return params
+
+
+def svgp(Y,
+         model,
+         device,
+         optimizer=optim.Adam,
+         outdir="results/vanilla",
+         max_steps=1000,
+         n_mc=128,
+         burnin=100,
+         lrate=1E-3,
+         callback=None,
+         print_every=50):
+    print(max_steps, burnin)
+    n, m, _ = Y.shape  # neurons, conditions, samples
+    data = torch.from_numpy(Y).float().to(device)
+    opt = optimizer(model.parameters(), lr=lrate)
+
+    for i in range(max_steps):  # come up with a different stopping condition
+        opt.zero_grad()
+        ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
+        n_b = n_mc  # batch size
+        svgp_lik, svgp_kl, kl = model(data, n_b)  # log p(Y|G), KL(Q(G), p(G))
+        svgp_elbo = svgp_lik - svgp_kl
+        loss = (-svgp_elbo) + (ramp * kl)  # -LL
+        loss.backward()
+        opt.step()
+
+        if i % print_every == 0:
+            mu_mag = np.mean(
+                np.sqrt(
+                    np.sum(model.manif.prms.data.cpu().numpy()[:]**2, axis=1)))
+            alpha_mag, ell_mag = [
+                np.mean(val.data.cpu().numpy()) for val in model.kernel.prms
+            ]
+            print((
+                '\riter {:4d} | elbo {:.4f} | svgp_kl {:.4f} | kl {:.4f} | loss {:.4f} '
+                + '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f}').format(
+                    i,
+                    svgp_elbo.item() / (n * m),
+                    svgp_kl.item() / (n * m),
+                    kl.item() / (n * m),
+                    loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag),
+                  end='\r')
+        if callback is not None:
+            callback(model, i)
+
+    return model
