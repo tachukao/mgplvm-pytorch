@@ -50,31 +50,24 @@ class Gaussian(Likelihoods):
 
 
 class Poisson(Likelihoods):
-    def __init__(self,
-                 n: int,
-                 m: int,
-                 variance: Optional[Tensor] = None,
-                 inv_link=torch.exp):
+    def __init__(self, n: int, m: int, inv_link=torch.exp, binsize=1):
         super().__init__(n, m)
-        sigma = torch.randn(n, ) if variance is None else torch.sqrt(
-            torch.tensor(variance, dtype=torch.get_default_dtype()))
-        self.sigma = nn.Parameter(data=sigma, requires_grad=True)
-        self.inv_lin = inv_link
+        self.inv_link = inv_link
+        self.binsize = binsize
 
     @property
     def prms(self):
-        variance = torch.square(self.sigma)
-        return variance
+        pass
 
     def log_prob(self, y):
         pass
 
-    def variational_expectation(self, n_samples, y, mu, var):
+    def variational_expectation(self, n_samples, y, fmu, fvar):
         if self.inv_link == torch.exp:
-            variance = self.prms
-            n_b = mu.shape[0]
-            v1 = y * mu - torch.exp(mu + var / 2)
-            v2 = (torch.lgamma(y + 1) + y) * n_b
+            n_b = fmu.shape[0]
+            v1 = (y * fmu) - (self.binsize *
+                              torch.exp(fmu + 0.5 * fvar[..., None]))
+            v2 = (y * np.log(self.binsize) - torch.lgamma(y + 1)) * n_b
             return v1.sum() + v2.sum()
         else:
             raise NotImplementedError
