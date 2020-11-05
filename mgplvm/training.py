@@ -7,6 +7,7 @@ import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import LambdaLR
 
+
 def sgp(Y,
         model,
         device,
@@ -22,7 +23,6 @@ def sgp(Y,
         nbatch=1,
         Tfix=slice(0),
         sigma_thresh=0.0001):
-
     def _Tlearn_hook(grad):
         ''' used to 'mask' some gradients for cv'''
         grad[Tfix, ...] *= 0
@@ -125,18 +125,17 @@ def print_progress(model, i, n, m, sgp_elbo, kl, loss):
               end='\r')
 
 
-def sort_params(model, hook, trainGP, svgp = False):
+def sort_params(model, hook, trainGP, svgp=False):
     '''apply burnin period to Sigma_Q and alpha^2
     allow for masking of certain conditions for use in crossvalidation'''
 
     # parameters to be optimized
-    
+
     if svgp:
         params = [[], [], []]
     else:
         params = [[], []]
-    
-    
+
     for param in model.parameters():
         if (param.shape == model.rdist.gamma.shape) and torch.all(
                 param == model.rdist.gamma):
@@ -146,9 +145,11 @@ def sort_params(model, hook, trainGP, svgp = False):
                 param == model.manif.mu):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
-        elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(param == model.svgp.q_mu):
+        elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(
+                param == model.svgp.q_mu):
             params[2].append(param)
-        elif svgp and (param.shape == model.svgp.q_sqrt.shape) and torch.all(param == model.svgp.q_sqrt):
+        elif svgp and (param.shape == model.svgp.q_sqrt.shape) and torch.all(
+                param == model.svgp.q_sqrt):
             params[2].append(param)
         elif trainGP:  # only update GP parameters if trainGP
             # add ell to group 2
@@ -157,7 +158,7 @@ def sort_params(model, hook, trainGP, svgp = False):
                 params[1].append(param)
             else:
                 params[0].append(param)
-            
+
     return params
 
 
@@ -197,20 +198,31 @@ def svgp(Y,
          burnin=100,
          lrate=1E-3,
          callback=None,
-         print_every=50):
-    print(max_steps, burnin)
+         print_every=50,
+         batch_size=None):
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
+    data_size = m
+
+    def generate_batch_idxs():
+        idxs = np.arange(data_size)
+        if model.lprior.name == "Brownian":
+            # if prior is Brownian, then batches have to be contiguous
+            start = np.random.randint(data_size - batch_size)
+            return idxs[start:start + batch_size]
+        else:
+            np.shuffle(idxs)
+            return idxs[0:batch_size]
+
     #opt = optimizer(model.parameters(), lr=lrate)
-    
+
     def _Tlearn_hook(grad):
         return grad
-    params = sort_params(model, _Tlearn_hook, True, svgp = True)
+
+    params = sort_params(model, _Tlearn_hook, True, svgp=True)
     opt = optimizer(params[0], lr=lrate)  # instantiate optimizer
     opt.add_param_group({'params': params[1]})
     opt.add_param_group({'params': params[2]})
-    print(len(opt.param_groups))
-    print([len(ps) for ps in params])
 
     # set learning rate schedule so sigma updates have a burn-in period
     def fburn(x):
@@ -219,6 +231,7 @@ def svgp(Y,
         #only optimize
         x -= 50
         return 1 - np.exp(-x / (3 * burnin))
+
     def finit(x):
         if x < 50:
             return 0
@@ -230,15 +243,18 @@ def svgp(Y,
     for i in range(max_steps):  # come up with a different stopping condition
         opt.zero_grad()
         ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
-        n_b = n_mc  # batch size
-        svgp_lik, svgp_kl, kl = model(data, n_b)  # log p(Y|G), KL(Q(G), p(G))
+
+        if batch_size is None:
+            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=None)
+        else:
+            batch_idxs = generate_batch_idxs()
+            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=batch_idxs)
+
         svgp_elbo = svgp_lik - svgp_kl
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
-
         loss.backward()
         opt.step()
         scheduler.step()
-
         if i % print_every == 0:
             mu_mag = np.mean(
                 np.sqrt(
@@ -255,8 +271,6 @@ def svgp(Y,
                     kl.item() / (n * m),
                     loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag),
                   end='\r')
-
-
 
         if callback is not None:
             callback(model, i)

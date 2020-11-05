@@ -38,8 +38,10 @@ class Torus(Manifold):
     def lprior(self, g):
         return self.lprior_const * torch.ones(g.shape[:2])
 
-    def transform(self, x, mu=None):
+    def transform(self, x, mu=None, batch_idxs=None):
         mu = self.prms
+        if batch_idxs is not None:
+            mu = mu[batch_idxs]
         return self.gmul(mu, x)
 
     # log of the uniform prior (negative log volume) for T^d
@@ -65,8 +67,8 @@ class Torus(Manifold):
         ks = np.arange(-kmax, kmax + 1)
         zs = np.meshgrid(*(ks for _ in range(d)))
         zs = np.stack([z.flatten() for z in zs]).T * 2. * np.pi
-        zs = torch.from_numpy(zs).float().to(
-            x.device)  # meshgrid shape (2kmax+1)^n
+        zs = torch.from_numpy(zs).float()
+        zs = zs.to(x.device)  # meshgrid shape (2kmax+1)^n
         y = x + zs[:, None, None, ...]  # meshgrid x n_b x m x n_samples
         lp = torch.logsumexp(log_base_prob(y), dim=0)  # n_b x m
         return lp

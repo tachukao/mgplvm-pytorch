@@ -195,7 +195,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             # [ v1 ] has dims : (n_b x n x m x m)
             v1 = torch.matmul(tmp1, tmp1.permute(0, 1, 3, 2))
             # [ v2 ] has dims : (n_b x n x m x m)
-            v2 = torch.matmul(alpha.permute(0, 1, 3, 2), kzx)
+            v2 = torch.matmul(alphat, alphat)
             # [ kxx ] has dims : (n_b x n x m x m)
             kxx = kernel(x, x)
             v = kxx + v1 - v2

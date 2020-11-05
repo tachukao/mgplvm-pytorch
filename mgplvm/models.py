@@ -410,17 +410,20 @@ class Svgp(nn.Module):
         self.rdist = ref_dist
         self.lprior = lpriors.Default(manif) if lprior is None else lprior
 
-    def forward(self, data, n_b, kmax=5):
+    def forward(self, data, n_mc, kmax=5, batch_idxs=None):
         """
         Parameters
         ----------
         data : Tensor
             data with dimensionality (n x m x n_samples)
-        n_b : int
-            batch size
+        n_mc : int
+            number of MC samples
         kmax : int
             parameter for estimating entropy for several manifolds
             (not used for some manifolds)
+        batch_idxs: Optional int list
+            if None then use all data and (batch_size == m)
+            otherwise, (batch_size == len(batch_idxs))
         Returns
         -------
         svgp_elbo : Tensor
@@ -433,25 +436,27 @@ class Svgp(nn.Module):
         ----
         ELBO of the model per batch is [ svgp_elbo - kl ]
         """
-        _, _, n_samples = data.shape
-        q = self.rdist()  # return reference distribution
 
-        # sample a batch with dims: (n_b x m x d)
-        x = q.rsample(torch.Size([n_b]))
+        data = data if batch_idxs is None else data[:, batch_idxs, :]
+        _, _, n_samples = data.shape
+        q = self.rdist(batch_idxs)  # return reference distribution
+
+        # sample a batch with dims: (n_mc x batch_size x d)
+        x = q.rsample(torch.Size([n_mc]))
         # compute entropy (summed across batches)
         lq = self.manif.log_q(q.log_prob, x, self.manif.d, kmax)
 
-        # transform x to group with dims (n_b x m x d)
+        # transform x to group with dims (n_mc x m x d)
         gtilde = self.manif.expmap(x)
 
-        # apply g_mu with dims: (n_b x m x d)
-        g = self.manif.transform(gtilde)
+        # apply g_mu with dims: (n_mc x m x d)
+        g = self.manif.transform(gtilde, batch_idxs=batch_idxs)
 
         # sparse GP elbo summed over all batches
-        # note that [ svgp.elbo ] recognizes inputs of dims (n_b x d x m)
+        # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
-        svgp_lik, svgp_kl = self.svgp.elbo(n_samples, n_b, data,
+        svgp_lik, svgp_kl = self.svgp.elbo(n_samples, n_mc, data,
                                            g.permute(0, 2, 1))
         # KL(Q(G) || p(G)) ~ logQ - logp(G)
         kl = lq.sum() - self.lprior(g).sum()
-        return svgp_lik / n_b, svgp_kl / n_b, (kl / n_b)
+        return svgp_lik / n_mc, svgp_kl / n_mc, (kl / n_mc)

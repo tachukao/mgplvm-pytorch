@@ -4,7 +4,7 @@ import torch.nn as nn
 from torch import Tensor
 from .base import Manifold
 from ..inducing_variables import InducingPoints
-from typing import Optional
+from typing import Optional, List
 
 
 class Euclid(Manifold):
@@ -32,8 +32,11 @@ class Euclid(Manifold):
     def prms(self) -> Tensor:
         return self.mu
 
-    def transform(self, x: Tensor) -> Tensor:
+    def transform(self, x: Tensor,
+                  batch_idxs: Optional[List[int]] = None) -> Tensor:
         mu = self.prms
+        if batch_idxs is not None:
+            mu = mu[batch_idxs]
         return self.gmul(mu, x)
 
     def lprior(self, g):

@@ -6,7 +6,7 @@ from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 from .base import Manifold
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from ..inducing_variables import InducingPoints
 
 
@@ -62,8 +62,11 @@ class So3(Manifold):
     def lprior(self, g):
         return self.lprior_const * torch.ones(g.shape[:2])
 
-    def transform(self, x: Tensor) -> Tensor:
+    def transform(self, x: Tensor,
+                  batch_idxs: Optional[List[int]] = None) -> Tensor:
         mu = self.prms
+        if batch_idxs is not None:
+            mu = mu[batch_idxs]
         return self.gmul(mu, x)  # group multiplication
 
     @staticmethod

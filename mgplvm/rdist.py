@@ -43,10 +43,14 @@ class MVN(Module):
             return self.mu, gamma
         return gamma
 
-    def forward(self):
+    def forward(self, batch_idxs=None):
         if self.with_mu:
             mu, gamma = self.prms
         else:
             gamma = self.prms
             mu = torch.zeros(self.m, self.d).to(gamma.device)
+
+        if batch_idxs is not None:
+            mu = mu[batch_idxs]
+            gamma = gamma[batch_idxs]
         return MultivariateNormal(mu, scale_tril=gamma)
