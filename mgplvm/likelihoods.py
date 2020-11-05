@@ -50,20 +50,35 @@ class Gaussian(Likelihoods):
 
 
 class Poisson(Likelihoods):
-    def __init__(self, n: int, m: int, inv_link=torch.exp, binsize=1):
+    def __init__(self,
+                 n: int,
+                 m: int,
+                 inv_link=torch.exp,
+                 binsize=1,
+                 c: Optional[Tensor] = None,
+                 d: Optional[Tensor] = None,
+                 fixed_c=False,
+                 fixed_d=False):
         super().__init__(n, m)
         self.inv_link = inv_link
         self.binsize = binsize
+        c = torch.ones(n, ) if c is None else c
+        d = torch.zeros(n, ) if d is None else d
+        self.c = nn.Parameter(data=c, requires_grad=not fixed_c)
+        self.d = nn.Parameter(data=d, requires_grad=not fixed_d)
 
     @property
     def prms(self):
-        pass
+        return self.c, self.d
 
     def log_prob(self, y):
         pass
 
     def variational_expectation(self, n_samples, y, fmu, fvar):
         if self.inv_link == torch.exp:
+            c, d = self.prms
+            fmu = c[..., None, None] * fmu + d[..., None, None]
+            fvar = fvar * torch.square(c[..., None])
             n_b = fmu.shape[0]
             v1 = (y * fmu) - (self.binsize *
                               torch.exp(fmu + 0.5 * fvar[..., None]))

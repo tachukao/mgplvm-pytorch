@@ -201,6 +201,7 @@ def svgp(Y,
         svgp_lik, svgp_kl, kl = model(data, n_b)  # log p(Y|G), KL(Q(G), p(G))
         svgp_elbo = svgp_lik - svgp_kl
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
+
         loss.backward()
         opt.step()
 
@@ -220,6 +221,9 @@ def svgp(Y,
                     kl.item() / (n * m),
                     loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag),
                   end='\r')
+
+
+
         if callback is not None:
             callback(model, i)
 
