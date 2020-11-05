@@ -7,8 +7,6 @@ import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import LambdaLR
 
-
-
 def sgp(Y,
         model,
         device,
@@ -127,12 +125,18 @@ def print_progress(model, i, n, m, sgp_elbo, kl, loss):
               end='\r')
 
 
-def sort_params(model, hook, trainGP):
+def sort_params(model, hook, trainGP, svgp = False):
     '''apply burnin period to Sigma_Q and alpha^2
     allow for masking of certain conditions for use in crossvalidation'''
 
     # parameters to be optimized
-    params = [[], []]
+    
+    if svgp:
+        params = [[], [], []]
+    else:
+        params = [[], []]
+    
+    
     for param in model.parameters():
         if (param.shape == model.rdist.gamma.shape) and torch.all(
                 param == model.rdist.gamma):
@@ -142,6 +146,10 @@ def sort_params(model, hook, trainGP):
                 param == model.manif.mu):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
+        elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(param == model.svgp.q_mu):
+            params[2].append(param)
+        elif svgp and (param.shape == model.svgp.q_sqrt.shape) and torch.all(param == model.svgp.q_sqrt):
+            params[2].append(param)
         elif trainGP:  # only update GP parameters if trainGP
             # add ell to group 2
             if (param.shape == model.kernel.ell.shape) and torch.all(
@@ -149,6 +157,7 @@ def sort_params(model, hook, trainGP):
                 params[1].append(param)
             else:
                 params[0].append(param)
+            
     return params
 
 
@@ -192,7 +201,31 @@ def svgp(Y,
     print(max_steps, burnin)
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
-    opt = optimizer(model.parameters(), lr=lrate)
+    #opt = optimizer(model.parameters(), lr=lrate)
+    
+    def _Tlearn_hook(grad):
+        return grad
+    params = sort_params(model, _Tlearn_hook, True, svgp = True)
+    opt = optimizer(params[0], lr=lrate)  # instantiate optimizer
+    opt.add_param_group({'params': params[1]})
+    opt.add_param_group({'params': params[2]})
+    print(len(opt.param_groups))
+    print([len(ps) for ps in params])
+
+    # set learning rate schedule so sigma updates have a burn-in period
+    def fburn(x):
+        if x < 50:
+            return 0
+        #only optimize
+        x -= 50
+        return 1 - np.exp(-x / (3 * burnin))
+    def finit(x):
+        if x < 50:
+            return 0
+        return 1
+
+    LRfuncs = [finit, fburn, lambda x: 1]
+    scheduler = LambdaLR(opt, lr_lambda=LRfuncs)
 
     for i in range(max_steps):  # come up with a different stopping condition
         opt.zero_grad()
@@ -204,6 +237,7 @@ def svgp(Y,
 
         loss.backward()
         opt.step()
+        scheduler.step()
 
         if i % print_every == 0:
             mu_mag = np.mean(
