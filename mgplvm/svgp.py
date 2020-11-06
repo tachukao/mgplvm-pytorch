@@ -8,7 +8,7 @@ from .base import Module
 from .kernels import Kernel, Combination
 from .inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
-from torch.distributions import MultivariateNormal, kl_divergence, transform_to, constraints
+from torch.distributions import MultivariateNormal, kl_divergence, transform_to, constraints, Normal
 from .likelihoods import Likelihoods
 
 jitter: float = 1E-8
@@ -135,6 +135,27 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                                                        f_var).sum()
 
         return lik, prior_kl.sum() * n_b
+    
+    def tuning(self, query, n_b = 1000):
+        '''
+        query is mxd
+        '''
+        
+        query = torch.unsqueeze(query.T, 0) #add batch dimension
+        
+        mu, v = self.predict(query, False) #1xnxmx1, 1xnxm
+        mu = mu[0, :, :, 0] #n x m
+        v = v[0, :, :] # nxm
+
+        #sample from p(f|u)
+        dist = Normal(mu, torch.sqrt(v))
+        f_samps = dist.sample((n_b,))
+        
+        #sample from observation function p(y|f)
+        y_samps = self.likelihoods.sample(f_samps)
+        mu, std = y_samps.mean(dim = 0), y_samps.std(dim = 0)
+        
+        return mu, std
 
     def predict(self, x: Tensor, full_cov: bool) -> Tensor:
         """

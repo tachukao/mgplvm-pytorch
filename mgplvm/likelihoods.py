@@ -1,5 +1,6 @@
 import torch
 from torch import Tensor
+import torch.distributions
 import torch.nn as nn
 import abc
 from .base import Module
@@ -38,6 +39,14 @@ class Gaussian(Likelihoods):
 
     def log_prob(self, y):
         pass
+    
+    def sample(self, f_samps):
+        '''f is n_b x n x m'''
+        prms = self.prms
+        #sample from p(y|f)
+        dist = torch.distributions.Normal(f_samps, torch.sqrt(prms).reshape(1,-1,1))
+        y_samps = dist.sample()
+        return y_samps
 
     def variational_expectation(self, n_samples, y, fmu, fvar):
         n_b = fmu.shape[0]
@@ -73,6 +82,15 @@ class Poisson(Likelihoods):
 
     def log_prob(self, y):
         pass
+    
+    def sample(self, f_samps):
+        c, d = self.prms
+        lambd = torch.exp(c[None, ..., None] * f_samps + d[None, ..., None])
+        #sample from p(y|f)
+        dist = torch.distributions.Poisson(lambd)
+        y_samps = dist.sample()
+        return y_samps
+    
 
     def variational_expectation(self, n_samples, y, fmu, fvar):
         if self.inv_link == torch.exp:
