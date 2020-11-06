@@ -114,6 +114,18 @@ def print_progress(model, i, n, m, sgp_elbo, kl, loss):
                  loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag, sig,
                  brownian_c.item(), brownian_eta.item()),
               end='\r')
+
+    elif model.lprior.name == "AR1":
+        ar1_c, ar1_phi, ar1_eta = model.lprior.prms
+        print((
+            '\riter {:4d} | elbo {:.4f} | kl {:.4f} | loss {:.4f} ' +
+            '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} | sig {:.4f} | ar1_c {:.4f} | ar1_phi {:.4f} | ar1_eta {:.4f}'
+        ).format(i,
+                 sgp_elbo.item() / (n * m),
+                 kl.item() / (n * m),
+                 loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag, sig,
+                 ar1_c.item(), ar1_phi.item(), ar1_eta.item()),
+              end='\r')
     else:
         print(('\riter {:4d} | elbo {:.4f} | kl {:.4f} | loss {:.4f} ' +
                '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} | sig {:.8f}'
@@ -211,7 +223,7 @@ def svgp(Y,
             start = np.random.randint(data_size - batch_size)
             return idxs[start:start + batch_size]
         else:
-            np.shuffle(idxs)
+            np.random.shuffle(idxs)
             return idxs[0:batch_size]
 
     #opt = optimizer(model.parameters(), lr=lrate)
@@ -262,15 +274,58 @@ def svgp(Y,
             alpha_mag, ell_mag = [
                 np.mean(val.data.cpu().numpy()) for val in model.kernel.prms
             ]
-            print((
-                '\riter {:4d} | elbo {:.4f} | svgp_kl {:.4f} | kl {:.4f} | loss {:.4f} '
-                + '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f}').format(
-                    i,
-                    svgp_elbo.item() / (n * m),
-                    svgp_kl.item() / (n * m),
-                    kl.item() / (n * m),
-                    loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag),
-                  end='\r')
+
+            if model.lprior.name == "Brownian":
+                brownian_c, brownian_eta = model.lprior.prms
+                print((
+                    '\riter {:4d} | elbo {:.4f} | svgp_kl{:4f} | kl {:.4f} | loss {:.4f} '
+                    +
+                    '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} | brownian_c {:.4f} | brownian_eta {:.4f}'
+                ).format(i,
+                         svgp_elbo.item() / (n * m),
+                         svgp_kl.item() / (n * m),
+                         kl.item() / (n * m),
+                         loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag,
+                         brownian_c.item(), brownian_eta.item()),
+                      end='\r')
+            elif model.lprior.name == "AR1":
+                ar1_c, ar1_phi, ar1_eta = model.lprior.prms
+                print((
+                    '\riter {:4d} | elbo {:.4f} | svgp_kl {:.4f} | kl {:.4f} | loss {:.4f}' + \
+                        '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} | ar1_c {:.4f} | ar1_phi {:.4f} | ar1_eta {:.4f}'
+                ).format(i,
+                         svgp_elbo.item() / (n * m),
+                         svgp_kl.item() / (n * m),
+                         kl.item() / (n * m),
+                         loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag,
+                         ar1_c.item(), ar1_phi.item(), ar1_eta.item()),
+                      end='\r')
+            elif model.lprior.name == "ARP":
+                ar_c, ar_phi, ar_eta = model.lprior.prms
+                print((
+                    '\riter {:4d} | elbo {:.4f} | svgp_kl {:.4f} | kl {:.4f} | loss {:.4f}' + \
+                        '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} | ar_c {:.4f} | ar_phi_avg {:.4f} | ar_eta {:.4f}'
+                ).format(i,
+                         svgp_elbo.item() / (n * m),
+                         svgp_kl.item() / (n * m),
+                         kl.item() / (n * m),
+                         loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag,
+                         ar_c.item(), torch.mean(ar_phi).item(), ar_eta.item()),
+                      end='\r')
+            else:
+                print((
+                    '\riter {:4d} | elbo {:.4f} | svgp_kl {:4f} | kl {:.4f} | loss {:.4f} '
+                    + '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f} ').format(
+                        i,
+                        svgp_elbo.item() / (n * m),
+                        svgp_kl.item() / (n * m),
+                        kl.item() / (n * m),
+                        loss.item() / (n * m),
+                        mu_mag,
+                        alpha_mag**2,
+                        ell_mag,
+                    ),
+                      end='\r')
 
         if callback is not None:
             callback(model, i)

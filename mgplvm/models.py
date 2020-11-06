@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import pickle
 import mgplvm.lpriors as lpriors
 
+jitter = 1E-8
 
 class Sgp(nn.Module):
     name = "Sgp"
@@ -120,7 +121,7 @@ class Sgp(nn.Module):
             g = g.permute(0, 2, 1)  # (n_b x d x m)
             p_mu, p_cov = self.sgp.prediction(data, g, query)
             _, _, _, m_s = p_cov.shape
-            p_cov = p_cov + (1E-3 * torch.eye(m_s).to(data.device))
+            p_cov = p_cov + (jitter * torch.eye(m_s).to(data.device))
             ps = [
                 MultivariateNormal(p_mu[..., i], covariance_matrix=p_cov)
                 for i in range(n_samples)
