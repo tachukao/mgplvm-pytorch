@@ -9,7 +9,7 @@ from .kernels import Kernel, Combination
 from .inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
 from torch.distributions import MultivariateNormal, kl_divergence, transform_to, constraints, Normal
-from .likelihoods import Likelihoods
+from .likelihoods import Likelihood
 
 jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)
@@ -21,7 +21,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                  n: int,
                  m: int,
                  n_inducing: int,
-                 likelihoods: Likelihoods,
+                 likelihood: Likelihood,
                  q_mu: Optional[Tensor] = None,
                  q_sqrt: Optional[Tensor] = None,
                  whiten=True):
@@ -57,7 +57,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         self.q_mu = nn.Parameter(q_mu, requires_grad=True)
         self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
 
-        self.likelihoods = likelihoods
+        self.likelihood = likelihood
         self.whiten = whiten
 
     @abc.abstractmethod
@@ -131,7 +131,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         prior_kl = self.prior_kl()  # prior KL(q(u) || p(u))
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
-        lik = self.likelihoods.variational_expectation(n_samples, y, f_mean,
+        lik = self.likelihood.variational_expectation(n_samples, y, f_mean,
                                                        f_var).sum()
         return lik, prior_kl.sum() * n_b
     
@@ -151,7 +151,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         f_samps = dist.sample((n_b,))
         
         #sample from observation function p(y|f)
-        y_samps = self.likelihoods.sample(f_samps)
+        y_samps = self.likelihood.sample(f_samps)
         mu, std = y_samps.mean(dim = 0), y_samps.std(dim = 0)
         
         return mu, std
@@ -242,7 +242,7 @@ class Svgp(SvgpBase):
                  n: int,
                  m: int,
                  z: InducingPoints,
-                 likelihoods: Likelihoods,
+                 likelihood: Likelihood,
                  whiten: Optional[bool] = True):
         """
         __init__ method for Sparse GP Class
@@ -256,8 +256,8 @@ class Svgp(SvgpBase):
             number of conditions
         z : InducingPoints
             inducing points for sparse GP
-        likelihoods : Likelihoods
-            likleihoods p(y | f) 
+        likelihood : Likelihood
+            likleihood p(y | f) 
         whiten : Optional bool
             whiten q if true
         """
@@ -271,7 +271,7 @@ class Svgp(SvgpBase):
                          n,
                          m,
                          n_inducing,
-                         likelihoods,
+                         likelihood,
                          q_sqrt=l,
                          whiten=whiten)
         self.z = z
@@ -298,7 +298,7 @@ class SvgpComb(SvgpBase):
                  n: int,
                  m: int,
                  zs: List[InducingPoints],
-                 likelihoods: Likelihoods,
+                 likelihood: Likelihood,
                  whiten: Optional[bool] = True):
         """
         __init__ method for Sparse GP with Combination Kernels
@@ -312,8 +312,8 @@ class SvgpComb(SvgpBase):
             number of conditions
         zs : InducingPoints list
             list of inducing points
-        likleihoods: Likelihoods
-            likelihoods p(y|f)
+        likleihood: Likelihood
+            likelihood p(y|f)
         whiten : Optional bool
             whiten q if true
         """
@@ -333,7 +333,7 @@ class SvgpComb(SvgpBase):
                          n,
                          m,
                          n_inducing,
-                         likelihoods,
+                         likelihood,
                          q_sqrt=l,
                          whiten=whiten)
         self.zs = zs

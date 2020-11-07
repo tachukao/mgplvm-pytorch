@@ -12,11 +12,10 @@ log2pi: float = np.log(2 * np.pi)
 n_gh_locs: int = 20  # default number of Gauss-Hermite points
 
 
-class Likelihoods(Module, metaclass=abc.ABCMeta):
-    def __init__(self, n: int, m: int, n_gh_locs: int):
+class Likelihood(Module, metaclass=abc.ABCMeta):
+    def __init__(self, n: int, n_gh_locs: int):
         super().__init__()
         self.n = n
-        self.m = m
         self.n_gh_locs = n_gh_locs
 
     @abc.abstractproperty
@@ -28,13 +27,12 @@ class Likelihoods(Module, metaclass=abc.ABCMeta):
         pass
 
 
-class Gaussian(Likelihoods):
+class Gaussian(Likelihood):
     def __init__(self,
                  n: int,
-                 m: int,
                  variance: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs):
-        super().__init__(n, m, n_gh_locs)
+        super().__init__(n, n_gh_locs)
         sigma = 1 * torch.ones(n, ) if variance is None else torch.sqrt(
             torch.tensor(variance, dtype=torch.get_default_dtype()))
         self.sigma = nn.Parameter(data=sigma, requires_grad=True)
@@ -45,7 +43,7 @@ class Gaussian(Likelihoods):
         return variance
 
     def log_prob(self, y):
-        pass
+        raise Exception("Gaussian likelihood not implemented")
 
     def sample(self, f_samps):
         '''f is n_b x n x m'''
@@ -57,19 +55,18 @@ class Gaussian(Likelihoods):
         return y_samps
 
     def variational_expectation(self, n_samples, y, fmu, fvar):
-        n_b = fmu.shape[0]
+        n_b, m = fmu.shape[0], fmu.shape[2]
         variance = self.prms
-        ve1 = -0.5 * log2pi * self.m * self.n * n_samples * n_b
-        ve2 = -0.5 * torch.log(variance).sum() * n_samples * n_b * self.m
+        ve1 = -0.5 * log2pi * m * self.n * n_samples * n_b
+        ve2 = -0.5 * torch.log(variance).sum() * n_samples * n_b
         ve3 = -0.5 * torch.square(y - fmu) / variance[..., None, None]
         ve4 = -0.5 * fvar / variance[..., None] * n_samples
         return ve1.sum() + ve2.sum() + ve3.sum() + ve4.sum()
 
 
-class Poisson(Likelihoods):
+class Poisson(Likelihood):
     def __init__(self,
                  n: int,
-                 m: int,
                  inv_link=torch.exp,
                  binsize=1,
                  c: Optional[Tensor] = None,
@@ -77,7 +74,7 @@ class Poisson(Likelihoods):
                  fixed_c=False,
                  fixed_d=False,
                  n_gh_locs: Optional[int] = n_gh_locs):
-        super().__init__(n, m, n_gh_locs)
+        super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize
         c = torch.ones(n, ) if c is None else c
@@ -90,8 +87,12 @@ class Poisson(Likelihoods):
         return self.c, self.d
 
     def log_prob(self, lamb, y):
-        p = dists.Poisson(lamb)
-        return p.log_prob(y)
+        if y.shape[-1] == 1:
+            p = dists.Poisson(lamb)
+            return p.log_prob(y)
+        else:
+            p = dists.Poisson(lamb[..., None, :])
+            return p.log_prob(y[..., None])
 
     def sample(self, f_samps):
         c, d = self.prms
@@ -123,10 +124,9 @@ class Poisson(Likelihoods):
             return torch.sum(1 / np.sqrt(np.pi) * lp * ws)
 
 
-class NegativeBinomial(Likelihoods):
+class NegativeBinomial(Likelihood):
     def __init__(self,
                  n: int,
-                 m: int,
                  inv_link=lambda x: x,
                  binsize=1,
                  total_count: Optional[Tensor] = None,
@@ -136,7 +136,7 @@ class NegativeBinomial(Likelihoods):
                  fixed_c=False,
                  fixed_d=False,
                  n_gh_locs: Optional[int] = n_gh_locs):
-        super().__init__(n, m, n_gh_locs)
+        super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize
         total_count = 2 * torch.ones(
@@ -155,28 +155,37 @@ class NegativeBinomial(Likelihoods):
         total_count = dists.transform_to(dists.constraints.greater_than_eq(0))(
             self.total_count)
         return total_count, self.c, self.d
-    
+
     def sample(self, f_samps):
         '''f_samps is n_b x n x m'''
         total_count, c, d = self.prms
-        rate = c[None, ..., None] * fsamps + d[None, ..., None] #shift+scale
-        dist = dists.NegativeBinomial(total_count[None, ..., None], logits=rate) #neg binom
-        y_samps = dist.sample() #sample observations
+        rate = c[None, ..., None] * f_samps + d[None, ..., None]  #shift+scale
+        dist = dists.NegativeBinomial(total_count[None, ..., None],
+                                      logits=rate)  #neg binom
+        y_samps = dist.sample()  #sample observations
         return y_samps
 
     def log_prob(self, total_count, rate, y):
-        p = dists.NegativeBinomial(total_count[..., None, None], logits=rate)
-        return p.log_prob(y)
+        if y.shape[-1] == 1:
+            p = dists.NegativeBinomial(total_count[..., None, None],
+                                       logits=rate)
+            return p.log_prob(y)
+        else:
+            p = dists.NegativeBinomial(total_count[..., None, None, None],
+                                       logits=rate[..., None, :])
+            return p.log_prob(y[..., None])
 
     def variational_expectation(self, n_samples, y, fmu, fvar, gh=False):
         total_count, c, d = self.prms
         fmu = c[..., None, None] * fmu + d[..., None, None]
         fvar = fvar * torch.square(c[..., None])
         # use Gauss-Hermite quadrature to approximate integral
-        locs, ws = np.polynomial.hermite.hermgauss(self.n_gh_locs) #sample points and weights for quadrature
+        locs, ws = np.polynomial.hermite.hermgauss(
+            self.n_gh_locs)  #sample points and weights for quadrature
         ws = torch.Tensor(ws).to(fmu.device)
         locs = torch.Tensor(locs).to(fvar.device)
         fvar = fvar[..., None]
-        locs = self.inv_link(torch.sqrt(2. * fvar) * locs + fmu) * self.binsize #coordinate transform
+        locs = self.inv_link(torch.sqrt(2. * fvar) * locs +
+                             fmu) * self.binsize  #coordinate transform
         lp = self.log_prob(total_count, locs, y)
         return torch.sum(1 / np.sqrt(np.pi) * lp * ws)

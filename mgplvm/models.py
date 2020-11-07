@@ -368,7 +368,7 @@ class Svgp(nn.Module):
                  m,
                  n_z,
                  kernel,
-                 likelihoods,
+                 likelihood,
                  ref_dist,
                  lprior=None,
                  whiten=True):
@@ -386,7 +386,7 @@ class Svgp(nn.Module):
             number of inducing points
         kernel : Kernel
             kernel used for GP regression
-        likelihoods : Likelihoods
+        likelihood : Likelihood
             likelihood p(y|f)
         ref_dist : rdist
             reference distribution
@@ -399,13 +399,13 @@ class Svgp(nn.Module):
         self.n_z = n_z
         self.kernel = kernel
         self.z = self.manif.inducing_points(n, n_z)
-        self.likelihoods = likelihoods
+        self.likelihood = likelihood
         self.whiten = whiten
         self.svgp = svgp.Svgp(self.kernel,
                               n,
                               m,
                               self.z,
-                              likelihoods,
+                              likelihood,
                               whiten=whiten)
         # reference distribution
         self.rdist = ref_dist
