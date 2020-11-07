@@ -105,7 +105,7 @@ class Poisson(Likelihoods):
         c, d = self.prms
         fmu = c[..., None, None] * fmu + d[..., None, None]
         fvar = fvar * torch.square(c[..., None])
-        if self.inv_link == torch.exp and not gh:
+        if self.inv_link == torch.exp and (not gh):
             n_b = fmu.shape[0]
             v1 = (y * fmu) - (self.binsize *
                               torch.exp(fmu + 0.5 * fvar[..., None]))
@@ -155,6 +155,14 @@ class NegativeBinomial(Likelihoods):
         total_count = dists.transform_to(dists.constraints.greater_than_eq(0))(
             self.total_count)
         return total_count, self.c, self.d
+    
+    def sample(self, f_samps):
+        '''f_samps is n_b x n x m'''
+        total_count, c, d = self.prms
+        rate = c[None, ..., None] * fsamps + d[None, ..., None] #shift+scale
+        dist = dists.NegativeBinomial(total_count[None, ..., None], logits=rate) #neg binom
+        y_samps = dist.sample() #sample observations
+        return y_samps
 
     def log_prob(self, total_count, rate, y):
         p = dists.NegativeBinomial(total_count[..., None, None], logits=rate)
@@ -165,10 +173,10 @@ class NegativeBinomial(Likelihoods):
         fmu = c[..., None, None] * fmu + d[..., None, None]
         fvar = fvar * torch.square(c[..., None])
         # use Gauss-Hermite quadrature to approximate integral
-        locs, ws = np.polynomial.hermite.hermgauss(self.n_gh_locs)
+        locs, ws = np.polynomial.hermite.hermgauss(self.n_gh_locs) #sample points and weights for quadrature
         ws = torch.Tensor(ws).to(fmu.device)
         locs = torch.Tensor(locs).to(fvar.device)
         fvar = fvar[..., None]
-        locs = self.inv_link(torch.sqrt(2. * fvar) * locs + fmu) * self.binsize
+        locs = self.inv_link(torch.sqrt(2. * fvar) * locs + fmu) * self.binsize #coordinate transform
         lp = self.log_prob(total_count, locs, y)
         return torch.sum(1 / np.sqrt(np.pi) * lp * ws)
