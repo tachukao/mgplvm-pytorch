@@ -133,7 +133,6 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         f_mean, f_var = self.predict(x, full_cov=False)
         lik = self.likelihoods.variational_expectation(n_samples, y, f_mean,
                                                        f_var).sum()
-
         return lik, prior_kl.sum() * n_b
 
     def predict(self, x: Tensor, full_cov: bool) -> Tensor:

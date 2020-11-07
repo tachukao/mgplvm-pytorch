@@ -123,7 +123,7 @@ class ARP(Module):
         self.kmax = kmax
 
         ar_phi = 0.5 * torch.ones(d, p) if ar_phi is None else ar_phi
-        ar_eta = torch.ones(d) if ar_eta is None else ar_eta
+        ar_eta = 0.05 * torch.ones(d) if ar_eta is None else ar_eta
         ar_c = torch.ones(d) if ar_c is None else ar_c
         self.ar_phi = nn.Parameter(data=ar_phi, requires_grad=True)
         self.ar_eta = nn.Parameter(data=ar_eta, requires_grad=True)
