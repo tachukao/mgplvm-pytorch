@@ -86,7 +86,7 @@ class IARP(LpriorTorus):
                  concentration=None,
                  fixed_mu=False,
                  fixed_concentration=False,
-                 link="atan"):
+                 link="logits"):
         super().__init__(manif)
         d = manif.d
         self.p = p
@@ -101,7 +101,7 @@ class IARP(LpriorTorus):
             self.inv_link = lambda x: dists.utils.probs_to_logits(x /
                                                                   (2 * np.pi))
         else:
-            raise Exception("Linke function not implemented for %s" % link)
+            raise Exception("Link function not implemented for %s" % link)
 
         mu = torch.zeros(d) if mu is None else mu
 
@@ -153,7 +153,7 @@ class LARP(LpriorTorus):
                  eta=None,
                  fixed_mu=False,
                  fixed_eta=False,
-                 link="atan"):
+                 link="logits"):
         super().__init__(manif)
         d = manif.d
         self.p = p
