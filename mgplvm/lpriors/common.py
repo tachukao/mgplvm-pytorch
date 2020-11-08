@@ -38,7 +38,7 @@ class Uniform(Lprior):
         return ""
 
 
-class Brownian(Lprio):
+class Brownian(Lprior):
     name = "Brownian"
 
     def __init__(self,
@@ -101,7 +101,7 @@ class AR1(Lprior):
         self.kmax = kmax
 
         ar1_phi = 0.0 * torch.ones(d) if ar1_phi is None else ar1_phi
-        ar1_eta = torch.ones(d) if ar1_eta is None else ar1_eta
+        ar1_eta = torch.ones(d) if ar1_eta is None else torch.sqrt(ar1_eta)
         ar1_c = torch.zeros(d) if ar1_c is None else ar1_c
         self.ar1_phi = nn.Parameter(data=ar1_phi, requires_grad=True)
         self.ar1_eta = nn.Parameter(data=ar1_eta, requires_grad=True)
@@ -109,7 +109,7 @@ class AR1(Lprior):
 
     @property
     def prms(self):
-        return self.ar1_c, self.ar1_phi, self.ar1_eta
+        return self.ar1_c, self.ar1_phi, torch.square(self.ar1_eta)
 
     def forward(self, g):
         ar1_c, ar1_phi, ar1_eta = self.prms
@@ -146,7 +146,7 @@ class ARP(Lprior):
         self.kmax = kmax
 
         ar_phi = 0.0 * torch.ones(d, p) if ar_phi is None else ar_phi
-        ar_eta = 0.05 * torch.ones(d) if ar_eta is None else ar_eta
+        ar_eta = 0.05 * torch.ones(d) if ar_eta is None else torch.sqrt(ar_eta)
         ar_c = torch.zeros(d) if ar_c is None else ar_c
         self.ar_phi = nn.Parameter(data=ar_phi, requires_grad=True)
         self.ar_eta = nn.Parameter(data=ar_eta, requires_grad=True)
@@ -154,7 +154,7 @@ class ARP(Lprior):
 
     @property
     def prms(self):
-        return self.ar_c, self.ar_phi, self.ar_eta
+        return self.ar_c, self.ar_phi, torch.square(self.ar_eta)
 
     def forward(self, g):
         p = self.p

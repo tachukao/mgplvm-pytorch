@@ -75,8 +75,8 @@ class VonMises(LpriorTorus):
         return vm.log_prob(dg)
 
 
-class LARP(LpriorTorus):
-    name = "LinkedARP"
+class IARP(LpriorTorus):
+    name = "IARP"
 
     def __init__(self,
                  p,
@@ -85,14 +85,24 @@ class LARP(LpriorTorus):
                  phi=None,
                  concentration=None,
                  fixed_mu=False,
-                 fixed_concentration=False):
+                 fixed_concentration=False,
+                 link="atan"):
         super().__init__(manif)
         d = manif.d
         self.p = p
         phi = 0.0 * torch.ones(d, p) if phi is None else phi
         self.phi = nn.Parameter(data=phi, requires_grad=True)
-        self.link = lambda x: (2 * torch.atan(x)) + np.pi
-        self.inv_link = lambda x: torch.tan((0.5 * x) - np.pi)
+
+        if link == "atan":
+            self.link = lambda x: (2 * torch.atan(x)) + np.pi
+            self.inv_link = lambda x: torch.tan((0.5 * x) - np.pi)
+        elif link == "logits":
+            self.link = lambda x: np.pi * 2 * dists.utils.logits_to_probs(x)
+            self.inv_link = lambda x: dists.utils.probs_to_logits(x /
+                                                                  (2 * np.pi))
+        else:
+            raise Exception("Linke function not implemented for %s" % link)
+
         mu = torch.zeros(d) if mu is None else mu
 
         self.mu = nn.Parameter(data=self.inv_link(mu),
@@ -118,8 +128,8 @@ class LARP(LpriorTorus):
         delta = phi * torch.stack(
             [self.inv_link(g[..., p - j - 1:-j - 1, :]) for j in range(p)],
             axis=-1)
-        muhat = mu + self.link(delta.sum(-1))
-        vm = dists.VonMises(loc=muhat, concentration=concentration)
+        hat = self.link(delta.sum(-1))
+        vm = dists.VonMises(loc=hat, concentration=concentration)
         vm = dists.Independent(vm, 1)
         return vm.log_prob(g[..., p:, :])
 
@@ -130,3 +140,63 @@ class LARP(LpriorTorus):
             'mu_avg {:.3f} | phi_avg {:.3f} | concentration {:.3f}').format(
                 torch.mean(mu).item(),
                 torch.mean(phi).item(), concentration.item())
+
+
+class LARP(LpriorTorus):
+    name = "LinkedARP"
+
+    def __init__(self,
+                 p,
+                 manif,
+                 mu=None,
+                 phi=None,
+                 eta=None,
+                 fixed_mu=False,
+                 fixed_eta=False,
+                 link="atan"):
+        super().__init__(manif)
+        d = manif.d
+        self.p = p
+        phi = 0.0 * torch.ones(d, p) if phi is None else phi
+        self.phi = nn.Parameter(data=phi, requires_grad=True)
+
+        if link == "atan":
+            self.link = lambda x: (2 * torch.atan(x)) + np.pi
+            self.inv_link = lambda x: torch.tan((0.5 * x) - np.pi)
+        elif link == "logits":
+            self.link = lambda x: np.pi * 2 * dists.utils.logits_to_probs(x)
+            self.inv_link = lambda x: dists.utils.probs_to_logits(x /
+                                                                  (2 * np.pi))
+        else:
+            raise Exception("Linke function not implemented for %s" % link)
+
+        mu = torch.zeros(d) if mu is None else mu
+
+        self.mu = nn.Parameter(data=self.inv_link(mu),
+                               requires_grad=(not fixed_mu))
+        eta = torch.ones(d) if eta is None else torch.sqrt(eta)
+        self.eta = nn.Parameter(requires_grad=(not fixed_eta))
+
+    @property
+    def prms(self):
+        mu = self.link(self.mu)
+        return mu, self.phi, torch.square(self.eta)
+
+    def forward(self, g):
+        mu, phi, eta = self.prms
+        p = self.p
+        g = (g - mu) % (np.pi * 2)  # make sure it's on the circle
+        delta = phi * torch.stack(
+            [self.inv_link(g[..., p - j - 1:-j - 1, :]) for j in range(p)],
+            axis=-1)
+        hat = delta.sum(-1)
+        normal = dists.Normal(hat, scale=torch.sqrt(eta))
+        normal = dists.Independent(normal, 1)
+        return normal.log_prob(g[..., p:, :])
+
+    @property
+    def msg(self):
+        mu, phi, concentration = self.prms
+        return ('mu_avg {:.3f} | phi_avg {:.3f} | eta {:.3f}').format(
+            torch.mean(mu).item(),
+            torch.mean(phi).item(), eta.item())
