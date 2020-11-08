@@ -8,36 +8,6 @@ from torch import nn, optim
 from torch.optim.lr_scheduler import LambdaLR
 
 
-def lp_msg(model):
-    if model.lprior.name == "Brownian":
-        brownian_c, brownian_eta = model.lprior.prms
-        lp_msg = ('brownian_c {:.4f} | brownian_eta {:.4f}').format(
-            brownian_c.item(), brownian_eta.item())
-    elif model.lprior.name == "AR1":
-        ar1_c, ar1_phi, ar1_eta = model.lprior.prms
-        lp_msg = ('ar1_c {:.4f} | ar1_phi {:.4f} | ar1_eta {:.4f}').format(
-            ar1_c.item(), ar1_phi.item(), ar1_eta.item())
-    elif model.lprior.name == "ARP":
-        ar_c, ar_phi, ar_eta = model.lprior.prms
-        lp_msg = ('ar_c {:.4f} | ar_phi_avg {:.4f} | ar_eta {:.4f}').format(
-            ar_c.item(),
-            torch.mean(ar_phi).item(), ar_eta.item())
-    elif model.lprior.name == "ARP":
-        ar_c, ar_phi, ar_eta = model.lprior.prms
-        lp_msg = (
-            'alpha_sqr {:.4f} | ell {:.4f} | ar_c {:.4f} | ar_phi_avg {:.4f} | ar_eta {:.4f}'
-        ).format(ar_c.item(),
-                 torch.mean(ar_phi).item(), ar_eta.item())
-
-    elif model.lprior.name == "VonMises":
-        concentration = model.lprior.prms
-        lp_msg = ('concentration {:.4f}').format(concentration.item())
-
-    else:
-        lp_msg = ''
-    return lp_msg
-
-
 def sgp(Y,
         model,
         device,
@@ -133,12 +103,13 @@ def print_sgp_progress(model, i, n, m, sgp_elbo, kl, loss):
             val.mean().data.cpu().numpy() for val in model.kernel.prms
         ]
 
-    msg = ('\riter {:4d} | elbo {:.4f} | kl {:.4f} | loss {:.4f} | |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f}' 
-           ).format(i,
-                    sgp_elbo.item() / (n * m),
-                    kl.item() / (n * m),
-                    loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag)
-    print(msg + " | " + lp_msg(model), "\r")
+    msg = (
+        '\riter {:4d} | elbo {:.4f} | kl {:.4f} | loss {:.4f} | |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f}'
+    ).format(i,
+             sgp_elbo.item() / (n * m),
+             kl.item() / (n * m),
+             loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag)
+    print(msg + " | " + model.lprior.msg, "\r")
 
 
 def sort_params(model, hook, trainGP, svgp=False):
@@ -287,7 +258,7 @@ def svgp(Y,
                     svgp_kl.item() / (n * m),
                     kl.item() / (n * m),
                     loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag)
-            print(msg + ' | ' + lp_msg(model), end="\r")
+            print(msg + ' | ' + model.lprior.msg, end="\r")
 
         if callback is not None:
             callback(model, i)

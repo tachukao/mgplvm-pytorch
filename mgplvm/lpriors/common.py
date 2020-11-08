@@ -14,9 +14,14 @@ class Lprior(Module, metaclass=abc.ABCMeta):
         self.manif = manif
         self.d = self.manif.d
 
+    @property
+    @abc.abstractmethod
+    def msg(self):
+        pass
 
-class Default(Lprior):
-    name = "default"
+
+class Uniform(Lprior):
+    name = "uniform"
 
     def __init__(self, manif):
         super().__init__(manif)
@@ -28,8 +33,12 @@ class Default(Lprior):
     def forward(self, g):
         return self.manif.lprior(g)
 
+    @property
+    def msg(self):
+        return ""
 
-class Brownian(Module):
+
+class Brownian(Lprio):
     name = "Brownian"
 
     def __init__(self,
@@ -73,8 +82,13 @@ class Brownian(Module):
                                 self.manif.d,
                                 kmax=self.kmax)
 
+    def msg(self):
+        brownian_c, brownian_eta = self.prms
+        return ('brownian_c {:.3f} | brownian_eta {:.3f}').format(
+            brownian_c.item(), brownian_eta.item())
 
-class AR1(Module):
+
+class AR1(Lprior):
     name = "AR1"
 
     def __init__(self, manif, kmax=5, ar1_phi=None, ar1_eta=None, ar1_c=None):
@@ -111,8 +125,14 @@ class AR1(Module):
                                 self.manif.d,
                                 kmax=self.kmax)
 
+    @property
+    def msg(self):
+        ar1_c, ar1_phi, ar1_eta = self.prms
+        return ('ar1_c {:.3f} | ar1_phi {:.3f} | ar1_eta {:.3f}').format(
+            ar1_c.item(), ar1_phi.item(), ar1_eta.item())
 
-class ARP(Module):
+
+class ARP(Lprior):
     name = "ARP"
 
     def __init__(self, p, manif, kmax=5, ar_phi=None, ar_eta=None, ar_c=None):
@@ -151,3 +171,11 @@ class ARP(Module):
                                 dy,
                                 self.manif.d,
                                 kmax=self.kmax)
+
+    @property
+    def msg(self):
+        ar_c, ar_phi, ar_eta = self.prms
+        lp_msg = ('ar_c {:.3f} | ar_phi_avg {:.3f} | ar_eta {:.3f}').format(
+            ar_c.item(),
+            torch.mean(ar_phi).item(), ar_eta.item())
+        return lp_msg
