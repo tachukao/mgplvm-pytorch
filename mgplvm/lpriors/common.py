@@ -2,15 +2,24 @@ import abc
 import torch
 import torch.nn as nn
 import torch.distributions as dists
-from .base import Module
+from ..base import Module
 
 
-class Default(Module):
-    name = "default"
-
+class Lprior(Module, metaclass=abc.ABCMeta):
+    """
+    Base kernel class
+    """
     def __init__(self, manif):
         super().__init__()
         self.manif = manif
+        self.d = self.manif.d
+
+
+class Default(Lprior):
+    name = "default"
+
+    def __init__(self, manif):
+        super().__init__(manif)
 
     @property
     def prms(self):
@@ -34,11 +43,9 @@ class Brownian(Module):
         x_t = c + w_t
         w_t = N(0, eta)
         '''
-        super().__init__()
-        d = manif.d
-        self.d = d
-        self.manif = manif
+        super().__init__(manif)
         self.kmax = kmax
+        d = self.d
 
         brownian_eta = torch.ones(d) if brownian_eta is None else brownian_eta
         brownian_c = torch.zeros(d) if brownian_c is None else brownian_c
@@ -75,10 +82,8 @@ class AR1(Module):
         x_t = c + phi x_{t-1} + w_t
         w_t = N(0, eta)
         '''
-        super().__init__()
-        d = manif.d
-        self.d = d
-        self.manif = manif
+        super().__init__(manif)
+        d = self.d
         self.kmax = kmax
 
         ar1_phi = 0.0 * torch.ones(d) if ar1_phi is None else ar1_phi
@@ -115,11 +120,9 @@ class ARP(Module):
         x_t = c + \sum_{j=1}^p phi_j x_{t-1} + w_t
         w_t = N(0, eta)
         '''
-        super().__init__()
-        d = manif.d
-        self.d = d
+        super().__init__(manif)
+        d = self.d
         self.p = p
-        self.manif = manif
         self.kmax = kmax
 
         ar_phi = 0.0 * torch.ones(d, p) if ar_phi is None else ar_phi
