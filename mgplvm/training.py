@@ -249,16 +249,17 @@ def svgp(Y,
             alpha_mag, ell_mag = [
                 np.mean(val.data.cpu().numpy()) for val in model.kernel.prms
             ]
-
+            sig = np.median(np.concatenate(
+                    [np.diag(sig) for sig in model.rdist.prms.data.cpu().numpy()]))
             msg = (
-                '\riter {:4d} | elbo {:.4f} | svgp_kl{:4f} | kl {:.4f} | loss {:.4f} '
-                + '| |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f}').format(
+                '\riter {:3d} | elbo {:.3f} | svgp_kl{:.3f} | kl {:.3f} | loss {:.3f} '
+                + '| |mu| {:.3f} | alpha_sqr {:.3f} | ell {:.3f} | sig {:.3f}').format(
                     i,
                     svgp_elbo.item() / (n * m),
                     svgp_kl.item() / (n * m),
                     kl.item() / (n * m),
-                    loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag)
-            print(msg + ' | ' + model.lprior.msg, end="\r")
+                    loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag, sig)
+            print(msg + ' | ' + model.lprior.msg(), end="\r")
 
         if callback is not None:
             callback(model, i)
