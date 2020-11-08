@@ -58,15 +58,15 @@ class Brownian(Lprior):
 
         brownian_eta = torch.ones(d) if brownian_eta is None else brownian_eta
         brownian_c = torch.zeros(d) if brownian_c is None else brownian_c
-        self.log_brownian_eta = nn.Parameter(
-            data=torch.log(brownian_eta),
+        self.brownian_eta = nn.Parameter(
+            data=torch.sqrt(brownian_eta),
             requires_grad=(not fixed_brownian_eta))
         self.brownian_c = nn.Parameter(data=brownian_c,
                                        requires_grad=(not fixed_brownian_c))
 
     @property
     def prms(self):
-        brownian_eta = torch.exp(self.log_brownian_eta) + 1E-16
+        brownian_eta = torch.square(self.brownian_eta) + 1E-16
         brownian_c = self.brownian_c
         return brownian_c, brownian_eta
 
