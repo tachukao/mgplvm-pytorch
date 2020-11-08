@@ -148,7 +148,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         #sample from p(f|u)
         dist = Normal(mu, torch.sqrt(v))
-        f_samps = dist.sample((n_b,))
+        f_samps = dist.sample((n_b,)) #n_b x n x m
         
         #sample from observation function p(y|f)
         y_samps = self.likelihood.sample(f_samps)

@@ -58,7 +58,7 @@ class Gaussian(Likelihood):
         n_b, m = fmu.shape[0], fmu.shape[2]
         variance = self.prms
         ve1 = -0.5 * log2pi * m * self.n * n_samples * n_b
-        ve2 = -0.5 * torch.log(variance).sum() * n_samples * n_b
+        ve2 = -0.5 * torch.log(variance).sum() * n_samples * n_b * m
         ve3 = -0.5 * torch.square(y - fmu) / variance[..., None, None]
         ve4 = -0.5 * fvar / variance[..., None] * n_samples
         return ve1.sum() + ve2.sum() + ve3.sum() + ve4.sum()
@@ -71,7 +71,7 @@ class Poisson(Likelihood):
                  binsize=1,
                  c: Optional[Tensor] = None,
                  d: Optional[Tensor] = None,
-                 fixed_c=False,
+                 fixed_c=True,
                  fixed_d=False,
                  n_gh_locs: Optional[int] = n_gh_locs):
         super().__init__(n, n_gh_locs)
@@ -133,7 +133,7 @@ class NegativeBinomial(Likelihood):
                  c: Optional[Tensor] = None,
                  d: Optional[Tensor] = None,
                  fixed_total_count=False,
-                 fixed_c=False,
+                 fixed_c=True,
                  fixed_d=False,
                  n_gh_locs: Optional[int] = n_gh_locs):
         super().__init__(n, n_gh_locs)
