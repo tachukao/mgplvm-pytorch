@@ -38,7 +38,7 @@ class Uniform(Lprior):
         return ""
 
 
-class Brownian(Lprio):
+class Brownian(Lprior):
     name = "Brownian"
 
     def __init__(self,
