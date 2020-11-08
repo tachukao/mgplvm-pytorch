@@ -109,7 +109,7 @@ def print_sgp_progress(model, i, n, m, sgp_elbo, kl, loss):
              sgp_elbo.item() / (n * m),
              kl.item() / (n * m),
              loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag)
-    print(msg + " | " + model.lprior.msg, "\r")
+    print(msg + " | " + model.lprior.msg(), "\r")
 
 
 def sort_params(model, hook, trainGP, svgp=False):
@@ -258,7 +258,7 @@ def svgp(Y,
                     svgp_kl.item() / (n * m),
                     kl.item() / (n * m),
                     loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag)
-            print(msg + ' | ' + model.lprior.msg, end="\r")
+            print(msg + ' | ' + model.lprior.msg(), end="\r")
 
         if callback is not None:
             callback(model, i)
