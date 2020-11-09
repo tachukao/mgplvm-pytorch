@@ -196,8 +196,19 @@ def svgp(Y,
         idxs = np.arange(data_size)
         if model.lprior.name == "Brownian":
             # if prior is Brownian, then batches have to be contiguous
-            start = np.random.randint(data_size - batch_size)
-            return idxs[start:start + batch_size]
+            
+            i0 = np.random.randint(1, data_size-1)
+            if i0 < batch_size/2:
+                batch_idxs = idxs[:int(round(batch_size/2+i0))]
+            elif i0 > (data_size - batch_size/2):
+                batch_idxs = idxs[int(round(i0-batch_size/2)):]
+            else:
+                batch_idxs = idxs[int(round(i0 - batch_size/2)):int(round(i0+batch_size/2))]
+            #print(len(batch_idxs))
+            return batch_idxs
+            
+            #start = np.random.randint(data_size - batch_size)
+            #return idxs[start:start + batch_size]
         else:
             np.random.shuffle(idxs)
             return idxs[0:batch_size]
@@ -235,10 +246,10 @@ def svgp(Y,
         if batch_size is None:
             svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=None)
         else:
-            m = batch_size  #use for printing likelihoods etc.
             batch_idxs = generate_batch_idxs()
             svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=batch_idxs)
-
+            m = len(batch_idxs)  #use for printing likelihoods etc.
+            
         svgp_elbo = svgp_lik - svgp_kl
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
         loss.backward()
