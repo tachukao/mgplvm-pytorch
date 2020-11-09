@@ -82,6 +82,7 @@ class Brownian(Lprior):
                                 self.manif.d,
                                 kmax=self.kmax)
 
+    @property
     def msg(self):
         brownian_c, brownian_eta = self.prms
         return ('brownian_c {:.3f} | brownian_eta {:.3f}').format(

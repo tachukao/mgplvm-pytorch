@@ -109,7 +109,7 @@ def print_sgp_progress(model, i, n, m, sgp_elbo, kl, loss):
              sgp_elbo.item() / (n * m),
              kl.item() / (n * m),
              loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag)
-    print(msg + " | " + model.lprior.msg(), "\r")
+    print(msg + " | " + model.lprior.msg, "\r")
 
 
 def sort_params(model, hook, trainGP, svgp=False):
@@ -249,17 +249,20 @@ def svgp(Y,
             alpha_mag, ell_mag = [
                 np.mean(val.data.cpu().numpy()) for val in model.kernel.prms
             ]
-            sig = np.median(np.concatenate(
-                    [np.diag(sig) for sig in model.rdist.prms.data.cpu().numpy()]))
+            sig = np.median(
+                np.concatenate([
+                    np.diag(sig)
+                    for sig in model.rdist.prms.data.cpu().numpy()
+                ]))
             msg = (
                 '\riter {:3d} | elbo {:.3f} | svgp_kl{:.3f} | kl {:.3f} | loss {:.3f} '
-                + '| |mu| {:.3f} | alpha_sqr {:.3f} | ell {:.3f} | sig {:.3f}').format(
-                    i,
-                    svgp_elbo.item() / (n * m),
-                    svgp_kl.item() / (n * m),
-                    kl.item() / (n * m),
-                    loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag, sig)
-            print(msg + ' | ' + model.lprior.msg(), end="\r")
+                + '| |mu| {:.3f} | alpha_sqr {:.3f} | ell {:.3f} | sig {:.3f}'
+            ).format(i,
+                     svgp_elbo.item() / (n * m),
+                     svgp_kl.item() / (n * m),
+                     kl.item() / (n * m),
+                     loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag, sig)
+            print(msg + ' | ' + model.lprior.msg, end="\r")
 
         if callback is not None:
             callback(model, i)
