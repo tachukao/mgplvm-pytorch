@@ -135,9 +135,11 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                                                        f_var).sum()
         return lik, prior_kl.sum() * n_b
     
-    def tuning(self, query, n_b = 1000):
+    def tuning(self, query, n_b = 1000, square = False):
         '''
         query is mxd
+        return n_b samples from the full model (n_b x n x m)
+        if square, the outputs are squared (useful e.g. when fitting sqrt spike counts with a Gaussian likelihood)
         '''
         
         query = torch.unsqueeze(query.T, 0) #add batch dimension
@@ -152,9 +154,12 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         
         #sample from observation function p(y|f)
         y_samps = self.likelihood.sample(f_samps)
-        mu, std = y_samps.mean(dim = 0), y_samps.std(dim = 0)
+        #mu, std = y_samps.mean(dim = 0), y_samps.std(dim = 0)
         
-        return mu, std
+        if square:
+            y_samps = y_samps**2
+        
+        return y_samps
 
     def predict(self, x: Tensor, full_cov: bool) -> Tensor:
         """
