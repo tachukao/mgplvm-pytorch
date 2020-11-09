@@ -86,7 +86,7 @@ class Brownian(Lprior):
     def msg(self):
         brownian_c, brownian_eta = self.prms
         return ('brownian_c {:.3f} | brownian_eta {:.3f}').format(
-            brownian_c.item(), brownian_eta.item())
+            brownian_c.detach().cpu().numpy().mean(), brownian_eta.detach().cpu().numpy().mean())
 
 
 class AR1(Lprior):
