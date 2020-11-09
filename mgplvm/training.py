@@ -186,10 +186,11 @@ def svgp(Y,
          lrate=1E-3,
          callback=None,
          print_every=50,
-         batch_size=None):
+         batch_size=None,
+         n_svgp=50):
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
-    data_size = m
+    data_size = m  #total conditions
 
     def generate_batch_idxs():
         idxs = np.arange(data_size)
@@ -213,14 +214,14 @@ def svgp(Y,
 
     # set learning rate schedule so sigma updates have a burn-in period
     def fburn(x):
-        if x < 50:
+        if x < n_svgp:
             return 0
         #only optimize
-        x -= 50
+        x -= n_svgp
         return 1 - np.exp(-x / (3 * burnin))
 
     def finit(x):
-        if x < 50:
+        if x < n_svgp:
             return 0
         return 1
 
@@ -234,6 +235,7 @@ def svgp(Y,
         if batch_size is None:
             svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=None)
         else:
+            m = batch_size  #use for printing likelihoods etc.
             batch_idxs = generate_batch_idxs()
             svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=batch_idxs)
 
