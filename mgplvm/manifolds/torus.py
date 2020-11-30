@@ -104,7 +104,12 @@ class Torus(Manifold):
         diff = 2 - (2 * torch.cos(x[..., None] - y[..., None, :]))
         dist_sqr = torch.sum(diff, dim=-3)
         return dist_sqr
-
+    
+    @staticmethod
+    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
+        dist = torch.cos(x[..., None] - y[..., None, :]).sum(dim = -3)
+        return dist
+    
     @staticmethod
     def distance_ard(x: Tensor, y: Tensor) -> Tensor:
         return 2 - (2 * torch.cos(x[..., None] - y[..., None, :]))

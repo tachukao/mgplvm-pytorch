@@ -135,3 +135,9 @@ class So3(Manifold):
         cosdist = (x[..., None] * y[..., None, :])
         cosdist = cosdist.sum(-3)
         return 4 * (1 - torch.square(cosdist))
+    
+    @staticmethod
+    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
+        dist = (x[..., None] * y[..., None, :]).sum(dim = -3)
+        dist = 2*torch.square(dist)
+        return dist

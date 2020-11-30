@@ -140,8 +140,9 @@ def sort_params(model, hook, trainGP, svgp=False):
             params[2].append(param)
         elif trainGP:  # only update GP parameters if trainGP
             # add ell to group 2
-            if (param.shape == model.kernel.ell.shape) and torch.all(
-                    param == model.kernel.ell):
+            if (('QuadExp' in model.kernel.name) and
+                (param.shape == model.kernel.ell.shape) and 
+                torch.all(param == model.kernel.ell)):
                 params[1].append(param)
             else:
                 params[0].append(param)
@@ -259,9 +260,6 @@ def svgp(Y,
             mu_mag = np.mean(
                 np.sqrt(
                     np.sum(model.manif.prms.data.cpu().numpy()[:]**2, axis=1)))
-            alpha_mag, ell_mag = [
-                np.mean(val.data.cpu().numpy()) for val in model.kernel.prms
-            ]
             sig = np.median(
                 np.concatenate([
                     np.diag(sig)
@@ -269,13 +267,13 @@ def svgp(Y,
                 ]))
             msg = (
                 '\riter {:3d} | elbo {:.3f} | svgp_kl{:.3f} | kl {:.3f} | loss {:.3f} '
-                + '| |mu| {:.3f} | alpha_sqr {:.3f} | ell {:.3f} | sig {:.3f}'
+                + '| |mu| {:.3f} | sig {:.3f}'
             ).format(i,
                      svgp_elbo.item() / (n * m),
                      svgp_kl.item() / (n * m),
                      kl.item() / (n * m),
-                     loss.item() / (n * m), mu_mag, alpha_mag**2, ell_mag, sig)
-            print(msg + ' | ' + model.lprior.msg, end="\r")
+                     loss.item() / (n * m), mu_mag, sig)
+            print(msg + ' | ' + model.lprior.msg + model.kernel.msg, end="\r")
 
         if callback is not None:
             callback(model, i)

@@ -172,6 +172,13 @@ class QuadExp(QuadExpBase):
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
+    
+    @property
+    def msg(self):
+        alpha_mag, ell_mag = [
+                np.mean(val.data.cpu().numpy()) for val in self.prms
+            ]
+        return ('alpha_sqr {:.3f} | ell {:.3f}').format(alpha_mag**2, ell_mag)
 
 
 class QuadExpARD(QuadExpBase):
@@ -207,3 +214,97 @@ class QuadExpARD(QuadExpBase):
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
+    
+    @property
+    def msg(self):
+        alpha_mag, ell_mag = [
+                np.mean(val.data.cpu().numpy()) for val in self.prms
+            ]
+        return ('alpha_sqr {:.3f} | ell {:.3f}').format(alpha_mag**2, ell_mag)
+
+
+
+class LinearBase(Kernel):
+    def __init__(self, n: int):
+        super().__init__()
+
+    def diagK(self, x: Tensor) -> Tensor:
+        """
+        Parameters
+        ----------
+        x : Tensor
+            input tensor of dims (... n x d x mx)
+
+        Returns
+        -------
+        diagK : Tensor
+            diagonal of kernel K(x,x) with dims (... n x mx )
+
+        Note
+        ----
+        For a linear kernel, the diagonal is a mx-dimensional 
+        vector (||x_1||^2, ||x_2||^2, ..., ||x_mx||^2)
+        """
+        diag = (x**2).sum(axis = -2)
+
+        return diag
+
+    def trK(self, x: Tensor) -> Tensor:
+        """
+        Parameters
+        ----------
+        x : Tensor
+            input tensor of dims (... n x d x mx)
+
+        Returns
+        -------
+        trK : Tensor
+            trace of kernel K(x,x) with dims (... n)
+
+        Note
+        ----
+        For a stationary quad exp kernel, the trace is alpha^2 * mx
+        """
+        return self.diagK(x).sum(axis = -1)
+
+    @abc.abstractmethod
+    def K(self, x: Tensor, y: Tensor) -> Tensor:
+        pass
+
+    @property
+    def prms(self) -> Tuple[Tensor, Tensor]:
+        return
+
+class Linear(LinearBase):
+    name = "Linear"
+
+    def __init__(self, n: int, distance):
+        super().__init__(n)
+        self.distance = distance
+
+    def K(self, x: Tensor, y: Tensor) -> Tensor:
+        """
+        Parameters
+        ----------
+        x : Tensor
+            input tensor of dims (... n x d x mx)
+        y : Tensor
+            input tensor of dims (... n x d x my)
+
+        Returns
+        -------
+        kxy : Tensor
+            quadratic exponential kernel with dims (... n x mx x my)
+
+        """
+        distance = self.distance(x, y)  # dims (... n x mx x my)
+        kxy = distance
+        return kxy
+
+    def forward(self, x: Tensor, y: Tensor) -> Tensor:
+        return self.K(x, y)
+    
+    @property
+    def msg(self):
+        return ''
+    

@@ -93,6 +93,11 @@ class Euclid(Manifold):
         diff = x[..., None] - y[..., None, :]
         dist_sqr = torch.sum(torch.square(diff), dim=-3)
         return dist_sqr
+    
+    @staticmethod
+    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
+        dist = (x[..., None] * y[..., None, :]).sum(dim = -3)
+        return dist
 
     @staticmethod
     def distance_ard(x: Tensor, y: Tensor) -> Tensor:
