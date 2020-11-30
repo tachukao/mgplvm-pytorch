@@ -69,19 +69,21 @@ class Null(Lprior):
 class Gaussian(Lprior):
     name = "gaussian"
 
-    def __init__(self, manif):
+    def __init__(self, manif, sigma = 1.5):
         '''
         Gaussian prior for Euclidean space and wrapped Gaussian for other manifolds
-        TODO: implement
+        Euclidean is fixed N(0, I) since the space can be scaled and rotated freely
+        non-Euclidean manifolds are parameterized as ReLie[N(0, Sigma)]
+        'sigma = value' initializes the sqrt diagonal elements of Sigma
         '''
         super().__init__(manif)
         
         if 'Euclid' in manif.name:
             #N(0,I) can always be recovered from a scaling/rotation of the space
-            dist = MVN(1, manif.d, sigma=1, fixed_gamma = True)#.to(manif.mu.device)
+            dist = MVN(1, manif.d, sigma=1, fixed_gamma = True)
         else:
             #parameterize the covariance matrix
-            dist = MVN(1, manif.d, sigma=1.5, fixed_gamma = False)#.to(manif.mu.device)
+            dist = MVN(1, manif.d, sigma=sigma, fixed_gamma = False)
                 
         self.dist = dist
 
