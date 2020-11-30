@@ -258,3 +258,75 @@ class ARP(Lprior):
             ar_c.item(),
             torch.mean(ar_phi).item(), ar_eta.item())
         return lp_msg
+
+    
+    
+class ARP_new(Lprior):
+    name = "ARP"
+
+    def __init__(self, p, manif, kmax=5, ar_phi=None, ar_eta=None, ar_c=None):
+        '''
+        g_t^tilde = g_c * \prod_{j=p}^1 exp(a_j*log(g_t-j*g_t-j-1)) * g_t-1
+        Log[ g_t^tilde g_(t-1)^(-1) ] ~ N(0, eta)
+        '''
+        super().__init__(manif)
+        d = self.d
+        self.p = p
+        self.kmax = kmax
+
+        ar_phi = 0.0 * torch.ones(d, p) if ar_phi is None else ar_phi
+        ar_eta = 0.5 * torch.ones(d) if ar_eta is None else ar_eta
+        ar_c = torch.zeros(d) if ar_c is None else ar_c
+        
+        ### AR parameters
+        self.ar_phi = nn.Parameter(data=ar_phi, requires_grad=True)
+        
+        #w_t \sim Exp[ N(0, eta) ]
+        self.ar_eta = nn.Parameter(data=ar_eta, requires_grad=True)
+        
+        #parameterize as g_c = exp(x_c) for now
+        self.ar_c = nn.Parameter(data=ar_c, requires_grad=True)
+
+    @property
+    def prms(self):
+        return self.ar_c, self.ar_phi, torch.square(self.ar_eta)
+
+    def forward(self, g):
+        p = self.p
+        ar_c, ar_phi, ar_eta = self.prms
+        ginv = self.manif.inverse(g) # n_b x mx x d (on group)
+        dg = self.manif.gmul(g[..., 1:, :], ginv[..., 0:-1, :]) #n_b x (mx-1) x d (on group)
+        dx = self.manif.logmap(dg) #n_b x (mx-1) x d (on algebra)
+        delta = ar_phi * torch.stack(
+            [dx[..., (p-j-1):(-j-1), :] for j in range(p)], axis=-1) # n_b x (mx-1-p) x d x p (on algebra)
+        dg_phi = self.manif.expmap(delta) #n_b x (mx-1-p) x d x p (on group)
+        
+        #multiply along axis -1
+        dg_tot = dg_phi[:, :, :, 0] #n_b x (mx-1-p) x d (on group)
+        for i in range(1, p):
+            #sequential multiplication ... dg_t-3 * dg_t-2 * dg_t-1
+            dg_tot = self.manif.gmul(dg_phi[:, :, :, i], dg_tot) #n_b x (mx-1-p) x d (on group)
+            
+        #exp(ar_c) * dg_t-p * dg_t-p+1 ... dg_t-1
+        g_c = self.manif.expmap(ar_c.reshape(1, 1, -1)) #1 x 1 x d (on group)
+        dg_tot = self.manif.gmul(g_c, dg_tot) #n_b x (mx-1-p) x d (on group)
+        
+        #g_t g_t^(-1) \approx dg_tot
+        #Log[g_t g_t^(-1)] = Log[dg_tot] + wi ~ N(0, Sigma)
+        Log_dg = self.manif.logmap(dg_tot) #n_b x (mx-1-p) x d (on algebra)
+        
+        normal = dists.Normal(loc = 0, scale=torch.sqrt(ar_eta))
+        diagn = dists.Independent(normal, 1)
+        
+        return self.manif.log_q(diagn.log_prob,
+                                dy,
+                                self.manif.d,
+                                kmax=self.kmax)
+
+    @property
+    def msg(self):
+        ar_c, ar_phi, ar_eta = self.prms
+        lp_msg = (' ar_c {:.3f} | ar_phi_avg {:.3f} | ar_eta {:.3f} |').format(
+            ar_c.item(),
+            torch.mean(ar_phi).item(), ar_eta.item())
+        return lp_msg
