@@ -103,10 +103,9 @@ class Gaussian(Lprior):
         
         # return reference distribution
         q = self.dist()
+        #project onto tangent space
+        x = self.manif.logmap(g)
         # compute log prior
-        #print(g.device)
-        #print(q.loc.device)
-        #print(q.scale_tril.device)
         lq = self.manif.log_q(q.log_prob, g, self.manif.d, kmax)
         return lq
 
