@@ -5,6 +5,7 @@ from torch import Tensor
 from .base import Manifold
 from ..inducing_variables import InducingPoints
 from typing import Optional, List
+from sklearn import decomposition
 
 
 class Euclid(Manifold):
@@ -12,17 +13,39 @@ class Euclid(Manifold):
                  m: int,
                  d: int,
                  mu: Optional[np.ndarray] = None,
-                 Tinds: Optional[np.ndarray] = None):
-        super().__init__(d)
+                 Tinds: Optional[np.ndarray] = None,
+                initialization: Optional[str] = 'random',
+                Y: Optional[np.ndarray] = None):
+        '''
+        initialization: 'pca' or 'random' (default)
+        mu: optional initialization of the mean
+        Tinds: only set mean for these time points
+        '''
+        super().__init__(d, initialization = initialization)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
 
-        mudata = torch.randn(m, d) * 0.1
+        mudata = self.initialize(initialization, m, d, Y)
         if mu is not None:
             mudata[Tinds, ...] = torch.tensor(mu,
                                               dtype=torch.get_default_dtype())
+
         self.mu = nn.Parameter(data=mudata, requires_grad=True)
 
+    @staticmethod
+    def initialize(initialization, m, d, Y):
+        '''initializes latents - can add more exciting initializations as well'''
+        if initialization == 'pca':
+            #Y is N x m; reduce to d x m
+            if Y is None:
+                print('user must provide data for PCA initialization')
+            else:
+                pca = decomposition.PCA(n_components=d)
+                mudata = pca.fit_transform(Y.T) #m x d
+                return torch.tensor(mudata, dtype=torch.get_default_dtype())
+        mudata = torch.randn(m, d) * 0.1
+        return mudata
+        
     def inducing_points(self, n, n_z, z=None):
         # distribute according to prior
         z = torch.randn(n, self.d, n_z) if z is None else z

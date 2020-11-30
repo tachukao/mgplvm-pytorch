@@ -10,10 +10,10 @@ from typing import Tuple, Optional, List
 from ..inducing_variables import InducingPoints
 
 
-class So3(Manifold):
+class S3(Manifold):
 
     # log of the uniform prior (negative log volume)
-    log_uniform = (special.loggamma(2) - np.log(1) - 2 * np.log(np.pi))
+    log_uniform = (special.loggamma(2) - np.log(2) - 2 * np.log(np.pi))
 
     def __init__(self,
                  m: int,
@@ -37,7 +37,7 @@ class So3(Manifold):
 
         # per condition
         self.lprior_const = torch.tensor(
-            special.loggamma(2) - np.log(1) - 2 * np.log(np.pi))
+            special.loggamma(2) - np.log(2) - 2 * np.log(np.pi))
     
     @staticmethod
     def initialize(initialization, m, d, Y):
@@ -66,7 +66,7 @@ class So3(Manifold):
 
     @property
     def name(self):
-        return 'So3(' + str(self.d) + ')'
+        return 'S(' + str(self.d) + ')'
 
     def lprior(self, g):
         return self.lprior_const * torch.ones(g.shape[:2])
@@ -80,6 +80,7 @@ class So3(Manifold):
 
     @staticmethod
     def expmap(x: Tensor, dim: int = -1) -> Tuple[Tensor, Tensor, Tensor]:
+        '''same as SO(3)'''
         theta = torch.norm(x, dim=dim, keepdim=True)
         v = x / theta
         y = torch.cat((torch.cos(theta), torch.sin(theta) * v), dim=dim)
@@ -91,6 +92,7 @@ class So3(Manifold):
 
     @staticmethod
     def logmap(q: Tensor, dim: int = -1) -> Tensor:
+        '''same as SO(3)'''
         x = q[..., 0]
         y = torch.norm(q[..., 1:], dim=dim)
         theta = 2 * torch.atan2(y, x)
@@ -102,6 +104,7 @@ class So3(Manifold):
 
     @staticmethod
     def gmul(x: Tensor, y: Tensor) -> Tensor:
+        '''same as SO(3)'''
         return quaternion.product(x, y)
 
     @staticmethod
@@ -110,21 +113,20 @@ class So3(Manifold):
         theta = |x|/2
         '''
 
-        theta = torch.norm(x, dim=dim, keepdim=True)
-        v = x / theta
+        theta = torch.norm(x, dim=dim, keepdim=True) #vector magintudes
+        v = x / theta #unit vectors
         ks = np.arange(-kmax, kmax + 1)
-        zs = np.meshgrid(*(ks for _ in range(1)))
-        zs = np.stack([z.flatten() for z in zs]).T * np.pi
-        #zs = torch.from_numpy(zs).float().to(theta.device)
+        zs = np.meshgrid(*(ks for _ in range(1))) #construct equivalent elements
+        zs = np.stack([z.flatten() for z in zs]).T * 2*np.pi #need to add multiples of 2pi
         zs = torch.tensor(zs, dtype=torch.get_default_dtype()).to(theta.device)
         theta = theta + zs[:, None, None, ...]  # (nk, n_b, m, 1)
         x = theta * v
 
         # |J|->1 as phi -> 0; cap at 1e-5 for numerical stability
-        phi = 2 * theta + 1e-5
+        phi = 2 * theta + 1e-5 #magnitude of rotation
         l0 = torch.square(phi)
         l1 = 2 - 2 * torch.cos(phi)
-        # |J^(-1)| = phi^2/(2 - 2*cos(phi))
+        # |J^(-1)| = phi^2/(2 - 2*cos(phi)) = 2|x|^2/(1-cos(2|x|))
         ljac = torch.log(l0) - torch.log(l1)
 
         lp = torch.logsumexp(log_base_prob(x) + ljac[..., 0], dim=0)
@@ -134,4 +136,4 @@ class So3(Manifold):
     def distance(x: Tensor, y: Tensor) -> Tensor:
         cosdist = (x[..., None] * y[..., None, :])
         cosdist = cosdist.sum(-3)
-        return 4 * (1 - torch.square(cosdist))
+        return 2 * (1 - cosdist)

@@ -5,6 +5,7 @@ from torch import Tensor
 from .base import Manifold
 from ..inducing_variables import InducingPoints
 from typing import Optional
+from sklearn import decomposition
 
 
 class Torus(Manifold):
@@ -12,12 +13,14 @@ class Torus(Manifold):
                  m: int,
                  d: int,
                  mu: Optional[np.ndarray] = None,
-                 Tinds: Optional[np.ndarray] = None):
+                 Tinds: Optional[np.ndarray] = None,
+                 initialization: Optional[str] = 'random',
+                Y: Optional[np.ndarray] = None):
         super().__init__(d)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
 
-        mudata = torch.randn(m, d) * 0.1
+        mudata = self.initialize(initialization, m, d, Y)
         if mu is not None:
             mudata[Tinds, ...] = torch.tensor(mu,
                                               dtype=torch.get_default_dtype())
@@ -27,6 +30,21 @@ class Torus(Manifold):
         # per condition
         self.lprior_const = torch.tensor(-self.d * np.log(2 * np.pi))
 
+    @staticmethod
+    def initialize(initialization, m, d, Y):
+        '''initializes latents - can add more exciting initializations as well'''
+        if initialization == 'pca':
+            #Y is N x m; reduce to d x m
+            if Y is None:
+                print('user must provide data for PCA initialization')
+            else:
+                pca = decomposition.PCA(n_components=d)
+                mudata = pca.fit_transform(Y.T) #m x d
+                mudata *= 2*np.pi/(np.amax(mudata)-np.amin(mudata))
+                return torch.tensor(mudata, dtype=torch.get_default_dtype())
+        mudata = torch.randn(m, d) * 0.1
+        return mudata
+        
     def inducing_points(self, n, n_z, z=None):
         z = torch.rand(n, self.d, n_z) * 2 * np.pi if z is None else z
         return InducingPoints(n, self.d, n_z, z=z)
