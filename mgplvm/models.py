@@ -409,6 +409,8 @@ class Svgp(nn.Module):
                               whiten=whiten)
         # reference distribution
         self.rdist = ref_dist
+        
+        #uniform is actuall gaussian for Euclidean space
         self.lprior = lpriors.Uniform(manif) if lprior is None else lprior
 
     def forward(self, data, n_mc, kmax=5, batch_idxs=None):

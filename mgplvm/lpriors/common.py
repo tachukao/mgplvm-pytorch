@@ -24,6 +24,9 @@ class Uniform(Lprior):
     name = "uniform"
 
     def __init__(self, manif):
+        '''
+        uniform prior for closed manifolds, Gaussian prior for Euclidean space
+        '''
         super().__init__(manif)
 
     @property
@@ -36,7 +39,51 @@ class Uniform(Lprior):
     @property
     def msg(self):
         return ""
+    
+class Null(Lprior):
+    name = "null"
 
+    def __init__(self, manif):
+        '''
+        return 0; non-Bayesian point prior
+        '''
+        super().__init__(manif)
+
+    @property
+    def prms(self):
+        return None
+
+    def forward(self, g):
+        '''
+        g: (n_b x mx x d)
+        output: (n_b x mx)
+        '''
+        return 0 * torch.ones(g.shape[:2])
+
+    @property
+    def msg(self):
+        return ""
+
+class Gaussian(Lprior):
+    name = "gaussian"
+
+    def __init__(self, manif):
+        '''
+        Gaussian prior for Euclidean space and wrapped Gaussian for other manifolds
+        TODO: implement
+        '''
+        super().__init__(manif)
+
+    @property
+    def prms(self):
+        return
+
+    def forward(self, g):
+        return 
+
+    @property
+    def msg(self):
+        return
 
 class Brownian(Lprior):
     name = "Brownian"
