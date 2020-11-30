@@ -267,13 +267,13 @@ def svgp(Y,
                 ]))
             msg = (
                 '\riter {:3d} | elbo {:.3f} | svgp_kl{:.3f} | kl {:.3f} | loss {:.3f} '
-                + '| |mu| {:.3f} | sig {:.3f}'
+                + '| |mu| {:.3f} | sig {:.3f} |'
             ).format(i,
                      svgp_elbo.item() / (n * m),
                      svgp_kl.item() / (n * m),
                      kl.item() / (n * m),
                      loss.item() / (n * m), mu_mag, sig)
-            print(msg + ' | ' + model.lprior.msg + model.kernel.msg, end="\r")
+            print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
         if callback is not None:
             callback(model, i)

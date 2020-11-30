@@ -6,13 +6,13 @@ from .base import Module
 
 
 class MVN(Module):
-    """ Parameterised zero-mean multivarariate normal
+    """ Parameterised zero-mean multivariate normal
     TODO: with_mu a bit hacky
     """
     name = "MVN"
 
     def __init__(self, m, d, with_mu=False, sigma=1.5, gammas=None,
-                 Tinds=None):
+                 Tinds=None, fixed_gamma = False):
         '''
         gammas is the base distribution which is inverse transformed before storing
         since it's transformed by constraints.tril when used.
@@ -33,7 +33,12 @@ class MVN(Module):
                                              dtype=torch.get_default_dtype())
 
         gamma = transform_to(constraints.lower_cholesky).inv(gamma)
-        self.gamma = nn.Parameter(data=gamma, requires_grad=True)
+        
+        if fixed_gamma:
+            #don't update the covariance matrix
+            self.gamma = gamma
+        else:
+            self.gamma = nn.Parameter(data=gamma, requires_grad=True)
 
     @property
     def prms(self):

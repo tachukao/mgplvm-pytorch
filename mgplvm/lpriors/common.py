@@ -2,7 +2,9 @@ import abc
 import torch
 import torch.nn as nn
 import torch.distributions as dists
+import numpy as np
 from ..base import Module
+from ..rdist import MVN 
 
 
 class Lprior(Module, metaclass=abc.ABCMeta):
@@ -47,8 +49,8 @@ class Null(Lprior):
         '''
         return 0; non-Bayesian point prior
         '''
-        super().__init__(manif)
-
+        super().__init__(manif)        
+        
     @property
     def prms(self):
         return None
@@ -73,17 +75,45 @@ class Gaussian(Lprior):
         TODO: implement
         '''
         super().__init__(manif)
+        
+        if 'Euclid' in manif.name:
+            #N(0,I) can always be recovered from a scaling/rotation of the space
+            dist = MVN(1, manif.d, sigma=1, fixed_gamma = True)#.to(manif.mu.device)
+        else:
+            #parameterize the covariance matrix
+            dist = MVN(1, manif.d, sigma=1.5, fixed_gamma = False)#.to(manif.mu.device)
+                
+        self.dist = dist
 
     @property
     def prms(self):
-        return
+        return self.dist.prms
 
-    def forward(self, g):
-        return 
+    def forward(self, g, kmax = 5):
+        '''
+        g: (n_b x mx x d)
+        output: (n_b x mx)
+        '''
+        if g.device != self.dist.gamma.device:
+            #print('putting things on the same device')
+            self.dist.gamma = self.dist.gamma.to(g.device)
+            #print(self.dist.gamma.device, '\n')
+        
+        # return reference distribution
+        q = self.dist()
+        # compute log prior
+        #print(g.device)
+        #print(q.loc.device)
+        #print(q.scale_tril.device)
+        lq = self.manif.log_q(q.log_prob, g, self.manif.d, kmax)
+        return lq
 
     @property
     def msg(self):
-        return
+        sig = np.median(np.concatenate([
+                np.diag(sig)for sig in self.prms.data.cpu().numpy()
+            ]))
+        return (' prior_sig {:.3f} |').format(sig)
 
 class Brownian(Lprior):
     name = "Brownian"
@@ -132,7 +162,7 @@ class Brownian(Lprior):
     @property
     def msg(self):
         brownian_c, brownian_eta = self.prms
-        return ('brownian_c {:.3f} | brownian_eta {:.3f}').format(
+        return (' brownian_c {:.3f} | brownian_eta {:.3f} |').format(
             brownian_c.detach().cpu().numpy().mean(), brownian_eta.detach().cpu().numpy().mean())
 
 
@@ -176,7 +206,7 @@ class AR1(Lprior):
     @property
     def msg(self):
         ar1_c, ar1_phi, ar1_eta = self.prms
-        return ('ar1_c {:.3f} | ar1_phi {:.3f} | ar1_eta {:.3f}').format(
+        return (' ar1_c {:.3f} | ar1_phi {:.3f} | ar1_eta {:.3f} |').format(
             ar1_c.item(), ar1_phi.item(), ar1_eta.item())
 
 
@@ -223,7 +253,7 @@ class ARP(Lprior):
     @property
     def msg(self):
         ar_c, ar_phi, ar_eta = self.prms
-        lp_msg = ('ar_c {:.3f} | ar_phi_avg {:.3f} | ar_eta {:.3f}').format(
+        lp_msg = (' ar_c {:.3f} | ar_phi_avg {:.3f} | ar_eta {:.3f} |').format(
             ar_c.item(),
             torch.mean(ar_phi).item(), ar_eta.item())
         return lp_msg

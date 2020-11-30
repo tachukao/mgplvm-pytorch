@@ -4,7 +4,7 @@ from torch import nn, Tensor
 from .utils import softplus, inv_softplus
 from .base import Module
 from typing import Tuple, List, Sequence
-
+import numpy as np
 
 class Kernel(Module, metaclass=abc.ABCMeta):
     """
@@ -178,7 +178,7 @@ class QuadExp(QuadExpBase):
         alpha_mag, ell_mag = [
                 np.mean(val.data.cpu().numpy()) for val in self.prms
             ]
-        return ('alpha_sqr {:.3f} | ell {:.3f}').format(alpha_mag**2, ell_mag)
+        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(alpha_mag**2, ell_mag)
 
 
 class QuadExpARD(QuadExpBase):
@@ -220,7 +220,7 @@ class QuadExpARD(QuadExpBase):
         alpha_mag, ell_mag = [
                 np.mean(val.data.cpu().numpy()) for val in self.prms
             ]
-        return ('alpha_sqr {:.3f} | ell {:.3f}').format(alpha_mag**2, ell_mag)
+        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(alpha_mag**2, ell_mag)
 
 
 
