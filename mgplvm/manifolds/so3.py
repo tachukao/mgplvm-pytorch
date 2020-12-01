@@ -79,9 +79,13 @@ class So3(Manifold):
         return self.gmul(mu, x)  # group multiplication
 
     @staticmethod
-    def expmap(x: Tensor, dim: int = -1) -> Tuple[Tensor, Tensor, Tensor]:
+    def expmap(x: Tensor, dim: int = -1, jitter = 1e-6) -> Tuple[Tensor, Tensor, Tensor]:
+        '''
+        x \in R^3 -> q \in R^4 s.t. ||q|| = 1
+        '''
+        x = x+jitter*torch.randn(x.shape) #avoid nans
         theta = torch.norm(x, dim=dim, keepdim=True)
-        v = x / theta
+        v = x / theta 
         y = torch.cat((torch.cos(theta), torch.sin(theta) * v), dim=dim)
         return y  # , theta, v
 
@@ -91,10 +95,15 @@ class So3(Manifold):
 
     @staticmethod
     def logmap(q: Tensor, dim: int = -1) -> Tensor:
-        x = q[..., 0]
-        y = torch.norm(q[..., 1:], dim=dim)
-        theta = 2 * torch.atan2(y, x)
-        return theta * (q[..., 1:] / y)
+        '''
+        q \in R^4 s.t. ||q|| = 1 -> x \in R^3
+        '''
+        #make first index positive as convention -- this gives theta \in [0, pi] and u on the hemisphere
+        q = torch.sign(q[..., :1]) * q
+        a = q[..., :1]
+        theta = 2*torch.acos(a) #magnitude of rotation; ||x|| = theta/2
+        u = q[..., 1:] / torch.norm(q[..., 1:], dim=dim, keepdim = True)
+        return 0.5*theta*u
 
     @staticmethod
     def inverse(q: Tensor) -> Tensor:

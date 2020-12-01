@@ -73,8 +73,8 @@ class Torus(Manifold):
 
     @staticmethod
     def expmap(x: Tensor) -> Tensor:
-        '''move to [0, 2*pi]'''
-        return x%(2*np.pi)
+        '''move to [-pi, pi]'''
+        return (x+np.pi)%(2*np.pi) - np.pi
 
     @staticmethod
     def logmap(x: Tensor) -> Tensor:

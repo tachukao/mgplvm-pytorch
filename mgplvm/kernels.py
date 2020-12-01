@@ -224,9 +224,24 @@ class QuadExpARD(QuadExpBase):
 
 
 
-class LinearBase(Kernel):
-    def __init__(self, n: int):
+class Linear(Kernel):
+    name = "Linear"
+    
+    def __init__(self, n: int, distance, scaling = False):
+        '''
+        n is number of neurons/readouts
+        distance is the distance function used
+        scaling determines wheter an output scale parameter is learned for each neuron
+        '''
         super().__init__()
+        
+        self.distance = distance
+        
+        scale = inv_softplus(torch.ones(n, ))
+        if scaling:
+            self.scale = nn.Parameter(data=scale, requires_grad=True)
+        else:
+            self.scale = scale
 
     def diagK(self, x: Tensor) -> Tensor:
         """
@@ -245,7 +260,9 @@ class LinearBase(Kernel):
         For a linear kernel, the diagonal is a mx-dimensional 
         vector (||x_1||^2, ||x_2||^2, ..., ||x_mx||^2)
         """
-        diag = (x**2).sum(axis = -2)
+        scale = self.prms
+        sqr_scale = torch.square(scale)[:, None, None].to(x.device)
+        diag = (sqr_scale * torch.square(x)).sum(axis = -2)
 
         return diag
 
@@ -267,21 +284,6 @@ class LinearBase(Kernel):
         """
         return self.diagK(x).sum(axis = -1)
 
-    @abc.abstractmethod
-    def K(self, x: Tensor, y: Tensor) -> Tensor:
-        pass
-
-    @property
-    def prms(self) -> Tuple[Tensor, Tensor]:
-        return
-
-class Linear(LinearBase):
-    name = "Linear"
-
-    def __init__(self, n: int, distance):
-        super().__init__(n)
-        self.distance = distance
-
     def K(self, x: Tensor, y: Tensor) -> Tensor:
         """
         Parameters
@@ -297,14 +299,22 @@ class Linear(LinearBase):
             quadratic exponential kernel with dims (... n x mx x my)
 
         """
+        scale = self.prms
+        sqr_scale = torch.square(scale)[:, None, None].to(x.device)
         distance = self.distance(x, y)  # dims (... n x mx x my)
-        kxy = distance
+
+        kxy = sqr_scale * distance
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
     
     @property
+    def prms(self) ->Tensor:
+        return softplus(self.scale)
+    
+    @property
     def msg(self):
-        return ''
+        scale = self.prms
+        return (' scale {:.3f} |').format(scale.mean())
     
