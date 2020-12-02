@@ -67,24 +67,29 @@ class MVN(Module):
         return MultivariateNormal(mu, scale_tril=gamma)
 
 
-class Relie(Module):
+class ReLie(Module):
     name = "ReLie"
+
     def __init__(self,
+                 manif,
                  m,
-                 d,
                  with_mu=False,
+                 kmax=5,
                  sigma=1.5,
                  gammas=None,
                  Tinds=None,
                  fixed_gamma=False):
         '''
-        gammas is the base distribution which is inverse transformed before storing
+        gammas is the reference distribution which is inverse transformed before storing
         since it's transformed by constraints.tril when used.
         If no gammas is None, it is initialized as a diagonal matrix with value sigma
         '''
-        super(MVN, self).__init__()
+        super(ReLie, self).__init__()
+        self.manif = manif
         self.m = m
-        self.d = d
+        self.d = manif.d
+        self.kmax = kmax
+        d = self.d
         self.with_mu = with_mu  # also learn a mean parameter
 
         if self.with_mu:
@@ -112,7 +117,7 @@ class Relie(Module):
             return self.mu, gamma
         return gamma
 
-    def forward(self, batch_idxs=None):
+    def mvn(self, batch_idxs=None):
         if self.with_mu:
             mu, gamma = self.prms
         else:
@@ -124,4 +129,18 @@ class Relie(Module):
             gamma = gamma[batch_idxs]
         return MultivariateNormal(mu, scale_tril=gamma)
 
+    def sample(self, size, batch_idxs=None, kmax=5):
+        """
+        generate samples and computes its log entropy
+        """
+        q = self.mvn(batch_idxs)
+        # sample a batch with dims: (n_mc x batch_size x d)
+        x = q.rsample(size)
+        lq = self.manif.log_q(q.log_prob, x, self.manif.d, self.kmax)
 
+        # transform x to group with dims (n_mc x m x d)
+        gtilde = self.manif.expmap(x)
+
+        # apply g_mu with dims: (n_mc x m x d)
+        g = self.manif.transform(gtilde, batch_idxs=batch_idxs)
+        return g, lq

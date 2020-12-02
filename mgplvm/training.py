@@ -124,12 +124,12 @@ def sort_params(model, hook, trainGP, svgp=False):
         params = [[], []]
 
     for param in model.parameters():
-        if (param.shape == model.rdist.gamma.shape) and torch.all(
-                param == model.rdist.gamma):
+        if (param.shape == model.lat_dist.gamma.shape) and torch.all(
+                param == model.lat_dist.gamma):
             param.register_hook(hook)  # option to mask gradients
             params[1].append(param)
-        elif (param.shape == model.manif.mu.shape) and torch.all(
-                param == model.manif.mu):
+        elif (param.shape == model.lat_dist.manif.mu.shape) and torch.all(
+            param == model.lat_dist.manif.mu):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
         elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(
@@ -157,8 +157,8 @@ def sort_params_prod(model, hook, trainGP):
     # parameters to be optimized
 
     params = [[], []]
-    for ref_dist in model.rdist:  # variational widths
-        param = ref_dist.gamma
+    for lat_dist in model.lat_dist:  # variational widths
+        param = lat_dist.gamma
         param.register_hook(hook)
         params[1].append(param)
     for manif in model.manif:  # varriational maens
@@ -261,11 +261,11 @@ def svgp(Y,
         if i % print_every == 0:
             mu_mag = np.mean(
                 np.sqrt(
-                    np.sum(model.manif.prms.data.cpu().numpy()[:]**2, axis=1)))
+                    np.sum(model.lat_dist.manif.prms.data.cpu().numpy()[:]**2, axis=1)))
             sig = np.median(
                 np.concatenate([
                     np.diag(sig)
-                    for sig in model.rdist.prms.data.cpu().numpy()
+                    for sig in model.lat_dist.prms.data.cpu().numpy()
                 ]))
             msg = (
                 '\riter {:3d} | elbo {:.3f} | svgp_kl{:.3f} | kl {:.3f} | loss {:.3f} '

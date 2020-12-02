@@ -29,21 +29,17 @@ def test_svgp_runs():
     Y = Y + np.random.normal(size=Y.shape) * np.mean(Y) / 3
     # specify manifold, kernel and rdist
     manif = Torus(m, d)
-    ref_dist = mgplvm.rdist.MVN(m, d, sigma=sig0)
+    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=sig0)
     # initialize signal variance
     alpha = np.mean(np.std(Y, axis=1), axis=1)
     kernel = kernels.QuadExp(n, manif.distance, alpha=alpha)
     # generate model
     sigma = np.mean(np.std(Y, axis=1), axis=1)  # initialize noise
     lik = likelihoods.Gaussian(n, variance=np.square(sigma))
-    mod = models.SvgpLvm(manif,
-                                 n,
-                                 m,
-                                 n_z,
-                                 kernel,
-                                 lik,
-                                 ref_dist,
-                                 whiten=True).to(device)
+    lprior = mgplvm.lpriors.Uniform(manif)
+    z = manif.inducing_points(n, n_z)
+    mod = models.SvgpLvm(n, m, z, kernel, lik, lat_dist, lprior,
+                         whiten=True).to(device)
 
     # train model
     trained_model = training.svgp(Y,
