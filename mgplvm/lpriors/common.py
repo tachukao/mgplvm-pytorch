@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.distributions as dists
 import numpy as np
 from ..base import Module
-from ..rdist import MVN 
+from ..rdist import MVN
 
 
 class Lprior(Module, metaclass=abc.ABCMeta):
@@ -41,7 +41,8 @@ class Uniform(Lprior):
     @property
     def msg(self):
         return ""
-    
+
+
 class Null(Lprior):
     name = "null"
 
@@ -49,8 +50,8 @@ class Null(Lprior):
         '''
         return 0; non-Bayesian point prior
         '''
-        super().__init__(manif)        
-        
+        super().__init__(manif)
+
     @property
     def prms(self):
         return None
@@ -66,10 +67,11 @@ class Null(Lprior):
     def msg(self):
         return ""
 
+
 class Gaussian(Lprior):
     name = "gaussian"
 
-    def __init__(self, manif, sigma = 1.5):
+    def __init__(self, manif, sigma=1.5):
         '''
         Gaussian prior for Euclidean space and wrapped Gaussian for other manifolds
         Euclidean is fixed N(0, I) since the space can be scaled and rotated freely
@@ -77,21 +79,21 @@ class Gaussian(Lprior):
         'sigma = value' initializes the sqrt diagonal elements of Sigma
         '''
         super().__init__(manif)
-        
+
         if 'Euclid' in manif.name:
             #N(0,I) can always be recovered from a scaling/rotation of the space
-            dist = MVN(1, manif.d, sigma=1, fixed_gamma = True)
+            dist = MVN(1, manif.d, sigma=1, fixed_gamma=True)
         else:
             #parameterize the covariance matrix
-            dist = MVN(1, manif.d, sigma=sigma, fixed_gamma = False)
-                
+            dist = MVN(1, manif.d, sigma=sigma, fixed_gamma=False)
+
         self.dist = dist
 
     @property
     def prms(self):
         return self.dist.prms
 
-    def forward(self, g, kmax = 5):
+    def forward(self, g, kmax=5):
         '''
         g: (n_b x mx x d)
         output: (n_b x mx)
@@ -100,7 +102,7 @@ class Gaussian(Lprior):
             #print('putting things on the same device')
             self.dist.gamma = self.dist.gamma.to(g.device)
             #print(self.dist.gamma.device, '\n')
-        
+
         # return reference distribution
         q = self.dist()
         #project onto tangent space
@@ -111,10 +113,11 @@ class Gaussian(Lprior):
 
     @property
     def msg(self):
-        sig = np.median(np.concatenate([
-                np.diag(sig)for sig in self.prms.data.cpu().numpy()
-            ]))
+        sig = np.median(
+            np.concatenate(
+                [np.diag(sig) for sig in self.prms.data.cpu().numpy()]))
         return (' prior_sig {:.3f} |').format(sig)
+
 
 class Brownian(Lprior):
     name = "Brownian"
@@ -164,7 +167,8 @@ class Brownian(Lprior):
     def msg(self):
         brownian_c, brownian_eta = self.prms
         return (' brownian_c {:.3f} | brownian_eta {:.3f} |').format(
-            brownian_c.detach().cpu().numpy().mean(), brownian_eta.detach().cpu().numpy().mean())
+            brownian_c.detach().cpu().numpy().mean(),
+            brownian_eta.detach().cpu().numpy().mean())
 
 
 class AR1(Lprior):
@@ -259,12 +263,20 @@ class ARP(Lprior):
             torch.mean(ar_phi).item(), ar_eta.item())
         return lp_msg
 
-    
-    
+
 class ARP_G(Lprior):
     name = "ARP"
 
-    def __init__(self, p, manif, kmax=5, ar_phi=None, ar_eta=None, ar_c=None, learn_eta = True, learn_phi = True, learn_c = True):
+    def __init__(self,
+                 p,
+                 manif,
+                 kmax=5,
+                 ar_phi=None,
+                 ar_eta=None,
+                 ar_c=None,
+                 learn_eta=True,
+                 learn_phi=True,
+                 learn_c=True):
         '''
         g_t^tilde = g_c * \prod_{j=p}^1 exp(a_j*log(g_t-j*g_t-j-1)) * g_t-1
         Log[ g_t^tilde g_(t-1)^(-1) ] ~ N(0, eta)
@@ -275,23 +287,23 @@ class ARP_G(Lprior):
         self.kmax = kmax
 
         #ar_phi = 1e-3 * torch.randn(d, p-1) if ar_phi is None else ar_phi
-        ar_phi = 1e-3 * torch.randn(1, p-1) if ar_phi is None else ar_phi
+        ar_phi = 1e-3 * torch.randn(1, p - 1) if ar_phi is None else ar_phi
         #ar_eta = 0.5 * torch.ones(d) if ar_eta is None else ar_eta
         ar_eta = torch.tensor(0.5) if ar_eta is None else ar_eta
-        ar_c = 1e-3*torch.randn(d) if ar_c is None else ar_c
-        
+        ar_c = 1e-3 * torch.randn(d) if ar_c is None else ar_c
+
         ### AR parameters
         if learn_phi:
             self.ar_phi = nn.Parameter(data=ar_phi, requires_grad=True)
         else:
             self.ar_phi = ar_phi
-        
+
         #w_t \sim Exp[ N(0, eta) ]
         if learn_eta:
             self.ar_eta = nn.Parameter(data=ar_eta, requires_grad=True)
         else:
             self.ar_eta = ar_eta
-        
+
         #parameterize as g_c = exp(x_c) for now
         if learn_c:
             self.ar_c = nn.Parameter(data=ar_c, requires_grad=True)
@@ -308,49 +320,58 @@ class ARP_G(Lprior):
         '''
         p = self.p
         _, mx, _ = g.shape
-        
+
         ar_c, ar_phi, ar_eta = self.prms
-        ginv = self.manif.inverse(g) # n_b x mx x d2 (on group)
-        
-        if p > 1: #if p > 1 we need to consider past displacements
-            dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :]) #n_b x (mx-1) x d (on group)
+        ginv = self.manif.inverse(g)  # n_b x mx x d2 (on group)
+
+        if p > 1:  #if p > 1 we need to consider past displacements
+            dg = self.manif.gmul(ginv[..., 0:-1, :],
+                                 g[..., 1:, :])  #n_b x (mx-1) x d (on group)
 
             #f_i(dg) = 'a_i dg' = Exp[ a_i*Log[dg] ]
-            dx = self.manif.logmap(dg) #n_b x (mx-1) x d (on algebra)
+            dx = self.manif.logmap(dg)  #n_b x (mx-1) x d (on algebra)
             delta = ar_phi * torch.stack(
-                [dx[..., (p-j-2):(mx-j-2), :] for j in range(p-1)], axis=-1) # n_b x (mx-p) x d x (p-1) (on algebra)
-            delta = delta.permute(0, 1, 3, 2) # n_b x (mx-p) x (p-1) x d (on algebra)
-            dg_phi = self.manif.expmap(delta) #n_b x (mx-p) x (p-1) x d2 (on group)
+                [dx[..., (p - j - 2):(mx - j - 2), :] for j in range(p - 1)],
+                axis=-1)  # n_b x (mx-p) x d x (p-1) (on algebra)
+            delta = delta.permute(0, 1, 3,
+                                  2)  # n_b x (mx-p) x (p-1) x d (on algebra)
+            dg_phi = self.manif.expmap(
+                delta)  #n_b x (mx-p) x (p-1) x d2 (on group)
             #print(delta.shape, dg_phi.shape)
 
         #consider g_{t-1} for t = (p+1:T)
-        g_tm1 = g[:, (p-1):-1,:] # n_b x (mx-p) x d2 (on group)
-        
+        g_tm1 = g[:, (p - 1):-1, :]  # n_b x (mx-p) x d2 (on group)
+
         #sequentially apply group elements
-        g_pred = g_tm1 #n_b x (mx-p) x d2 (on group)
-        
+        g_pred = g_tm1  #n_b x (mx-p) x d2 (on group)
+
         for i in range(1, p):
             #sequential multiplication ... g_t-1 * dg_t-1 * ... * dg_t-p+1
-            g_pred = self.manif.gmul(g_pred, dg_phi[:, :, -i, :]) #n_b x (mx-p) x d2 (on group)
-            
+            g_pred = self.manif.gmul(
+                g_pred, dg_phi[:, :, -i, :])  #n_b x (mx-p) x d2 (on group)
+
         #g_t-1 * dg_t-1 * ... * dg_t-p+1 * g_c
-        g_c = self.manif.expmap(ar_c.reshape(1, 1, -1)) #1 x 1 x d2 (on group)
-        g_pred = self.manif.gmul(g_pred, g_c) #n_b x (mx-p) x d2 (on group) -- add constant element
-        
+        g_c = self.manif.expmap(ar_c.reshape(1, 1, -1))  #1 x 1 x d2 (on group)
+        g_pred = self.manif.gmul(
+            g_pred, g_c)  #n_b x (mx-p) x d2 (on group) -- add constant element
+
         #g_t g_pred \approx I
         #only consider timepoints we have sufficient data for
-        g_true = g[:, p:, :] # n_b x (mx-p) x d2 (on group)
-        g_pred_inv = self.manif.inverse(g_pred) #inverse prediction
+        g_true = g[:, p:, :]  # n_b x (mx-p) x d2 (on group)
+        g_pred_inv = self.manif.inverse(g_pred)  #inverse prediction
         #discrepancy between true and prediction
-        g_err = self.manif.gmul(g_true, g_pred_inv) # n_b x (mx-p) x d2 (on group)
-        
+        g_err = self.manif.gmul(g_true,
+                                g_pred_inv)  # n_b x (mx-p) x d2 (on group)
+
         #likelihood of errors is given by a Gaussian projected onto the manifold
-        normal = dists.Normal(loc = 0, scale=torch.ones(self.manif.d)*torch.sqrt(ar_eta))
-        diagn = dists.Independent(normal, 1) #assume diagonal covariance
-        
+        normal = dists.Normal(loc=0,
+                              scale=torch.ones(self.manif.d) *
+                              torch.sqrt(ar_eta))
+        diagn = dists.Independent(normal, 1)  #assume diagonal covariance
+
         #compute an x_err s.t. Exp(x_err) = g_err
-        x_err = self.manif.logmap(g_err) # n_b x (mx-p) x d (on group)
-        
+        x_err = self.manif.logmap(g_err)  # n_b x (mx-p) x d (on group)
+
         #sum over {x_err} s.t. Exp(x_err) = g_err by considering equivalent points in the algebra
         #return log probability of each latent state -- (n_b x mx-p)
         return self.manif.log_q(diagn.log_prob,
@@ -358,61 +379,65 @@ class ARP_G(Lprior):
                                 self.manif.d,
                                 kmax=self.kmax)
 
-    def generate_trajectory(self, m, g0s, noise = True):
+    def generate_trajectory(self, m, g0s, noise=True):
         '''
         generate trajectory of length m drawn from the model.
         must provide a 'seed' of initial states
         g0 of dim p x d2
         '''
-        
-        
+
         ar_c, ar_phi, ar_eta = self.prms
         p = self.p
-        
-        gs = torch.zeros(m+p, g0s.shape[1])
+
+        gs = torch.zeros(m + p, g0s.shape[1])
         gs[:p, :] = g0s
-        
-        noise_dist = dists.Normal(loc = 0, scale=torch.ones(self.manif.d)*torch.sqrt(ar_eta))
-        noises = noise_dist.sample((m+p,))
+
+        noise_dist = dists.Normal(loc=0,
+                                  scale=torch.ones(self.manif.d) *
+                                  torch.sqrt(ar_eta))
+        noises = noise_dist.sample((m + p, ))
         if not noise:
             noises *= 0
-        
-        for t in range(p, m+p):
-            
-            gprevs = gs[t-p:t, :] #AR(p) -- need p most recent states
+
+        for t in range(p, m + p):
+
+            gprevs = gs[t - p:t, :]  #AR(p) -- need p most recent states
             if p > 1:
-                ginv = self.manif.inverse(gprevs) #p x d2
-                dg = self.manif.gmul(ginv[0:-1, :], gprevs[1:, :]) #(p-1) x d2s
-                dx = self.manif.logmap(dg) #(p-1) x d (on algebra)
+                ginv = self.manif.inverse(gprevs)  #p x d2
+                dg = self.manif.gmul(ginv[0:-1, :],
+                                     gprevs[1:, :])  #(p-1) x d2s
+                dx = self.manif.logmap(dg)  #(p-1) x d (on algebra)
                 #print(ar_phi.shape, dx.shape)
-                delta = ar_phi.T * dx #(p-1) x d (on algebra)
-                dg_phi = self.manif.expmap(delta) #(p-1) x d2 (on group)
-            
+                delta = ar_phi.T * dx  #(p-1) x d (on algebra)
+                dg_phi = self.manif.expmap(delta)  #(p-1) x d2 (on group)
+
             #print('dg_phi', dg_phi.shape)
-            g_pred = gprevs[-1, :] # d2 (on group)
+            g_pred = gprevs[-1, :]  # d2 (on group)
             #print('g_pred', g_pred.shape)
             for i in range(1, p):
                 #sequential multiplication ... g_t-1 * dg_t-1 * ... * dg_t-p+1
-                g_pred = self.manif.gmul(g_pred, dg_phi[-i, :]) #d2 (on group)
-            
+                g_pred = self.manif.gmul(g_pred, dg_phi[-i, :])  #d2 (on group)
+
             #g_t-1 * dg_t-1 * ... * dg_t-p+1 * g_c
-            g_c = self.manif.expmap(ar_c) # d2 (on group)
-            g_pred = self.manif.gmul(g_pred, g_c) # d2 (on group) -- add constant element
+            g_c = self.manif.expmap(ar_c)  # d2 (on group)
+            g_pred = self.manif.gmul(
+                g_pred, g_c)  # d2 (on group) -- add constant element
             #print(g_c.shape, g_pred.shape)
-            
-            x_pred = self.manif.logmap(g_pred) # d (on algebra)
-            x_new = x_pred + noises[t, :] # d (on algebra)
+
+            x_pred = self.manif.logmap(g_pred)  # d (on algebra)
+            x_new = x_pred + noises[t, :]  # d (on algebra)
             #print(x_pred.shape, x_new.shape)
-            g_new = self.manif.expmap(x_new) #new state
+            g_new = self.manif.expmap(x_new)  #new state
             #print(g_new.shape, gs.shape)
             gs[t, :] = g_new
-            
+
         return gs
-    
+
     @property
     def msg(self):
         ar_c, ar_phi, ar_eta = self.prms
         lp_msg = (' ar_c {:.3f} | ar_phi_avg {:.3f} | ar_eta {:.3f} |').format(
             ar_c.item(),
-            torch.mean(ar_phi).item(), ar_eta.sqrt().item())
+            torch.mean(ar_phi).item(),
+            ar_eta.sqrt().item())
         return lp_msg

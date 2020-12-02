@@ -14,14 +14,14 @@ class Euclid(Manifold):
                  d: int,
                  mu: Optional[np.ndarray] = None,
                  Tinds: Optional[np.ndarray] = None,
-                initialization: Optional[str] = 'random',
-                Y: Optional[np.ndarray] = None):
+                 initialization: Optional[str] = 'random',
+                 Y: Optional[np.ndarray] = None):
         '''
         initialization: 'pca' or 'random' (default)
         mu: optional initialization of the mean
         Tinds: only set mean for these time points
         '''
-        super().__init__(d, initialization = initialization)
+        super().__init__(d, initialization=initialization)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
 
@@ -41,11 +41,11 @@ class Euclid(Manifold):
                 print('user must provide data for PCA initialization')
             else:
                 pca = decomposition.PCA(n_components=d)
-                mudata = pca.fit_transform(Y.T) #m x d
+                mudata = pca.fit_transform(Y.T)  #m x d
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         mudata = torch.randn(m, d) * 0.1
         return mudata
-        
+
     def inducing_points(self, n, n_z, z=None):
         # distribute according to prior
         z = torch.randn(n, self.d, n_z) if z is None else z
@@ -55,7 +55,8 @@ class Euclid(Manifold):
     def prms(self) -> Tensor:
         return self.mu
 
-    def transform(self, x: Tensor,
+    def transform(self,
+                  x: Tensor,
                   batch_idxs: Optional[List[int]] = None) -> Tensor:
         mu = self.prms
         if batch_idxs is not None:
@@ -93,10 +94,10 @@ class Euclid(Manifold):
         diff = x[..., None] - y[..., None, :]
         dist_sqr = torch.sum(torch.square(diff), dim=-3)
         return dist_sqr
-    
+
     @staticmethod
     def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        dist = (x[..., None] * y[..., None, :]).sum(dim = -3)
+        dist = (x[..., None] * y[..., None, :]).sum(dim=-3)
         return dist
 
     @staticmethod

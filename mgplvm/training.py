@@ -140,9 +140,9 @@ def sort_params(model, hook, trainGP, svgp=False):
             params[2].append(param)
         elif trainGP:  # only update GP parameters if trainGP
             # add ell to group 2
-            if (('QuadExp' in model.kernel.name) and
-                (param.shape == model.kernel.ell.shape) and 
-                torch.all(param == model.kernel.ell)):
+            if (('QuadExp' in model.kernel.name)
+                    and (param.shape == model.kernel.ell.shape)
+                    and torch.all(param == model.kernel.ell)):
                 params[1].append(param)
             else:
                 params[0].append(param)
@@ -197,17 +197,19 @@ def svgp(Y,
         idxs = np.arange(data_size)
         if model.lprior.name == "Brownian":
             # if prior is Brownian, then batches have to be contiguous
-            
-            i0 = np.random.randint(1, data_size-1)
-            if i0 < batch_size/2:
-                batch_idxs = idxs[:int(round(batch_size/2+i0))]
-            elif i0 > (data_size - batch_size/2):
-                batch_idxs = idxs[int(round(i0-batch_size/2)):]
+
+            i0 = np.random.randint(1, data_size - 1)
+            if i0 < batch_size / 2:
+                batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
+            elif i0 > (data_size - batch_size / 2):
+                batch_idxs = idxs[int(round(i0 - batch_size / 2)):]
             else:
-                batch_idxs = idxs[int(round(i0 - batch_size/2)):int(round(i0+batch_size/2))]
+                batch_idxs = idxs[int(round(i0 - batch_size /
+                                            2)):int(round(i0 +
+                                                          batch_size / 2))]
             #print(len(batch_idxs))
             return batch_idxs
-            
+
             #start = np.random.randint(data_size - batch_size)
             #return idxs[start:start + batch_size]
         else:
@@ -250,7 +252,7 @@ def svgp(Y,
             batch_idxs = generate_batch_idxs()
             svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=batch_idxs)
             m = len(batch_idxs)  #use for printing likelihoods etc.
-            
+
         svgp_elbo = svgp_lik - svgp_kl
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
         loss.backward()
@@ -267,12 +269,12 @@ def svgp(Y,
                 ]))
             msg = (
                 '\riter {:3d} | elbo {:.3f} | svgp_kl{:.3f} | kl {:.3f} | loss {:.3f} '
-                + '| |mu| {:.3f} | sig {:.3f} |'
-            ).format(i,
-                     svgp_elbo.item() / (n * m),
-                     svgp_kl.item() / (n * m),
-                     kl.item() / (n * m),
-                     loss.item() / (n * m), mu_mag, sig)
+                + '| |mu| {:.3f} | sig {:.3f} |').format(
+                    i,
+                    svgp_elbo.item() / (n * m),
+                    svgp_kl.item() / (n * m),
+                    kl.item() / (n * m),
+                    loss.item() / (n * m), mu_mag, sig)
             print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
         if callback is not None:

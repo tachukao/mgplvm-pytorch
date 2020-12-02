@@ -11,6 +11,7 @@ import mgplvm.lpriors as lpriors
 
 jitter = 1E-8
 
+
 class Sgp(nn.Module):
     name = "Sgp"
 
@@ -409,7 +410,7 @@ class Svgp(nn.Module):
                               whiten=whiten)
         # reference distribution
         self.rdist = ref_dist
-        
+
         #uniform is actuall gaussian for Euclidean space
         self.lprior = lpriors.Uniform(manif) if lprior is None else lprior
 

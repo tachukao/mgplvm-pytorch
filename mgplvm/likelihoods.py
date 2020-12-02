@@ -7,6 +7,7 @@ from .base import Module
 from typing import Optional
 import torch.distributions as dists
 import numpy as np
+import warnings
 
 log2pi: float = np.log(2 * np.pi)
 n_gh_locs: int = 20  # default number of Gauss-Hermite points
@@ -252,7 +253,9 @@ class CMPoisson(Likelihood):
         return lp
 
     def variational_expectation(self, n_samples, y, fmu, fvar):
-        # we compute a lower bound here to the likelihood
+        warnings.warn(
+            "CMP variational expectation not properly tested: use with caution"
+        )
         nu, c, d = self.prms
         fmu = c[..., None, None] * fmu + d[..., None, None]
         fvar = fvar * torch.square(c[..., None])
@@ -265,7 +268,7 @@ class CMPoisson(Likelihood):
             K = torch.max(y).item() if self.max_k is None else self.max_k
             nu = nu[..., None, None]
             p = y * fmu + (y * np.log(self.binsize)) - (nu *
-                                                           torch.lgamma(y + 1))
+                                                        torch.lgamma(y + 1))
             ks = torch.arange(1, K + 1).to(y)
             # normalizing constant
             M = torch.logsumexp(

@@ -7,7 +7,7 @@ from typing import Any
 
 
 class Manifold(Module, metaclass=abc.ABCMeta):
-    def __init__(self, d: int, initialization = 'random'):
+    def __init__(self, d: int, initialization='random'):
         """
         :param d: dimensionality of the manifold
         initialization: specifies how the latent states are initialized

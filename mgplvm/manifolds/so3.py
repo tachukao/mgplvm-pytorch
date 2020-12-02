@@ -1,5 +1,5 @@
 import numpy as np
-from mgplvm import quaternion
+from . import quaternion
 from scipy import special
 import torch
 from torch import Tensor
@@ -20,14 +20,13 @@ class So3(Manifold):
                  d: Optional[int] = None,
                  mu: Optional[np.ndarray] = None,
                  Tinds: Optional[np.ndarray] = None,
-                initialization: Optional[str] = 'identity',
-                Y: Optional[np.ndarray] = None):
+                 initialization: Optional[str] = 'identity',
+                 Y: Optional[np.ndarray] = None):
         super().__init__(d=3)
 
         self.m = m
         self.d2 = 4  # dimensionality of the group parameterization
 
-        
         mudata = self.initialize(initialization, m, d, Y)
         if mu is not None:
             mudata[Tinds, ...] = torch.tensor(mu,
@@ -38,7 +37,7 @@ class So3(Manifold):
         # per condition
         self.lprior_const = torch.tensor(
             special.loggamma(2) - np.log(1) - 2 * np.log(np.pi))
-    
+
     @staticmethod
     def initialize(initialization, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
@@ -46,7 +45,7 @@ class So3(Manifold):
         mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]),
                               dtype=torch.get_default_dtype())
         return mudata
-    
+
     def inducing_points(self, n, n_z, z=None):
         if z is None:
             z = torch.randn(n, self.d2, n_z)
@@ -71,7 +70,8 @@ class So3(Manifold):
     def lprior(self, g):
         return self.lprior_const * torch.ones(g.shape[:2])
 
-    def transform(self, x: Tensor,
+    def transform(self,
+                  x: Tensor,
                   batch_idxs: Optional[List[int]] = None) -> Tensor:
         mu = self.prms
         if batch_idxs is not None:
@@ -79,13 +79,15 @@ class So3(Manifold):
         return self.gmul(mu, x)  # group multiplication
 
     @staticmethod
-    def expmap(x: Tensor, dim: int = -1, jitter = 1e-6) -> Tuple[Tensor, Tensor, Tensor]:
+    def expmap(x: Tensor,
+               dim: int = -1,
+               jitter=1e-6) -> Tuple[Tensor, Tensor, Tensor]:
         '''
         x \in R^3 -> q \in R^4 s.t. ||q|| = 1
         '''
-        x = x+jitter*torch.randn(x.shape) #avoid nans
+        x = x + jitter * torch.randn(x.shape)  #avoid nans
         theta = torch.norm(x, dim=dim, keepdim=True)
-        v = x / theta 
+        v = x / theta
         y = torch.cat((torch.cos(theta), torch.sin(theta) * v), dim=dim)
         return y  # , theta, v
 
@@ -101,9 +103,9 @@ class So3(Manifold):
         #make first index positive as convention -- this gives theta \in [0, pi] and u on the hemisphere
         q = torch.sign(q[..., :1]) * q
         a = q[..., :1]
-        theta = 2*torch.acos(a) #magnitude of rotation; ||x|| = theta/2
-        u = q[..., 1:] / torch.norm(q[..., 1:], dim=dim, keepdim = True)
-        return 0.5*theta*u
+        theta = 2 * torch.acos(a)  #magnitude of rotation; ||x|| = theta/2
+        u = q[..., 1:] / torch.norm(q[..., 1:], dim=dim, keepdim=True)
+        return 0.5 * theta * u
 
     @staticmethod
     def inverse(q: Tensor) -> Tensor:
@@ -144,9 +146,9 @@ class So3(Manifold):
         cosdist = (x[..., None] * y[..., None, :])
         cosdist = cosdist.sum(-3)
         return 4 * (1 - torch.square(cosdist))
-    
+
     @staticmethod
     def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        dist = (x[..., None] * y[..., None, :]).sum(dim = -3)
-        dist = 2*torch.square(dist)
+        dist = (x[..., None] * y[..., None, :]).sum(dim=-3)
+        dist = 2 * torch.square(dist)
         return dist

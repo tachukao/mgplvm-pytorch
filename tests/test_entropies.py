@@ -10,9 +10,7 @@ device = mgplvm.utils.get_device()
 
 
 def test_euclid(kmax=5):
-
     m = 100
-
     for d in [1, 2, 3]:
 
         manif = Euclid(m, d)
@@ -95,6 +93,7 @@ def test_so3(kmax=5):
     assert np.amax(H - std) < Hmax  # adhere to upper bound
     assert np.abs(H[0] - Hgauss[0]) < std[0]  # adhere to lower bound
 
+
 def test_s3(kmax=5):
     m = 100
 
@@ -121,4 +120,3 @@ def test_s3(kmax=5):
 
     assert np.amax(H - std) < Hmax  # adhere to upper bound
     assert np.abs(H[0] - Hgauss[0]) < std[0]  # adhere to lower bound
-    

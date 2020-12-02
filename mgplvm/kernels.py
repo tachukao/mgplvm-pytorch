@@ -6,6 +6,7 @@ from .base import Module
 from typing import Tuple, List, Sequence
 import numpy as np
 
+
 class Kernel(Module, metaclass=abc.ABCMeta):
     """
     Base kernel class
@@ -172,13 +173,14 @@ class QuadExp(QuadExpBase):
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
-    
+
     @property
     def msg(self):
         alpha_mag, ell_mag = [
-                np.mean(val.data.cpu().numpy()) for val in self.prms
-            ]
-        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(alpha_mag**2, ell_mag)
+            np.mean(val.data.cpu().numpy()) for val in self.prms
+        ]
+        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
+            alpha_mag**2, ell_mag)
 
 
 class QuadExpARD(QuadExpBase):
@@ -214,29 +216,29 @@ class QuadExpARD(QuadExpBase):
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
-    
+
     @property
     def msg(self):
         alpha_mag, ell_mag = [
-                np.mean(val.data.cpu().numpy()) for val in self.prms
-            ]
-        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(alpha_mag**2, ell_mag)
-
+            np.mean(val.data.cpu().numpy()) for val in self.prms
+        ]
+        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
+            alpha_mag**2, ell_mag)
 
 
 class Linear(Kernel):
     name = "Linear"
-    
-    def __init__(self, n: int, distance, scaling = False):
+
+    def __init__(self, n: int, distance, scaling=False):
         '''
         n is number of neurons/readouts
         distance is the distance function used
         scaling determines wheter an output scale parameter is learned for each neuron
         '''
         super().__init__()
-        
+
         self.distance = distance
-        
+
         scale = inv_softplus(torch.ones(n, ))
         if scaling:
             self.scale = nn.Parameter(data=scale, requires_grad=True)
@@ -262,7 +264,7 @@ class Linear(Kernel):
         """
         scale = self.prms
         sqr_scale = torch.square(scale)[:, None, None].to(x.device)
-        diag = (sqr_scale * torch.square(x)).sum(axis = -2)
+        diag = (sqr_scale * torch.square(x)).sum(axis=-2)
 
         return diag
 
@@ -282,7 +284,7 @@ class Linear(Kernel):
         ----
         For a stationary quad exp kernel, the trace is alpha^2 * mx
         """
-        return self.diagK(x).sum(axis = -1)
+        return self.diagK(x).sum(axis=-1)
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
         """
@@ -308,13 +310,12 @@ class Linear(Kernel):
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
-    
+
     @property
-    def prms(self) ->Tensor:
+    def prms(self) -> Tensor:
         return softplus(self.scale)
-    
+
     @property
     def msg(self):
         scale = self.prms
         return (' scale {:.3f} |').format(scale.mean())
-    

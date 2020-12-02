@@ -15,7 +15,7 @@ class Torus(Manifold):
                  mu: Optional[np.ndarray] = None,
                  Tinds: Optional[np.ndarray] = None,
                  initialization: Optional[str] = 'random',
-                Y: Optional[np.ndarray] = None):
+                 Y: Optional[np.ndarray] = None):
         super().__init__(d)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
@@ -39,12 +39,12 @@ class Torus(Manifold):
                 print('user must provide data for PCA initialization')
             else:
                 pca = decomposition.PCA(n_components=d)
-                mudata = pca.fit_transform(Y.T) #m x d
-                mudata *= 2*np.pi/(np.amax(mudata)-np.amin(mudata))
+                mudata = pca.fit_transform(Y.T)  #m x d
+                mudata *= 2 * np.pi / (np.amax(mudata) - np.amin(mudata))
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         mudata = torch.randn(m, d) * 0.1
         return mudata
-        
+
     def inducing_points(self, n, n_z, z=None):
         z = torch.rand(n, self.d, n_z) * 2 * np.pi if z is None else z
         return InducingPoints(n, self.d, n_z, z=z)
@@ -74,12 +74,12 @@ class Torus(Manifold):
     @staticmethod
     def expmap(x: Tensor) -> Tensor:
         '''move to [-pi, pi]'''
-        return (x+np.pi)%(2*np.pi) - np.pi
+        return (x + np.pi) % (2 * np.pi) - np.pi
 
     @staticmethod
     def logmap(x: Tensor) -> Tensor:
         '''move to [-pi, pi]'''
-        return (x+np.pi)%(2*np.pi) - np.pi
+        return (x + np.pi) % (2 * np.pi) - np.pi
 
     @staticmethod
     def log_q(log_base_prob, x, d, kmax):
@@ -106,12 +106,12 @@ class Torus(Manifold):
         diff = 2 - (2 * torch.cos(x[..., None] - y[..., None, :]))
         dist_sqr = torch.sum(diff, dim=-3)
         return dist_sqr
-    
+
     @staticmethod
     def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        dist = torch.cos(x[..., None] - y[..., None, :]).sum(dim = -3)
+        dist = torch.cos(x[..., None] - y[..., None, :]).sum(dim=-3)
         return dist
-    
+
     @staticmethod
     def distance_ard(x: Tensor, y: Tensor) -> Tensor:
         return 2 - (2 * torch.cos(x[..., None] - y[..., None, :]))

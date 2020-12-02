@@ -20,14 +20,13 @@ class S3(Manifold):
                  d: Optional[int] = None,
                  mu: Optional[np.ndarray] = None,
                  Tinds: Optional[np.ndarray] = None,
-                initialization: Optional[str] = 'identity',
-                Y: Optional[np.ndarray] = None):
+                 initialization: Optional[str] = 'identity',
+                 Y: Optional[np.ndarray] = None):
         super().__init__(d=3)
 
         self.m = m
         self.d2 = 4  # dimensionality of the group parameterization
 
-        
         mudata = self.initialize(initialization, m, d, Y)
         if mu is not None:
             mudata[Tinds, ...] = torch.tensor(mu,
@@ -38,7 +37,7 @@ class S3(Manifold):
         # per condition
         self.lprior_const = torch.tensor(
             special.loggamma(2) - np.log(2) - 2 * np.log(np.pi))
-    
+
     @staticmethod
     def initialize(initialization, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
@@ -46,7 +45,7 @@ class S3(Manifold):
         mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]),
                               dtype=torch.get_default_dtype())
         return mudata
-    
+
     def inducing_points(self, n, n_z, z=None):
         if z is None:
             z = torch.randn(n, self.d2, n_z)
@@ -71,7 +70,8 @@ class S3(Manifold):
     def lprior(self, g):
         return self.lprior_const * torch.ones(g.shape[:2])
 
-    def transform(self, x: Tensor,
+    def transform(self,
+                  x: Tensor,
                   batch_idxs: Optional[List[int]] = None) -> Tensor:
         mu = self.prms
         if batch_idxs is not None:
@@ -113,17 +113,19 @@ class S3(Manifold):
         theta = |x|/2
         '''
 
-        theta = torch.norm(x, dim=dim, keepdim=True) #vector magintudes
-        v = x / theta #unit vectors
+        theta = torch.norm(x, dim=dim, keepdim=True)  #vector magintudes
+        v = x / theta  #unit vectors
         ks = np.arange(-kmax, kmax + 1)
-        zs = np.meshgrid(*(ks for _ in range(1))) #construct equivalent elements
-        zs = np.stack([z.flatten() for z in zs]).T * 2*np.pi #need to add multiples of 2pi
+        zs = np.meshgrid(*(ks
+                           for _ in range(1)))  #construct equivalent elements
+        zs = np.stack([z.flatten() for z in zs
+                       ]).T * 2 * np.pi  #need to add multiples of 2pi
         zs = torch.tensor(zs, dtype=torch.get_default_dtype()).to(theta.device)
         theta = theta + zs[:, None, None, ...]  # (nk, n_b, m, 1)
         x = theta * v
 
         # |J|->1 as phi -> 0; cap at 1e-5 for numerical stability
-        phi = 2 * theta + 1e-5 #magnitude of rotation
+        phi = 2 * theta + 1e-5  #magnitude of rotation
         l0 = torch.square(phi)
         l1 = 2 - 2 * torch.cos(phi)
         # |J^(-1)| = phi^2/(2 - 2*cos(phi)) = 2|x|^2/(1-cos(2|x|))
@@ -137,8 +139,8 @@ class S3(Manifold):
         cosdist = (x[..., None] * y[..., None, :])
         cosdist = cosdist.sum(-3)
         return 2 * (1 - cosdist)
-    
+
     @staticmethod
     def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        dist = (x[..., None] * y[..., None, :]).sum(dim = -3)
+        dist = (x[..., None] * y[..., None, :]).sum(dim=-3)
         return dist
