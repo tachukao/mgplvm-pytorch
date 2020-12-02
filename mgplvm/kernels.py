@@ -75,13 +75,16 @@ class Product(Combination):
 
 
 class QuadExpBase(Kernel):
-    def __init__(self, n: int, ell=None, alpha=None):
+    def __init__(self, n: int, ell=None, alpha=None, learn_alpha = True):
         super().__init__()
 
         alpha = inv_softplus(torch.ones(
             n, )) if alpha is None else inv_softplus(
                 torch.tensor(alpha, dtype=torch.get_default_dtype()))
-        self.alpha = nn.Parameter(data=alpha, requires_grad=True)
+        if learn_alpha:
+            self.alpha = nn.Parameter(data=alpha, requires_grad=True)
+        else:
+            self.alpha = nn.Parameter(data=alpha, requires_grad=False)
 
         ell = inv_softplus(torch.ones(n, )) if ell is None else inv_softplus(
             torch.tensor(ell, dtype=torch.get_default_dtype()))
@@ -145,8 +148,8 @@ class QuadExpBase(Kernel):
 class QuadExp(QuadExpBase):
     name = "QuadExp"
 
-    def __init__(self, n: int, distance, ell=None, alpha=None):
-        super().__init__(n, ell, alpha)
+    def __init__(self, n: int, distance, ell=None, alpha=None, learn_alpha = True):
+        super().__init__(n, ell, alpha, learn_alpha)
         self.distance = distance
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -168,6 +171,7 @@ class QuadExp(QuadExpBase):
         distance = self.distance(x, y)  # dims (... n x mx x my)
         sqr_alpha = torch.square(alpha)[:, None, None]
         sqr_ell = torch.square(ell)[:, None, None]
+        #print(sqr_alpha.device, distance.device, sqr_ell.device)
         kxy = sqr_alpha * torch.exp(-0.5 * distance / sqr_ell)
         return kxy
 

@@ -55,6 +55,7 @@ class Euclid(Manif):
             gs = np.random.normal(2, 1, size=(n, self.d))
         else:
             gs = draw_GP(n, self.d, sig, ell)
+            gs = gs+2
 
         return gs
 

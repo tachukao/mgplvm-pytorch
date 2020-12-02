@@ -35,7 +35,7 @@ class Uniform(Lprior):
     def prms(self):
         return None
 
-    def forward(self, g):
+    def forward(self, g, ts = None):
         return self.manif.lprior(g)
 
     @property
@@ -56,7 +56,7 @@ class Null(Lprior):
     def prms(self):
         return None
 
-    def forward(self, g):
+    def forward(self, g, ts = None):
         '''
         g: (n_b x mx x d)
         output: (n_b x mx)
@@ -93,7 +93,7 @@ class Gaussian(Lprior):
     def prms(self):
         return self.dist.prms
 
-    def forward(self, g, kmax=5):
+    def forward(self, g, ts = None, kmax=5):
         '''
         g: (n_b x mx x d)
         output: (n_b x mx)
@@ -151,7 +151,7 @@ class Brownian(Lprior):
         brownian_c = self.brownian_c
         return brownian_c, brownian_eta
 
-    def forward(self, g):
+    def forward(self, g, ts = None):
         brownian_c, brownian_eta = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
@@ -194,7 +194,7 @@ class AR1(Lprior):
     def prms(self):
         return self.ar1_c, self.ar1_phi, torch.square(self.ar1_eta)
 
-    def forward(self, g):
+    def forward(self, g, ts = None):
         ar1_c, ar1_phi, ar1_eta = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
@@ -239,7 +239,7 @@ class ARP(Lprior):
     def prms(self):
         return self.ar_c, self.ar_phi, torch.square(self.ar_eta)
 
-    def forward(self, g):
+    def forward(self, g, ts = None):
         p = self.p
         ar_c, ar_phi, ar_eta = self.prms
         ginv = self.manif.inverse(g)
@@ -314,7 +314,7 @@ class ARP_G(Lprior):
     def prms(self):
         return self.ar_c, self.ar_phi, torch.square(self.ar_eta)
 
-    def forward(self, g):
+    def forward(self, g, ts = None):
         '''
         g is (n_b x mx x d2)
         '''

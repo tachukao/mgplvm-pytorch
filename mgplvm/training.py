@@ -188,9 +188,11 @@ def svgp(Y,
          callback=None,
          print_every=50,
          batch_size=None,
-         n_svgp=50):
+         n_svgp=50,
+        ts = None):
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
+    ts = ts if ts is None else ts.to(device)
     data_size = m  #total conditions
 
     def generate_batch_idxs():
@@ -247,10 +249,10 @@ def svgp(Y,
         ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
 
         if batch_size is None:
-            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=None)
+            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=None, ts = ts)
         else:
             batch_idxs = generate_batch_idxs()
-            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=batch_idxs)
+            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=batch_idxs, ts =ts)
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo = svgp_lik - svgp_kl

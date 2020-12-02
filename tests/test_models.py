@@ -55,4 +55,5 @@ def test_svgp_runs():
     
 if __name__ == '__main__':
     test_svgp_runs()
+    print('done')
     
