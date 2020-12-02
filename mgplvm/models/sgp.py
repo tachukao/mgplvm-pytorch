@@ -3,13 +3,13 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 import numpy as np
-from mgplvm.utils import softplus, inv_softplus
+from mgplvm.utils import softplus, inv_softplus, default_jitter
 from ..base import Module
 from ..kernels import Kernel, Combination
 from ..inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
 
-jitter: float = 1E-8
+jitter: float = default_jitter
 log2pi: float = np.log(2 * np.pi)
 
 
