@@ -3,9 +3,7 @@ import torch
 from torch import optim
 import mgplvm
 from mgplvm import kernels, rdist, models, training
-import syndata
 from mgplvm.manifolds import Torus, Euclid, So3
-import mgplvm.likelihoods as likelihoods
 import matplotlib.pyplot as plt
 torch.set_default_dtype(torch.float64)
 if torch.cuda.is_available():
@@ -17,8 +15,7 @@ n = 50  # number of neurons
 m = 100  # number of conditions / time points
 n_z = 15  # number of inducing points
 n_samples = 1  # number of samples
-gen = syndata.Gen(syndata.Torus(d), n, m, variability=0.25)
-
+gen = mgplvm.syndata.Gen(syndata.Torus(d), n, m, variability=0.25)
 sig0 = 1.5
 l = 0.4
 gen.set_param('l', l)
@@ -33,7 +30,7 @@ alpha = np.mean(np.std(Y, axis=1), axis=1)
 kernel = kernels.QuadExp(n, manif.distance, alpha=alpha)
 # generate model
 sigma = np.mean(np.std(Y, axis=1), axis=1)  # initialize noise
-likelihoods = likelihoods.Gaussian(n, m, variance=np.square(sigma))
+likelihoods = mgplvm.likelihoods.Gaussian(n, variance=np.square(sigma))
 mod = models.Svgp(manif, n, m, n_z, kernel, likelihoods, ref_dist,
                   whiten=True).to(device)
 
