@@ -9,7 +9,7 @@ torch.set_default_dtype(torch.float64)
 device = mgplvm.utils.get_device()
 
 
-def test_euclid(kmax=5):
+def test_euclid(kmax=5, savefig=False):
     m = 100
     for d in [1, 2, 3]:
 
@@ -24,18 +24,22 @@ def test_euclid(kmax=5):
 
         Hgauss = d / 2 + d / 2 * np.log(2 * np.pi) + d * np.log(sigmas[:, 0])
 
-        plt.figure()
-        plt.plot(sigmas[:, 0], Hgauss, 'g-')
-        plt.plot(sigmas[:, 0], H, 'b--')
-        plt.fill_between(sigmas[:, 0], H - std, H + std, color='b', alpha=0.2)
-        plt.xscale('log')
-        plt.savefig('test_euclid' + str(d) + '.png', dpi=120)
-        plt.close()
-
+        if savefig:
+            plt.figure()
+            plt.plot(sigmas[:, 0], Hgauss, 'g-')
+            plt.plot(sigmas[:, 0], H, 'b--')
+            plt.fill_between(sigmas[:, 0],
+                             H - std,
+                             H + std,
+                             color='b',
+                             alpha=0.2)
+            plt.xscale('log')
+            plt.savefig('test_euclid' + str(d) + '.png', dpi=120)
+            plt.close()
         assert all(np.abs(H - Hgauss) < std)  # adhere to bound
 
 
-def test_torus(kmax=5):
+def test_torus(kmax=5, savefig=False):
 
     m = 100
 
@@ -53,20 +57,25 @@ def test_torus(kmax=5):
         Hmax = -manif.lprior_const
         Hgauss = d / 2 + d / 2 * np.log(2 * np.pi) + d * np.log(sigmas)
 
-        plt.figure()
-        plt.plot([sigmas[0], sigmas[-1]], [Hmax, Hmax], 'g-')
-        plt.plot(sigmas[:, 0], Hgauss, 'g-')
-        plt.plot(sigmas[:, 0], H, 'b--')
-        plt.fill_between(sigmas[:, 0], H - std, H + std, color='b', alpha=0.2)
-        plt.xscale('log')
-        plt.savefig('test_torus' + str(d) + '.png', dpi=120)
-        plt.close()
+        if savefig:
+            plt.figure()
+            plt.plot([sigmas[0], sigmas[-1]], [Hmax, Hmax], 'g-')
+            plt.plot(sigmas[:, 0], Hgauss, 'g-')
+            plt.plot(sigmas[:, 0], H, 'b--')
+            plt.fill_between(sigmas[:, 0],
+                             H - std,
+                             H + std,
+                             color='b',
+                             alpha=0.2)
+            plt.xscale('log')
+            plt.savefig('test_torus' + str(d) + '.png', dpi=120)
+            plt.close()
 
         assert np.amax(H - std) < Hmax  # adhere to upper bound
         assert np.abs(H[0] - Hgauss[0]) < std[0]  # adhere to lower bound
 
 
-def test_so3(kmax=5):
+def test_so3(kmax=5, savefig=False):
     m = 100
 
     manif = So3(m)
@@ -81,20 +90,21 @@ def test_so3(kmax=5):
     Hmax = -manif.lprior_const
     Hgauss = 3 / 2 + 3 / 2 * np.log(2 * np.pi) + 3 * np.log(sigmas)
 
-    plt.figure()
-    plt.plot([sigmas[0], sigmas[-1]], [Hmax, Hmax], 'g-')
-    plt.plot(sigmas[:, 0], Hgauss, 'g-')
-    plt.plot(sigmas[:, 0], H, 'b--')
-    plt.fill_between(sigmas[:, 0], H - std, H + std, color='b', alpha=0.2)
-    plt.xscale('log')
-    plt.savefig('test_so3.png', dpi=120)
-    plt.close()
+    if savefig:
+        plt.figure()
+        plt.plot([sigmas[0], sigmas[-1]], [Hmax, Hmax], 'g-')
+        plt.plot(sigmas[:, 0], Hgauss, 'g-')
+        plt.plot(sigmas[:, 0], H, 'b--')
+        plt.fill_between(sigmas[:, 0], H - std, H + std, color='b', alpha=0.2)
+        plt.xscale('log')
+        plt.savefig('test_so3.png', dpi=120)
+        plt.close()
 
     assert np.amax(H - std) < Hmax  # adhere to upper bound
     assert np.abs(H[0] - Hgauss[0]) < std[0]  # adhere to lower bound
 
 
-def test_s3(kmax=5):
+def test_s3(kmax=5, savefig=False):
     m = 100
 
     manif = S3(m)
@@ -109,14 +119,15 @@ def test_s3(kmax=5):
     Hmax = -manif.lprior_const
     Hgauss = 3 / 2 + 3 / 2 * np.log(2 * np.pi) + 3 * np.log(sigmas)
 
-    plt.figure()
-    plt.plot([sigmas[0], sigmas[-1]], [Hmax, Hmax], 'g-')
-    plt.plot(sigmas[:, 0], Hgauss, 'g-')
-    plt.plot(sigmas[:, 0], H, 'b--')
-    plt.fill_between(sigmas[:, 0], H - std, H + std, color='b', alpha=0.2)
-    plt.xscale('log')
-    plt.savefig('test_s3.png', dpi=120)
-    plt.close()
+    if savefig:
+        plt.figure()
+        plt.plot([sigmas[0], sigmas[-1]], [Hmax, Hmax], 'g-')
+        plt.plot(sigmas[:, 0], Hgauss, 'g-')
+        plt.plot(sigmas[:, 0], H, 'b--')
+        plt.fill_between(sigmas[:, 0], H - std, H + std, color='b', alpha=0.2)
+        plt.xscale('log')
+        plt.savefig('test_s3.png', dpi=120)
+        plt.close()
 
     assert np.amax(H - std) < Hmax  # adhere to upper bound
     assert np.abs(H[0] - Hgauss[0]) < std[0]  # adhere to lower bound

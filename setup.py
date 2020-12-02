@@ -7,5 +7,5 @@ setup(name='mGPLVM',
       version='0.0.1',
       description='Pytorch implementation of mGPLVM',
       license='MIT',
-      install_requires=['numpy', 'torch>=0.4.1', 'scipy>=1.0.0', 'numpy'],
+      install_requires=['numpy', 'torch>=0.4.1', 'scipy>=1.0.0', 'sklearn'],
       packages=find_packages())

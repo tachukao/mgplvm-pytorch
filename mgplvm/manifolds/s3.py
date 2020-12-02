@@ -1,5 +1,5 @@
 import numpy as np
-from mgplvm import quaternion
+from . import quaternion
 from scipy import special
 import torch
 from torch import Tensor
