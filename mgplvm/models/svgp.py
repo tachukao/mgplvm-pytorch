@@ -4,12 +4,12 @@ import torch.nn as nn
 from torch import Tensor
 import numpy as np
 from mgplvm.utils import softplus
-from .base import Module
-from .kernels import Kernel, Combination
-from .inducing_variables import InducingPoints
+from ..base import Module
+from ..kernels import Kernel, Combination
+from ..inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
 from torch.distributions import MultivariateNormal, kl_divergence, transform_to, constraints, Normal
-from .likelihoods import Likelihood
+from ..likelihoods import Likelihood
 
 jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)

@@ -1,5 +1,7 @@
 import torch
 
+default_jitter = 1E-8
+
 
 def softplus(x):
     return torch.log(1 + torch.exp(x))

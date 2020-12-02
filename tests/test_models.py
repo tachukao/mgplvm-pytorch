@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, rdist, models, training, syndata
+from mgplvm import kernels, rdist, models, training, syndata, likelihoods
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 torch.set_default_dtype(torch.float64)
@@ -35,15 +35,15 @@ def test_svgp_runs():
     kernel = kernels.QuadExp(n, manif.distance, alpha=alpha)
     # generate model
     sigma = np.mean(np.std(Y, axis=1), axis=1)  # initialize noise
-    likelihoods = mgplvm.likelihoods.Gaussian(n, variance=np.square(sigma))
-    mod = models.Svgp(manif,
-                      n,
-                      m,
-                      n_z,
-                      kernel,
-                      likelihoods,
-                      ref_dist,
-                      whiten=True).to(device)
+    lik = likelihoods.Gaussian(n, variance=np.square(sigma))
+    mod = models.SvgpLvm(manif,
+                                 n,
+                                 m,
+                                 n_z,
+                                 kernel,
+                                 lik,
+                                 ref_dist,
+                                 whiten=True).to(device)
 
     # train model
     trained_model = training.svgp(Y,
