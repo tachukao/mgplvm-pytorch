@@ -295,7 +295,6 @@ class Gen():
         return gs
 
     def gen_data(self,
-                 tbin=0.001,
                  n_samples=1,
                  gs_in=None,
                  gprefs_in=None,
@@ -303,12 +302,14 @@ class Gen():
                  overwrite=True,
                  sigma=None,
                  ell=None,
-                 sig=10):
+                 sig=10,
+                rate = 10):
         """
         tbin is time of each time step (by default each time step is 1 ms)
         gs_in is optional input latent signal, otherwise random points on manifold
         generate Gaussian noise neural activities
         generate IPP spiking from Gaussian bump rate model
+        rate is the mean peak firing rate across neurons
         """
         # generate tuning curves
         if not overwrite:
@@ -342,8 +343,8 @@ class Gen():
                 noise = np.random.normal(0, np.repeat(sigma, m, axis=1))
                 self.Y[:, :, i] = fs + noise
             elif mode == 'Poisson':  # Poisson spiking
-                b = Bernoulli(torch.tensor(fs * tbin))
-                self.Y[:, :, i] = b.sample().numpy()
+                max_activity = np.mean(np.amax(f, axis = 1))
+                self.Y[:, :, i] = np.random.Poisson(f*rate/max_activity) #draw poisson samples
             else:
                 raise NotImplementedError('Synthetic data type not supported.')
 
