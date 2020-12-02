@@ -171,7 +171,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         mu : Tensor 
             mean of predictive density at test inputs [ s ]
         v : Tensor 
-            variance/covarianc eof predictive density at test inputs [ s ]
+            variance/covariance of predictive density at test inputs [ s ]
             if full_cov is true returns full covariance, otherwise
             returns diagonal variance
         Notes
