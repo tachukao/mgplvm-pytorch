@@ -16,7 +16,6 @@ class SvgpLvm(nn.Module):
 
     def __init__(self,
                  n,
-                 m,
                  z,
                  kernel,
                  likelihood,
@@ -46,14 +45,12 @@ class SvgpLvm(nn.Module):
         """
         super().__init__()
         self.n = n
-        self.m = m
         self.kernel = kernel
         self.z = z
         self.likelihood = likelihood
         self.whiten = whiten
         self.svgp = svgp.Svgp(self.kernel,
                               n,
-                              m,
                               self.z,
                               likelihood,
                               whiten=whiten)

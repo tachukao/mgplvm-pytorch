@@ -38,7 +38,7 @@ def test_svgp_runs():
     lik = likelihoods.Gaussian(n, variance=np.square(sigma))
     lprior = mgplvm.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = models.SvgpLvm(n, m, z, kernel, lik, lat_dist, lprior,
+    mod = models.SvgpLvm(n, z, kernel, lik, lat_dist, lprior,
                          whiten=True).to(device)
 
     # train model
@@ -52,3 +52,7 @@ def test_svgp_runs():
                                   n_mc=64,
                                   lrate=2E-2,
                                   print_every=1000)
+    
+if __name__ == '__main__':
+    test_svgp_runs()
+    

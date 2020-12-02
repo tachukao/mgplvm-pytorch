@@ -19,7 +19,6 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
     def __init__(self,
                  kernel: Kernel,
                  n: int,
-                 m: int,
                  n_inducing: int,
                  likelihood: Likelihood,
                  q_mu: Optional[Tensor] = None,
@@ -44,7 +43,6 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         """
         super().__init__()
         self.n = n
-        self.m = m
         self.n_inducing = n_inducing
         self.kernel = kernel
 
@@ -126,7 +124,6 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         """
 
         kernel = self.kernel
-        m = self.m  # conditions
         n_inducing = self.n_inducing  # inducing points
         prior_kl = self.prior_kl()  # prior KL(q(u) || p(u))
         # predictive mean and var at x
@@ -245,7 +242,6 @@ class Svgp(SvgpBase):
     def __init__(self,
                  kernel: Kernel,
                  n: int,
-                 m: int,
                  z: InducingPoints,
                  likelihood: Likelihood,
                  whiten: Optional[bool] = True):
@@ -274,7 +270,6 @@ class Svgp(SvgpBase):
         l = torch.cholesky(kzz, upper=False)
         super().__init__(kernel,
                          n,
-                         m,
                          n_inducing,
                          likelihood,
                          q_sqrt=l,
@@ -301,7 +296,6 @@ class SvgpComb(SvgpBase):
     def __init__(self,
                  kernel: Combination,
                  n: int,
-                 m: int,
                  zs: List[InducingPoints],
                  likelihood: Likelihood,
                  whiten: Optional[bool] = True):
@@ -336,7 +330,6 @@ class SvgpComb(SvgpBase):
         l = torch.cholesky(kzz, upper=False)
         super().__init__(kernel,
                          n,
-                         m,
                          n_inducing,
                          likelihood,
                          q_sqrt=l,
