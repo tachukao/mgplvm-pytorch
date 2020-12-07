@@ -105,7 +105,7 @@ class ReLie(Module):
 
         if fixed_gamma:
             #don't update the covariance matrix
-            self.gamma = gamma
+            self.gamma = nn.Parameter(data=gamma, requires_grad=False)
         else:
             self.gamma = nn.Parameter(data=gamma, requires_grad=True)
 

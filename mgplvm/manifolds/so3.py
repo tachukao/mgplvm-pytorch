@@ -81,11 +81,11 @@ class So3(Manifold):
     @staticmethod
     def expmap(x: Tensor,
                dim: int = -1,
-               jitter=1e-6) -> Tuple[Tensor, Tensor, Tensor]:
+               jitter=1e-8) -> Tuple[Tensor, Tensor, Tensor]:
         '''
         x \in R^3 -> q \in R^4 s.t. ||q|| = 1
         '''
-        x = x + jitter * torch.randn(x.shape)  #avoid nans
+        x = x + (jitter * torch.randn(x.shape)).to(x.device)  #avoid nans
         theta = torch.norm(x, dim=dim, keepdim=True)
         v = x / theta
         y = torch.cat((torch.cos(theta), torch.sin(theta) * v), dim=dim)

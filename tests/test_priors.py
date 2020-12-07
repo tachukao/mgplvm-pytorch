@@ -89,7 +89,7 @@ def test_GP_prior():
     print('ELBOs:', (lik1 - kl1).detach().data, (lik2 - kl2).detach().data)
     print('likelihoods:', lik1.detach().data, lik2.detach().data)
     print('KLs:', kl1.detach().data, kl2.detach().data)
-    assert ((lik1.detach().data == lik2.detach().data))
+    assert torch.isclose((lik1-kl1).detach().data, (lik2-kl2).detach().data)
 
 
 if __name__ == '__main__':

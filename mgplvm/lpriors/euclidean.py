@@ -55,8 +55,12 @@ class GP(LpriorEuclid):
         #x is (d x mx x n_samples)
         
         #elbo returns svgp_lik, svgp_kl
-        LLs = [self.svgp.elbo(1, x[i, :, :, None].permute(1,0,2), ts.reshape(1,1,-1)) for i in range(x.shape[0])]
-        LLs = torch.stack([LL[0] - LL[1] for LL in LLs], dim = 0)
+        #LLs = [self.svgp.elbo(1, x[i, :, :, None].permute(1,0,2), ts.reshape(1,1,-1)) for i in range(x.shape[0])]
+        #LLs = torch.stack([LL[0] - LL[1] for LL in LLs], dim = 0)
+        
+        lik, kl = self.svgp.elbo(x.shape[0], x.permute(2, 1, 0),
+                                     ts.reshape(1, 1, -1))
+        LLs = lik-kl
         
         return LLs
 

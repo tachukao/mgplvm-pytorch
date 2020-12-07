@@ -185,6 +185,82 @@ class QuadExp(QuadExpBase):
         ]
         return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
             alpha_mag**2, ell_mag)
+    
+    
+class Matern(QuadExpBase):
+    name = "Matern"
+
+    def __init__(self, n: int, distance, nu = 3/2, ell=None, alpha=None, learn_alpha = True):
+        '''
+        n is number of neurons/readouts
+        distance is a squared distance function
+        '''
+        super().__init__(n, ell, alpha, learn_alpha)
+
+        assert nu in [3/2, 5/2], "only nu=3/2 and nu=5/2 implemented"
+        if nu == 3/2:
+            self.k_r = self.k_r_3_2
+        elif nu == 5/2:
+            self.k_r = self.k_r_5_2
+        
+        self.nu = nu
+        self.distance_sqr = distance
+
+    def distance(self, x,y):
+        d_sqr = self.distance_sqr(x, y)
+        print(torch.min(d_sqr), torch.max(d_sqr))
+        return torch.sqrt(d_sqr)
+    
+    @staticmethod
+    def k_r_3_2(sqr_alpha, r, ell):
+        sqrt3_r_l = np.sqrt(3)*r/ell
+        kxy = sqr_alpha * (1+sqrt3_r_l)*torch.exp(-sqrt3_r_l)
+        return kxy
+    
+    @staticmethod
+    def k_r_5_2(sqr_alpha, r, ell):
+        sqrt5_r_l = np.sqrt(5)*r/ell
+        sqr_term = 5/3*torch.square(r)/torch.square(ell)
+        kxy = sqr_alpha*(1+sqrt5_r_l + sqr_term)*torch.exp(-sqrt5_r_l)
+        return kxy
+
+    def K(self, x: Tensor, y: Tensor) -> Tensor:
+        """
+        Parameters
+        ----------
+        x : Tensor
+            input tensor of dims (... n x d x mx)
+        y : Tensor
+            input tensor of dims (... n x d x my)
+
+        Returns
+        -------
+        kxy : Tensor
+            matern kernel with dims (... n x mx x my)
+
+        """
+        
+        alpha, ell = self.prms
+        sqr_alpha = torch.square(alpha)[:, None, None]
+        ell = ell[:, None, None]
+        #print(torch.min(ell), torch.max(ell))
+        #print(torch.min(sqr_alpha), torch.max(sqr_alpha))
+        r = self.distance(x, y)  # dims (... n x mx x my)
+        print(torch.min(r), torch.max(r))
+        
+        return self.k_r(sqr_alpha, r, ell)
+    
+    def forward(self, x: Tensor, y: Tensor) -> Tensor:
+        return self.K(x, y)
+
+    @property
+    def msg(self):
+        alpha_mag, ell_mag = [
+            np.mean(val.data.cpu().numpy()) for val in self.prms
+        ]
+        return (' nu {:.1f} | alpha_sqr {:.3f} | ell {:.3f} |').format(
+            self.nu, alpha_mag**2, ell_mag)
+
 
 
 class QuadExpARD(QuadExpBase):
@@ -302,7 +378,7 @@ class Linear(Kernel):
         Returns
         -------
         kxy : Tensor
-            quadratic exponential kernel with dims (... n x mx x my)
+            linear kernel with dims (... n x mx x my)
 
         """
         scale = self.prms
@@ -323,3 +399,5 @@ class Linear(Kernel):
     def msg(self):
         scale = self.prms
         return (' scale {:.3f} |').format(scale.mean())
+
+    

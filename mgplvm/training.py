@@ -188,7 +188,7 @@ def svgp(Y,
          callback=None,
          print_every=50,
          batch_size=None,
-         n_svgp=50,
+         n_svgp=0,
         ts = None):
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
