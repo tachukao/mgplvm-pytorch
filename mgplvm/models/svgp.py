@@ -102,12 +102,10 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, n_samples: int, n_b: int, y: Tensor, x: Tensor) -> Tensor:
+    def elbo(self, n_b: int, y: Tensor, x: Tensor) -> Tensor:
         """
         Parameters
         ----------
-        n_samples : int
-            number of data samples
         n_b : int
             batch size
         y : Tensor
@@ -123,6 +121,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html
         """
 
+        n_samples = y.shape[2]
         kernel = self.kernel
         n_inducing = self.n_inducing  # inducing points
         prior_kl = self.prior_kl()  # prior KL(q(u) || p(u))

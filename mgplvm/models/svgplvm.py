@@ -14,13 +14,7 @@ import mgplvm.lpriors as lpriors
 class SvgpLvm(nn.Module):
     name = "Svgplvm"
 
-    def __init__(self,
-                 n,
-                 z,
-                 kernel,
-                 likelihood,
-                 lat_dist,
-                 lprior,
+    def __init__(self, n, z, kernel, likelihood, lat_dist, lprior,
                  whiten=True):
         """
         __init__ method for Vanilla model
@@ -58,7 +52,7 @@ class SvgpLvm(nn.Module):
         self.lat_dist = lat_dist
         self.lprior = lprior
 
-    def forward(self, data, n_mc, kmax=5, batch_idxs=None, ts = None):
+    def forward(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
         """
         Parameters
         ----------
@@ -85,17 +79,16 @@ class SvgpLvm(nn.Module):
         ELBO of the model per batch is [ svgp_elbo - kl ]
         """
 
-        data = data if batch_idxs is None else data[:, batch_idxs, :] 
+        data = data if batch_idxs is None else data[:, batch_idxs, :]
         ts = ts if None in [ts, batch_idxs] else ts[batch_idxs]
-        
-        _, _, n_samples = data.shape #n x mx x n_samples
+
+        _, _, n_samples = data.shape  #n x mx x n_samples
         g, lq = self.lat_dist.sample(torch.Size([n_mc]), batch_idxs)
         # d is shape (n_mc, m, d)
         # sparse GP elbo summed over all batches
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
-        svgp_lik, svgp_kl = self.svgp.elbo(n_samples, n_mc, data,
-                                           g.permute(0, 2, 1))
+        svgp_lik, svgp_kl = self.svgp.elbo(n_mc, data, g.permute(0, 2, 1))
         # KL(Q(G) || p(G)) ~ logQ - logp(G)
         kl = lq.sum() - self.lprior(g, ts).sum()
         return svgp_lik / n_mc, svgp_kl / n_mc, (kl / n_mc)
