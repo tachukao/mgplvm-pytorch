@@ -309,21 +309,29 @@ class QuadExpARD(QuadExpBase):
 class Linear(Kernel):
     name = "Linear"
 
-    def __init__(self, n: int, distance, scaling=False):
+    def __init__(self, n: int, distance, d: int, output_scaling=False, input_scaling = False):
         '''
         n is number of neurons/readouts
         distance is the distance function used
+        d is the dimensionality of the group parameterization
         scaling determines wheter an output scale parameter is learned for each neuron
         '''
         super().__init__()
 
         self.distance = distance
 
-        scale = inv_softplus(torch.ones(n, ))
-        if scaling:
-            self.scale = nn.Parameter(data=scale, requires_grad=True)
+        #output_scale = inv_softplus(torch.ones(n, )) #one per neuron
+        output_scale = torch.ones(n, ) #one per neuron
+        if output_scaling:
+            self.output_scale = nn.Parameter(data=output_scale, requires_grad=True)
         else:
-            self.scale = scale
+            self.output_scale = nn.Parameter(data=output_scale, requires_grad=False)
+            
+        input_scale = torch.ones(n, d ) #full weight matrix
+        if input_scaling:
+            self.input_scale = nn.Parameter(data=input_scale, requires_grad=True)
+        else:
+            self.input_scale = nn.Parameter(data=input_scale, requires_grad=False)
 
     def diagK(self, x: Tensor) -> Tensor:
         """
@@ -342,8 +350,10 @@ class Linear(Kernel):
         For a linear kernel, the diagonal is a mx-dimensional 
         vector (||x_1||^2, ||x_2||^2, ..., ||x_mx||^2)
         """
-        scale = self.prms
-        sqr_scale = torch.square(scale)[:, None, None].to(x.device)
+        input_scale, output_scale = self.prms
+        x = input_scale[:, :, None] * x
+        
+        sqr_scale = torch.square(output_scale)[:, None, None].to(x.device)
         diag = (sqr_scale * torch.square(x)).sum(axis=-2)
 
         return diag
@@ -381,8 +391,12 @@ class Linear(Kernel):
             linear kernel with dims (... n x mx x my)
 
         """
-        scale = self.prms
-        sqr_scale = torch.square(scale)[:, None, None].to(x.device)
+        input_scale, output_scale = self.prms
+        
+        x = input_scale[:, :, None] * x
+        y = input_scale[:, :, None] * y
+        
+        sqr_scale = torch.square(output_scale)[:, None, None].to(x.device)
         distance = self.distance(x, y)  # dims (... n x mx x my)
 
         kxy = sqr_scale * distance
@@ -393,11 +407,12 @@ class Linear(Kernel):
 
     @property
     def prms(self) -> Tensor:
-        return softplus(self.scale)
+        #return softplus(self.input_scale), softplus(self.output_scale)
+        return self.input_scale, self.output_scale
 
     @property
     def msg(self):
-        scale = self.prms
-        return (' scale {:.3f} |').format(scale.mean())
+        input_scale, output_scale = self.prms
+        return (' scale_in {:.3f} | scale_out {:.3f} |').format(input_scale.mean(), output_scale.mean())
 
     

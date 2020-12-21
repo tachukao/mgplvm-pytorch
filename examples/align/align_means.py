@@ -21,20 +21,20 @@ def align_torus(mod, target):
     target = torch.tensor(target)
 
     def dist(newmus, params):
-        mus = mod.manif.gmul(newmus, params)
-        loss = mod.manif.distance(mus, target)
-        return loss.mean() / mod.m
+        mus = mod.lat_dist.manif.gmul(newmus, params)
+        loss = mod.lat_dist.manif.distance(mus, target)
+        return loss.mean() / mod.lat_dist.m
 
-    mus = mod.manif.prms.data.cpu()
+    mus = mod.lat_dist.manif.prms.data.cpu()
     optloss = np.inf
 
-    for coords in generate_binary_array(mod.d, []):
-        coords = torch.tensor(coords).reshape(1, mod.d)
+    for coords in generate_binary_array(mod.lat_dist.d, []):
+        coords = torch.tensor(coords).reshape(1, mod.lat_dist.d)
         newmus = coords * mus
 
         for i in range(5):  # random restarts to avoid local minima
-            #params = torch.zeros(mod.d)
-            params = torch.rand(mod.d) * 2 * np.pi
+            #params = torch.zeros(mod.lat_dist.d)
+            params = torch.rand(mod.lat_dist.d) * 2 * np.pi
             params.requires_grad_()
             optimizer = optim.LBFGS([params])
 
@@ -54,8 +54,8 @@ def align_torus(mod, target):
                 optcoords = coords
                 optparams = params.data.cpu()
 
-    newparam = (mod.manif.gmul(optcoords * mus, optparams) +
+    newparam = (mod.lat_dist.manif.gmul(optcoords * mus, optparams) +
                 2 * np.pi) % (2 * np.pi)
-    device = mod.manif.mu.device
-    mod.manif.mu.data = newparam.to(device)
+    device = mod.lat_dist.manif.mu.device
+    mod.lat_dist.manif.mu.data = newparam.to(device)
     return mod

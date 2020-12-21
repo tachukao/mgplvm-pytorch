@@ -102,7 +102,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, n_b: int, y: Tensor, x: Tensor) -> Tensor:
+    def elbo(self, n_b: int, y: Tensor, x: Tensor, by_batch = False) -> Tensor:
         """
         Parameters
         ----------
@@ -127,9 +127,15 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         prior_kl = self.prior_kl()  # prior KL(q(u) || p(u))
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
-        lik = self.likelihood.variational_expectation(n_samples, y, f_mean,
-                                                      f_var).sum()
-        return lik, prior_kl.sum() * n_b
+        
+        lik = self.likelihood.variational_expectation(n_samples, y, f_mean, f_var, by_batch = by_batch)
+        if by_batch:
+            return lik, torch.ones(n_b)*prior_kl.sum()
+            print('svgp:', lik.shape, prior_kl.shape, f_mean.shape, f_var.shape)
+        
+        else:
+            lik = lik.sum()
+            return lik, prior_kl.sum() * n_b
 
     def tuning(self, query, n_b=1000, square=False):
         '''

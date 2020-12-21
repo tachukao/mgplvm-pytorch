@@ -55,14 +55,19 @@ class Gaussian(Likelihood):
         y_samps = dist.sample()
         return y_samps
 
-    def variational_expectation(self, n_samples, y, fmu, fvar):
+    def variational_expectation(self, n_samples, y, fmu, fvar, by_batch = False):
         n_b, m = fmu.shape[0], fmu.shape[2]
         variance = self.prms
         ve1 = -0.5 * log2pi * m * self.n * n_samples * n_b
         ve2 = -0.5 * torch.log(variance).sum() * n_samples * n_b * m
         ve3 = -0.5 * torch.square(y - fmu) / variance[..., None, None]
         ve4 = -0.5 * fvar / variance[..., None] * n_samples
-        return ve1.sum() + ve2.sum() + ve3.sum() + ve4.sum()
+        if by_batch:
+            exp = ve1.sum()/n_b + ve2.sum()/n_b + ve3.sum(1).sum(1).sum(1) + ve4.sum(1).sum(1)
+            print(exp.shape)
+        else:
+            exp = ve1.sum() + ve2.sum() + ve3.sum() + ve4.sum()
+        return exp
 
 
 class Poisson(Likelihood):

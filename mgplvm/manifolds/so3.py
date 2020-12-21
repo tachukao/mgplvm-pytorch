@@ -38,12 +38,11 @@ class So3(Manifold):
         self.lprior_const = torch.tensor(
             special.loggamma(2) - np.log(1) - 2 * np.log(np.pi))
 
-    @staticmethod
-    def initialize(initialization, m, d, Y):
+    def initialize(self, initialization, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
         # initialize at identity
-        mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]),
-                              dtype=torch.get_default_dtype())
+        mudata = self.expmap(torch.randn(m, 3)*0.1)
+        #mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]), dtype=torch.get_default_dtype())
         return mudata
 
     def inducing_points(self, n, n_z, z=None):
@@ -118,7 +117,7 @@ class So3(Manifold):
     @staticmethod
     def log_q(log_base_prob, x, d, kmax, dim=-1):
         '''
-        theta = |x|/2
+        phi = |x|/2
         '''
 
         theta = torch.norm(x, dim=dim, keepdim=True)
