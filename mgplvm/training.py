@@ -117,7 +117,7 @@ def sort_params(model, hook, trainGP, svgp=False):
 
     # parameters to be optimized
 
-    params: List[List[Tensor]] = [[]] * 3 if svgp else [[]] * 2
+    params: List[List[Tensor]] = [[], [], []] if svgp else [[], []] 
 
     for param in model.parameters():
         if (param.shape == model.lat_dist.gamma.shape) and torch.all(
