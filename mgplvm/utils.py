@@ -1,4 +1,5 @@
 import torch
+from typing import Optional
 
 default_jitter = 1E-8
 
@@ -11,7 +12,7 @@ def inv_softplus(x):
     return torch.log(torch.exp(x) - 1)
 
 
-def get_device(device="cuda"):
+def get_device(device: Optional[str] = "cuda"):
     if torch.cuda.is_available() and device == "cuda":
         device = torch.device(device)
     else:

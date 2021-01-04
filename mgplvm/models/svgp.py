@@ -47,10 +47,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         self.kernel = kernel
 
         q_mu = torch.zeros(n, n_inducing) if q_mu is None else q_mu
-        if q_sqrt is None:
-            q_sqrt = torch.diag_embed(torch.ones(n, n_inducing))
-        else:
-            q_sqrt = transform_to(constraints.lower_cholesky).inv(q_sqrt)
+        q_sqrt = torch.diag_embed(torch.ones(n, n_inducing)) if q_sqrt is None else transform_to(constraints.lower_cholesky).inv(q_sqrt)
 
         self.q_mu = nn.Parameter(q_mu, requires_grad=True)
         self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)

@@ -3,7 +3,7 @@ import torch
 from torch import nn, Tensor
 from .utils import softplus, inv_softplus
 from .base import Module
-from typing import Tuple, List, Sequence
+from typing import Tuple, List 
 import numpy as np
 
 
