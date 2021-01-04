@@ -14,7 +14,7 @@ class Manifold(Module, metaclass=abc.ABCMeta):
         """
         super().__init__()
         self.d = d
-        self.d2 = d # d2 = d by default
+        self.d2 = d  # d2 = d by default
 
     @abc.abstractmethod
     def lprior(self, g: Tensor) -> Tensor:

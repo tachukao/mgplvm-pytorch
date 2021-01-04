@@ -14,7 +14,12 @@ np.random.seed(9310207)
 torch.manual_seed(9310207)
 
 
-def fit_th1(nbatch=2, epoch='wake', manif=Torus, d=1, n_z=10, ell0=1.5,
+def fit_th1(nbatch=2,
+            epoch='wake',
+            manif=Torus,
+            d=1,
+            n_z=10,
+            ell0=1.5,
             sig0=2):
     '''epoch is wake or sleep
     manif is the latent topology, d is the dimensionality.

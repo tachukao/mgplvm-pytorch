@@ -23,7 +23,6 @@ class Kernel(Module, metaclass=abc.ABCMeta):
         pass
 
 
-
 class Combination(Kernel):
     def __init__(self, kernels: List[Kernel]):
         """

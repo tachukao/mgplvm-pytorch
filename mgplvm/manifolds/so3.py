@@ -41,7 +41,7 @@ class So3(Manifold):
     def initialize(self, initialization, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
         # initialize at identity
-        mudata = self.expmap(torch.randn(m, 3)*0.1)
+        mudata = self.expmap(torch.randn(m, 3) * 0.1)
         #mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]), dtype=torch.get_default_dtype())
         return mudata
 
@@ -78,9 +78,7 @@ class So3(Manifold):
         return self.gmul(mu, x)  # group multiplication
 
     @staticmethod
-    def expmap(x: Tensor,
-               dim: int = -1,
-               jitter=1e-8) -> Tensor:
+    def expmap(x: Tensor, dim: int = -1, jitter=1e-8) -> Tensor:
         '''
         x \in R^3 -> q \in R^4 s.t. ||q|| = 1
         '''

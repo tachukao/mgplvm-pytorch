@@ -52,8 +52,8 @@ def test_svgp_runs():
                                   n_mc=64,
                                   lrate=2E-2,
                                   print_every=1000)
-    
+
+
 if __name__ == '__main__':
     test_svgp_runs()
     print('done')
-    

@@ -28,7 +28,7 @@ class Likelihood(Module, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractstaticmethod
-    def sample(self, x:Tensor):
+    def sample(self, x: Tensor):
         pass
 
 

@@ -34,8 +34,8 @@ class GP(LpriorEuclid):
         '''
         super().__init__(manif)
         d = manif.d
-        assert(tmax is not None)
-        assert(n_z is not None)
+        assert (tmax is not None)
+        assert (n_z is not None)
         #1d latent and n_z inducing points
         zinit = torch.linspace(0., tmax, n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
