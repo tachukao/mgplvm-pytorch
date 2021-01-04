@@ -36,7 +36,7 @@ class Uniform(Lprior):
         return None
 
     def forward(self, g, ts = None):
-        return self.manif.lprior(g)
+        return self.manif.lprior(g).to(g.device)
 
     @property
     def msg(self):
