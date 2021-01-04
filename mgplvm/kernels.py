@@ -309,29 +309,39 @@ class QuadExpARD(QuadExpBase):
 class Linear(Kernel):
     name = "Linear"
 
-    def __init__(self, n: int, distance, d: int, output_scaling=False, input_scaling = False):
+    def __init__(self, n: int, distance, d: int, alpha = None, learn_weights=False, learn_alpha = False, Y = None):
         '''
         n is number of neurons/readouts
         distance is the distance function used
         d is the dimensionality of the group parameterization
         scaling determines wheter an output scale parameter is learned for each neuron
+        
+        learn_weights: learn PCA/FA style weights
+        learn_alpha: learn an output scaling parameter (similar to the RBF signal variance)
         '''
         super().__init__()
 
         self.distance = distance
 
-        #output_scale = inv_softplus(torch.ones(n, )) #one per neuron
-        output_scale = torch.ones(n, ) #one per neuron
-        if output_scaling:
-            self.output_scale = nn.Parameter(data=output_scale, requires_grad=True)
+        if alpha is not None:
+            alpha = torch.tensor(alpha)
+        elif Y is not None: # <Y^2> = alpha^2 * d * <x^2> = alpha^2 * d
+            alpha = torch.tensor(np.sqrt(np.var(Y[:, :, 0], axis = 1)/d))
         else:
-            self.output_scale = nn.Parameter(data=output_scale, requires_grad=False)
+            alpha = torch.ones(n, ) #one per neuron
             
-        input_scale = torch.ones(n, d ) #full weight matrix
-        if input_scaling:
-            self.input_scale = nn.Parameter(data=input_scale, requires_grad=True)
+        if learn_alpha:
+            self.alpha = nn.Parameter(data=alpha, requires_grad=True)
         else:
-            self.input_scale = nn.Parameter(data=input_scale, requires_grad=False)
+            self.alpha = nn.Parameter(data=alpha, requires_grad=False)
+            
+        self.learn_weights = learn_weights
+        #W = torch.ones(n, d ) #full weight matrix
+        W = torch.randn(n, d )*0.1
+        if learn_weights:
+            self.W = nn.Parameter(data=W, requires_grad=True)
+        else:
+            self.W = nn.Parameter(data=W, requires_grad=False)
 
     def diagK(self, x: Tensor) -> Tensor:
         """
@@ -350,11 +360,14 @@ class Linear(Kernel):
         For a linear kernel, the diagonal is a mx-dimensional 
         vector (||x_1||^2, ||x_2||^2, ..., ||x_mx||^2)
         """
-        input_scale, output_scale = self.prms
-        x = input_scale[:, :, None] * x
+        W, alpha = self.prms
         
-        sqr_scale = torch.square(output_scale)[:, None, None].to(x.device)
-        diag = (sqr_scale * torch.square(x)).sum(axis=-2)
+        if self.learn_weights:
+            x = (W[:, :, None] * x).sum(axis = -2, keepdim = True) # n x 1 x mx
+        #x = W[:, :, None] * x
+        
+        sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
+        diag = (sqr_alpha * torch.square(x)).sum(axis=-2)
 
         return diag
 
@@ -389,17 +402,32 @@ class Linear(Kernel):
         -------
         kxy : Tensor
             linear kernel with dims (... n x mx x my)
+        
+        
+        W: nxd
+        X: n x d x mx
+        
+        x: d x mx
+        x^T w_n w_n^T y (mx x my)
+        
+        
+        K_n(x, y) = w_n X^T (mx x my)
+        K(X, Y) (n x mx x my)
 
         """
-        input_scale, output_scale = self.prms
+        W, alpha = self.prms
         
-        x = input_scale[:, :, None] * x
-        y = input_scale[:, :, None] * y
+        if self.learn_weights:
+            x = (W[:, :, None] * x).sum(axis = -2, keepdim = True) # n x 1 x mx
+            y = (W[:, :, None] * y).sum(axis = -2, keepdim = True) # n x 1 x my
+
+        #x = W[:, :, None] * x
+        #y = W[:, :, None] * y
         
-        sqr_scale = torch.square(output_scale)[:, None, None].to(x.device)
+        sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
         distance = self.distance(x, y)  # dims (... n x mx x my)
 
-        kxy = sqr_scale * distance
+        kxy = sqr_alpha * distance
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
@@ -408,11 +436,11 @@ class Linear(Kernel):
     @property
     def prms(self) -> Tensor:
         #return softplus(self.input_scale), softplus(self.output_scale)
-        return self.input_scale, self.output_scale
+        return self.W, self.alpha
 
     @property
     def msg(self):
-        input_scale, output_scale = self.prms
-        return (' scale_in {:.3f} | scale_out {:.3f} |').format(input_scale.mean(), output_scale.mean())
+        W, alpha = self.prms
+        return (' W {:.3f} | alpha {:.3f} |').format((W**2).mean().sqrt(), (alpha**2).mean().sqrt())
 
     
