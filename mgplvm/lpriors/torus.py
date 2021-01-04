@@ -38,41 +38,13 @@ class VonMises(LpriorTorus):
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
         vm = dists.VonMises(loc=torch.zeros(self.d).to(g.device),
                             concentration=concentration)
-        vm = dists.Independent(vm, 1)
-        return vm.log_prob(dg)
+        vm_all = dists.Independent(vm, 1)
+        return vm_all.log_prob(dg)
 
     @property
     def msg(self):
         concentration = self.prms
         return ('concentration {:.3f}').format(concentration.item())
-
-
-class VonMises(LpriorTorus):
-    name = "VonMises"
-
-    def __init__(self, manif, concentration=None, fixed_concentration=False):
-        super().__init__(manif)
-        d = manif.d
-        concentration = torch.ones(
-            d) if concentration is None else concentration
-        self.concentration = nn.Parameter(
-            data=dists.transform_to(
-                dists.constraints.greater_than_eq(0)).inv(concentration),
-            requires_grad=(not fixed_concentration))
-
-    @property
-    def prms(self):
-        return dists.transform_to(dists.constraints.greater_than_eq(0))(
-            self.concentration)
-
-    def forward(self, g):
-        concentration = self.prms
-        ginv = self.manif.inverse(g)
-        dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
-        vm = dists.VonMises(loc=torch.zeros(self.d).to(g.device),
-                            concentration=concentration)
-        vm = dists.Independent(vm, 1)
-        return vm.log_prob(dg)
 
 
 class IARP(LpriorTorus):
@@ -127,11 +99,11 @@ class IARP(LpriorTorus):
         g = (g - mu) % (np.pi * 2)  # make sure it's
         delta = phi * torch.stack(
             [self.inv_link(g[..., p - j - 1:-j - 1, :]) for j in range(p)],
-            axis=-1)
+            dim=-1)
         hat = self.link(delta.sum(-1))
         vm = dists.VonMises(loc=hat, concentration=concentration)
-        vm = dists.Independent(vm, 1)
-        return vm.log_prob(g[..., p:, :])
+        vm_all = dists.Independent(vm, 1)
+        return vm_all.log_prob(g[..., p:, :])
 
     @property
     def msg(self):
@@ -188,15 +160,15 @@ class LARP(LpriorTorus):
         g = (g - mu) % (np.pi * 2)  # make sure it's on the circle
         delta = phi * torch.stack(
             [self.inv_link(g[..., p - j - 1:-j - 1, :]) for j in range(p)],
-            axis=-1)
+            dim=-1)
         hat = delta.sum(-1)
         normal = dists.Normal(hat, scale=torch.sqrt(eta))
-        normal = dists.Independent(normal, 1)
-        return normal.log_prob(g[..., p:, :])
+        normal_all = dists.Independent(normal, 1)
+        return normal_all.log_prob(g[..., p:, :])
 
     @property
     def msg(self):
         mu, phi, concentration = self.prms
         return ('mu_avg {:.3f} | phi_avg {:.3f} | eta {:.3f}').format(
             torch.mean(mu).item(),
-            torch.mean(phi).item(), eta.item())
+            torch.mean(phi).item(), concentration.item())

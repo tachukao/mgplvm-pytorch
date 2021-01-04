@@ -1,9 +1,10 @@
 import abc
 import torch
-import torch.nn as nn
+from torch import Tensor, nn
 import torch.distributions as dists
 import numpy as np
 from ..base import Module
+from ..manifolds.base import Manifold
 from ..rdist import MVN
 
 
@@ -11,7 +12,7 @@ class Lprior(Module, metaclass=abc.ABCMeta):
     """
     Base kernel class
     """
-    def __init__(self, manif):
+    def __init__(self, manif: Manifold):
         super().__init__()
         self.manif = manif
         self.d = self.manif.d
@@ -31,12 +32,12 @@ class Uniform(Lprior):
         '''
         super().__init__(manif)
 
-    @property
-    def prms(self):
-        return None
+    def forward(self, g: Tensor, ts=None):
+        lp = self.manif.lprior(g)
+        return lp.to(g.device)
 
-    def forward(self, g, ts = None):
-        return self.manif.lprior(g).to(g.device)
+    def prms(self):
+        pass
 
     @property
     def msg(self):
@@ -52,16 +53,15 @@ class Null(Lprior):
         '''
         super().__init__(manif)
 
-    @property
-    def prms(self):
-        return None
-
-    def forward(self, g, ts = None):
+    def forward(self, g: Tensor, ts=None):
         '''
         g: (n_b x mx x d)
         output: (n_b x mx)
         '''
         return 0 * torch.ones(g.shape[:2])
+
+    def prms(self):
+        pass
 
     @property
     def msg(self):
@@ -93,7 +93,7 @@ class Gaussian(Lprior):
     def prms(self):
         return self.dist.prms
 
-    def forward(self, g, ts = None, kmax=5):
+    def forward(self, g, ts=None, kmax=5):
         '''
         g: (n_b x mx x d)
         output: (n_b x mx)
@@ -151,7 +151,7 @@ class Brownian(Lprior):
         brownian_c = self.brownian_c
         return brownian_c, brownian_eta
 
-    def forward(self, g, ts = None):
+    def forward(self, g, ts=None):
         brownian_c, brownian_eta = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
@@ -194,7 +194,7 @@ class AR1(Lprior):
     def prms(self):
         return self.ar1_c, self.ar1_phi, torch.square(self.ar1_eta)
 
-    def forward(self, g, ts = None):
+    def forward(self, g, ts=None):
         ar1_c, ar1_phi, ar1_eta = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
@@ -218,7 +218,13 @@ class AR1(Lprior):
 class ARP(Lprior):
     name = "ARP"
 
-    def __init__(self, p, manif, kmax=5, ar_phi=None, ar_eta=None, ar_c=None):
+    def __init__(self,
+                 p,
+                 manif: Manifold,
+                 kmax: int = 5,
+                 ar_phi=None,
+                 ar_eta=None,
+                 ar_c=None):
         '''
         x_t = c + \sum_{j=1}^p phi_j x_{t-1} + w_t
         w_t = N(0, eta)
@@ -239,14 +245,14 @@ class ARP(Lprior):
     def prms(self):
         return self.ar_c, self.ar_phi, torch.square(self.ar_eta)
 
-    def forward(self, g, ts = None):
+    def forward(self, g, ts=None):
         p = self.p
         ar_c, ar_phi, ar_eta = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
         dx = self.manif.logmap(dg)
         delta = ar_phi * torch.stack(
-            [dx[..., p - j - 1:-j - 1, :] for j in range(p)], axis=-1)
+            [dx[..., p - j - 1:-j - 1, :] for j in range(p)], dim=-1)
         dy = dx[..., p:, :] - delta.sum(-1)
         normal = dists.Normal(loc=ar_c, scale=torch.sqrt(ar_eta))
         diagn = dists.Independent(normal, 1)
@@ -269,8 +275,8 @@ class ARP_G(Lprior):
 
     def __init__(self,
                  p,
-                 manif,
-                 kmax=5,
+                 manif: Manifold,
+                 kmax: int = 5,
                  ar_phi=None,
                  ar_eta=None,
                  ar_c=None,
@@ -314,7 +320,7 @@ class ARP_G(Lprior):
     def prms(self):
         return self.ar_c, self.ar_phi, torch.square(self.ar_eta)
 
-    def forward(self, g, ts = None):
+    def forward(self, g: Tensor, ts=None):
         '''
         g is (n_b x mx x d2)
         '''
@@ -332,7 +338,7 @@ class ARP_G(Lprior):
             dx = self.manif.logmap(dg)  #n_b x (mx-1) x d (on algebra)
             delta = ar_phi * torch.stack(
                 [dx[..., (p - j - 2):(mx - j - 2), :] for j in range(p - 1)],
-                axis=-1)  # n_b x (mx-p) x d x (p-1) (on algebra)
+                dim=-1)  # n_b x (mx-p) x d x (p-1) (on algebra)
             delta = delta.permute(0, 1, 3,
                                   2)  # n_b x (mx-p) x (p-1) x d (on algebra)
             dg_phi = self.manif.expmap(

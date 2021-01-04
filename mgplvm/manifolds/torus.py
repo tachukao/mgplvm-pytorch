@@ -53,7 +53,7 @@ class Torus(Manifold):
     def prms(self) -> Tensor:
         return self.mu
 
-    def lprior(self, g):
+    def lprior(self, g: Tensor) -> Tensor:
         return self.lprior_const * torch.ones(g.shape[:2])
 
     def transform(self, x, mu=None, batch_idxs=None):

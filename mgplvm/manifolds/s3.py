@@ -79,7 +79,7 @@ class S3(Manifold):
         return self.gmul(mu, x)  # group multiplication
 
     @staticmethod
-    def expmap(x: Tensor, dim: int = -1) -> Tuple[Tensor, Tensor, Tensor]:
+    def expmap(x: Tensor, dim: int = -1) -> Tensor:
         '''same as SO(3)'''
         theta = torch.norm(x, dim=dim, keepdim=True)
         v = x / theta

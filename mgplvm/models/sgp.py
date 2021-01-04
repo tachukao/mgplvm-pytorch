@@ -140,7 +140,7 @@ class SgpBase(Module, metaclass=abc.ABCMeta):
             return torch.sum(l0 + l1 + l2 + l5 + l6 + l3 + l4)
 
         else:  # don't sum over batches
-            l0 = torch.tensor(l0 * self.n * n_samples).to(l1.device)  # (1,)
+            l0 = l0 * self.n * n_samples  # (1,)
             l1 = l1.sum(dim=[1, 2]) * n_samples  # (n_b,)
             l2 = (l2.sum() * n_samples).reshape(1)  # (1,)
             l3 = l3.sum().reshape(1)  # (1,)
@@ -150,7 +150,8 @@ class SgpBase(Module, metaclass=abc.ABCMeta):
 
             return l0 + l1 + l2 + l3 + l4 + l5 + l6
 
-    def prediction(self, y: Tensor, x: Tensor, s: Tensor) -> Tensor:
+    def prediction(self, y: Tensor, x: Tensor,
+                   s: Tensor) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------

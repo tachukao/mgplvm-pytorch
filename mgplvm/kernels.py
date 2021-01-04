@@ -3,7 +3,7 @@ import torch
 from torch import nn, Tensor
 from .utils import softplus, inv_softplus
 from .base import Module
-from typing import Tuple, List 
+from typing import Tuple, List
 import numpy as np
 
 
@@ -13,6 +13,15 @@ class Kernel(Module, metaclass=abc.ABCMeta):
     """
     def __init__(self):
         super().__init__()
+
+    @abc.abstractstaticmethod
+    def trK(self, x: Tensor) -> Tensor:
+        pass
+
+    @abc.abstractstaticmethod
+    def diagK(self, x: Tensor) -> Tensor:
+        pass
+
 
 
 class Combination(Kernel):
@@ -75,7 +84,7 @@ class Product(Combination):
 
 
 class QuadExpBase(Kernel):
-    def __init__(self, n: int, ell=None, alpha=None, learn_alpha = True):
+    def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True):
         super().__init__()
 
         alpha = inv_softplus(torch.ones(
@@ -148,7 +157,12 @@ class QuadExpBase(Kernel):
 class QuadExp(QuadExpBase):
     name = "QuadExp"
 
-    def __init__(self, n: int, distance, ell=None, alpha=None, learn_alpha = True):
+    def __init__(self,
+                 n: int,
+                 distance,
+                 ell=None,
+                 alpha=None,
+                 learn_alpha=True):
         super().__init__(n, ell, alpha, learn_alpha)
         self.distance = distance
 
@@ -185,43 +199,49 @@ class QuadExp(QuadExpBase):
         ]
         return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
             alpha_mag**2, ell_mag)
-    
-    
+
+
 class Matern(QuadExpBase):
     name = "Matern"
 
-    def __init__(self, n: int, distance, nu = 3/2, ell=None, alpha=None, learn_alpha = True):
+    def __init__(self,
+                 n: int,
+                 distance,
+                 nu=3 / 2,
+                 ell=None,
+                 alpha=None,
+                 learn_alpha=True):
         '''
         n is number of neurons/readouts
         distance is a squared distance function
         '''
         super().__init__(n, ell, alpha, learn_alpha)
 
-        assert nu in [3/2, 5/2], "only nu=3/2 and nu=5/2 implemented"
-        if nu == 3/2:
+        assert nu in [3 / 2, 5 / 2], "only nu=3/2 and nu=5/2 implemented"
+        if nu == 3 / 2:
             self.k_r = self.k_r_3_2
-        elif nu == 5/2:
+        elif nu == 5 / 2:
             self.k_r = self.k_r_5_2
-        
+
         self.nu = nu
         self.distance_sqr = distance
 
-    def distance(self, x,y):
+    def distance(self, x, y):
         d_sqr = self.distance_sqr(x, y)
         print(torch.min(d_sqr), torch.max(d_sqr))
         return torch.sqrt(d_sqr)
-    
+
     @staticmethod
     def k_r_3_2(sqr_alpha, r, ell):
-        sqrt3_r_l = np.sqrt(3)*r/ell
-        kxy = sqr_alpha * (1+sqrt3_r_l)*torch.exp(-sqrt3_r_l)
+        sqrt3_r_l = np.sqrt(3) * r / ell
+        kxy = sqr_alpha * (1 + sqrt3_r_l) * torch.exp(-sqrt3_r_l)
         return kxy
-    
+
     @staticmethod
     def k_r_5_2(sqr_alpha, r, ell):
-        sqrt5_r_l = np.sqrt(5)*r/ell
-        sqr_term = 5/3*torch.square(r)/torch.square(ell)
-        kxy = sqr_alpha*(1+sqrt5_r_l + sqr_term)*torch.exp(-sqrt5_r_l)
+        sqrt5_r_l = np.sqrt(5) * r / ell
+        sqr_term = 5 / 3 * torch.square(r) / torch.square(ell)
+        kxy = sqr_alpha * (1 + sqrt5_r_l + sqr_term) * torch.exp(-sqrt5_r_l)
         return kxy
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -239,7 +259,7 @@ class Matern(QuadExpBase):
             matern kernel with dims (... n x mx x my)
 
         """
-        
+
         alpha, ell = self.prms
         sqr_alpha = torch.square(alpha)[:, None, None]
         ell = ell[:, None, None]
@@ -247,9 +267,9 @@ class Matern(QuadExpBase):
         #print(torch.min(sqr_alpha), torch.max(sqr_alpha))
         r = self.distance(x, y)  # dims (... n x mx x my)
         print(torch.min(r), torch.max(r))
-        
+
         return self.k_r(sqr_alpha, r, ell)
-    
+
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
 
@@ -260,7 +280,6 @@ class Matern(QuadExpBase):
         ]
         return (' nu {:.1f} | alpha_sqr {:.3f} | ell {:.3f} |').format(
             self.nu, alpha_mag**2, ell_mag)
-
 
 
 class QuadExpARD(QuadExpBase):
@@ -309,7 +328,14 @@ class QuadExpARD(QuadExpBase):
 class Linear(Kernel):
     name = "Linear"
 
-    def __init__(self, n: int, distance, d: int, alpha = None, learn_weights=False, learn_alpha = False, Y = None):
+    def __init__(self,
+                 n: int,
+                 distance,
+                 d: int,
+                 alpha=None,
+                 learn_weights=False,
+                 learn_alpha=False,
+                 Y=None):
         '''
         n is number of neurons/readouts
         distance is the distance function used
@@ -325,19 +351,19 @@ class Linear(Kernel):
 
         if alpha is not None:
             alpha = torch.tensor(alpha)
-        elif Y is not None: # <Y^2> = alpha^2 * d * <x^2> = alpha^2 * d
-            alpha = torch.tensor(np.sqrt(np.var(Y[:, :, 0], axis = 1)/d))
+        elif Y is not None:  # <Y^2> = alpha^2 * d * <x^2> = alpha^2 * d
+            alpha = torch.tensor(np.sqrt(np.var(Y[:, :, 0], axis=1) / d))
         else:
-            alpha = torch.ones(n, ) #one per neuron
-            
+            alpha = torch.ones(n, )  #one per neuron
+
         if learn_alpha:
             self.alpha = nn.Parameter(data=alpha, requires_grad=True)
         else:
             self.alpha = nn.Parameter(data=alpha, requires_grad=False)
-            
+
         self.learn_weights = learn_weights
         #W = torch.ones(n, d ) #full weight matrix
-        W = torch.randn(n, d )*0.1
+        W = torch.randn(n, d) * 0.1
         if learn_weights:
             self.W = nn.Parameter(data=W, requires_grad=True)
         else:
@@ -361,13 +387,13 @@ class Linear(Kernel):
         vector (||x_1||^2, ||x_2||^2, ..., ||x_mx||^2)
         """
         W, alpha = self.prms
-        
+
         if self.learn_weights:
-            x = (W[:, :, None] * x).sum(axis = -2, keepdim = True) # n x 1 x mx
+            x = (W[:, :, None] * x).sum(dim=-2, keepdim=True)  # n x 1 x mx
         #x = W[:, :, None] * x
-        
+
         sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
-        diag = (sqr_alpha * torch.square(x)).sum(axis=-2)
+        diag = (sqr_alpha * torch.square(x)).sum(dim=-2)
 
         return diag
 
@@ -387,7 +413,7 @@ class Linear(Kernel):
         ----
         For a stationary quad exp kernel, the trace is alpha^2 * mx
         """
-        return self.diagK(x).sum(axis=-1)
+        return self.diagK(x).sum(dim=-1)
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
         """
@@ -416,14 +442,14 @@ class Linear(Kernel):
 
         """
         W, alpha = self.prms
-        
+
         if self.learn_weights:
-            x = (W[:, :, None] * x).sum(axis = -2, keepdim = True) # n x 1 x mx
-            y = (W[:, :, None] * y).sum(axis = -2, keepdim = True) # n x 1 x my
+            x = (W[:, :, None] * x).sum(dim=-2, keepdim=True)  # n x 1 x mx
+            y = (W[:, :, None] * y).sum(dim=-2, keepdim=True)  # n x 1 x my
 
         #x = W[:, :, None] * x
         #y = W[:, :, None] * y
-        
+
         sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
         distance = self.distance(x, y)  # dims (... n x mx x my)
 
@@ -434,13 +460,12 @@ class Linear(Kernel):
         return self.K(x, y)
 
     @property
-    def prms(self) -> Tensor:
+    def prms(self) -> Tuple[Tensor, Tensor]:
         #return softplus(self.input_scale), softplus(self.output_scale)
         return self.W, self.alpha
 
     @property
     def msg(self):
         W, alpha = self.prms
-        return (' W {:.3f} | alpha {:.3f} |').format((W**2).mean().sqrt(), (alpha**2).mean().sqrt())
-
-    
+        return (' W {:.3f} | alpha {:.3f} |').format((W**2).mean().sqrt(),
+                                                     (alpha**2).mean().sqrt())

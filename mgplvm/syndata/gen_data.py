@@ -55,7 +55,7 @@ class Euclid(Manif):
             gs = np.random.normal(2, 1, size=(n, self.d))
         else:
             gs = draw_GP(n, self.d, sig, ell)
-            gs = gs-np.mean(gs, axis = 0)+2
+            gs = gs - np.mean(gs, axis=0) + 2
 
         return gs
 
@@ -304,7 +304,7 @@ class Gen():
                  sigma=None,
                  ell=None,
                  sig=10,
-                rate = 10):
+                 rate=10):
         """
         tbin is time of each time step (by default each time step is 1 ms)
         gs_in is optional input latent signal, otherwise random points on manifold
@@ -315,6 +315,7 @@ class Gen():
         # generate tuning curves
         if not overwrite:
             gprefs_backup, gs_backup = self.gprefs, self.gs
+
         for i in range(n_samples):
             if gs_in is None:
                 if len(self.gs) == 0:
@@ -344,8 +345,9 @@ class Gen():
                 noise = np.random.normal(0, np.repeat(sigma, m, axis=1))
                 self.Y[:, :, i] = fs + noise
             elif mode == 'Poisson':  # Poisson spiking
-                max_activity = np.mean(np.amax(f, axis = 1))
-                self.Y[:, :, i] = np.random.Poisson(f*rate/max_activity) #draw poisson samples
+                max_activity = np.mean(np.amax(fs, axis=1))
+                self.Y[:, :, i] = np.random.poisson(
+                    fs * rate / max_activity)  #draw poisson samples
             else:
                 raise NotImplementedError('Synthetic data type not supported.')
 

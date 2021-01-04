@@ -14,17 +14,21 @@ n_gh_locs: int = 20  # default number of Gauss-Hermite points
 
 
 class Likelihood(Module, metaclass=abc.ABCMeta):
-    def __init__(self, n: int, n_gh_locs: int):
+    def __init__(self, n: int, n_gh_locs: Optional[int] = n_gh_locs):
         super().__init__()
         self.n = n
         self.n_gh_locs = n_gh_locs
 
     @abc.abstractproperty
-    def log_prob(y):
+    def log_prob(self):
         pass
 
     @abc.abstractproperty
-    def variational_expectation(y, mu, var):
+    def variational_expectation(self):
+        pass
+
+    @abc.abstractstaticmethod
+    def sample(self, x:Tensor):
         pass
 
 
@@ -46,7 +50,7 @@ class Gaussian(Likelihood):
     def log_prob(self, y):
         raise Exception("Gaussian likelihood not implemented")
 
-    def sample(self, f_samps):
+    def sample(self, f_samps: Tensor) -> Tensor:
         '''f is n_b x n x m'''
         prms = self.prms
         #sample from p(y|f)
@@ -55,7 +59,7 @@ class Gaussian(Likelihood):
         y_samps = dist.sample()
         return y_samps
 
-    def variational_expectation(self, n_samples, y, fmu, fvar, by_batch = False):
+    def variational_expectation(self, n_samples, y, fmu, fvar, by_batch=False):
         n_b, m = fmu.shape[0], fmu.shape[2]
         variance = self.prms
         ve1 = -0.5 * log2pi * m * self.n * n_samples * n_b
@@ -63,7 +67,8 @@ class Gaussian(Likelihood):
         ve3 = -0.5 * torch.square(y - fmu) / variance[..., None, None]
         ve4 = -0.5 * fvar / variance[..., None] * n_samples
         if by_batch:
-            exp = ve1.sum()/n_b + ve2.sum()/n_b + ve3.sum(1).sum(1).sum(1) + ve4.sum(1).sum(1)
+            exp = ve1.sum() / n_b + ve2.sum() / n_b + ve3.sum(1).sum(1).sum(
+                1) + ve4.sum(1).sum(1)
             print(exp.shape)
         else:
             exp = ve1.sum() + ve2.sum() + ve3.sum() + ve4.sum()
@@ -150,6 +155,7 @@ class NegativeBinomial(Likelihood):
             n, ) if total_count is None else total_count
         total_count = dists.transform_to(
             dists.constraints.greater_than_eq(0)).inv(total_count)
+        assert (total_count is not None)
         c = torch.ones(n, ) if c is None else c
         d = torch.zeros(n, ) if d is None else d
         self.total_count = nn.Parameter(data=total_count,
@@ -221,6 +227,7 @@ class CMPoisson(Likelihood):
         self.max_k = max_k
         nu = torch.ones(n, ) if nu is None else nu
         nu = dists.transform_to(dists.constraints.greater_than_eq(0)).inv(nu)
+        assert (nu is not None)
         c = torch.ones(n, ) if c is None else c
         d = torch.zeros(n, ) if d is None else d
         self.nu = nn.Parameter(data=nu, requires_grad=not fixed_nu)
@@ -253,7 +260,7 @@ class CMPoisson(Likelihood):
         # normalizing constant
         M = torch.logsumexp(ks * torch.log(rate[..., None]) -
                             (nu[..., None] * torch.lgamma(ks + 1)),
-                            axis=-1)
+                            dim=-1)
         lp = p - M
         return lp
 
@@ -280,7 +287,7 @@ class CMPoisson(Likelihood):
                 (ks * fmu[..., None]) + (ks * np.log(self.binsize)) -
                 (nu[..., None] * torch.lgamma(ks + 1)) +
                 (0.5 * fvar[..., None, None] * torch.square(ks)),
-                axis=-1)
+                dim=-1)
             lp = p - M
             return lp
         else:

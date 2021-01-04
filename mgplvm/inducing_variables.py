@@ -1,10 +1,16 @@
 import torch
-import torch.nn as nn
+from torch import nn, Tensor
 from .base import Module
+from typing import Optional
 
 
 class InducingPoints(Module):
-    def __init__(self, n, d, n_z, parameterise=None, z=None):
+    def __init__(self,
+                 n: int,
+                 d: int,
+                 n_z: int,
+                 parameterise=None,
+                 z: Optional[Tensor] = None):
         super().__init__()
         self.n = n  # neurons
         self.d = d  # latent dimensionality

@@ -47,7 +47,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         self.kernel = kernel
 
         q_mu = torch.zeros(n, n_inducing) if q_mu is None else q_mu
-        q_sqrt = torch.diag_embed(torch.ones(n, n_inducing)) if q_sqrt is None else transform_to(constraints.lower_cholesky).inv(q_sqrt)
+        q_sqrt = torch.diag_embed(torch.ones(
+            n, n_inducing)) if q_sqrt is None else transform_to(
+                constraints.lower_cholesky).inv(q_sqrt)
 
         self.q_mu = nn.Parameter(q_mu, requires_grad=True)
         self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
@@ -99,7 +101,11 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, n_b: int, y: Tensor, x: Tensor, by_batch = False) -> Tensor:
+    def elbo(self,
+             n_b: int,
+             y: Tensor,
+             x: Tensor,
+             by_batch=False) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -124,12 +130,15 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         prior_kl = self.prior_kl()  # prior KL(q(u) || p(u))
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
-        
-        lik = self.likelihood.variational_expectation(n_samples, y, f_mean, f_var, by_batch = by_batch)
+
+        lik = self.likelihood.variational_expectation(n_samples,
+                                                      y,
+                                                      f_mean,
+                                                      f_var,
+                                                      by_batch=by_batch)
         if by_batch:
-            return lik, torch.ones(n_b)*prior_kl.sum()
-            print('svgp:', lik.shape, prior_kl.shape, f_mean.shape, f_var.shape)
-        
+            #print('svgp:', lik.shape, prior_kl.shape, f_mean.shape, f_var.shape)
+            return lik, torch.ones(n_b) * prior_kl.sum()
         else:
             lik = lik.sum()
             return lik, prior_kl.sum() * n_b
@@ -144,7 +153,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         query = torch.unsqueeze(query.T, 0)  #add batch dimension
 
         mu, v = self.predict(query, False)  #1xnxmx1, 1xnxm
-        mu = mu[0, :, :, 0]  #n x m
+        mu = mu[0, :, :, 0]  #n x m, 
         v = v[0, :, :]  # nxm
 
         #sample from p(f|u)
@@ -160,7 +169,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return y_samps
 
-    def predict(self, x: Tensor, full_cov: bool) -> Tensor:
+    def predict(self, x: Tensor, full_cov: bool) -> Tuple[Tensor,Tensor]:
         """
         Parameters
         ----------
@@ -279,77 +288,78 @@ class Svgp(SvgpBase):
         self.z = z
 
     @property
-    def prms(self) -> Tuple[Tensor, Tensor]:
+    def prms(self) -> Tuple[Tensor, Tensor, Tensor]:
         z = self.z.prms
         q_mu = self.q_mu
         q_sqrt = transform_to(constraints.lower_cholesky)(self.q_sqrt)
         return q_mu, q_sqrt, z
 
-    def _expand_z(self, z: Tensor) -> Tuple[Tensor, Tensor]:
+    def _expand_z(self, z: Tensor) -> Tensor:
         z = z[None, ...]
         return z
 
-    def _expand_x(self, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def _expand_x(self, x: Tensor) -> Tensor:
         x = x[:, None, ...]
         return x
 
 
-class SvgpComb(SvgpBase):
-    def __init__(self,
-                 kernel: Combination,
-                 n: int,
-                 zs: List[InducingPoints],
-                 likelihood: Likelihood,
-                 whiten: Optional[bool] = True):
-        """
-        __init__ method for Sparse GP with Combination Kernels
-        Parameters
-        ----------
-        kernels : Combination Kernel
-            combination kernel used for sparse GP (e.g., Product)
-        n : int
-            number of neurons
-        m : int
-            number of conditions
-        zs : InducingPoints list
-            list of inducing points
-        likleihood: Likelihood
-            likelihood p(y|f)
-        whiten : Optional bool
-            whiten q if true
-        """
-
-        n_inducing = zs[0].n_inducing
-        # check all the us have the same n_inducing
-        for u in range(us):
-            assert (u.n_inducing == n_inducing)
-
-        # initialize q_sqrt
-        _zs = [z.prms for z in zs]
-        _z = self._expand_z(_zs)
-        e = torch.eye(n_inducing)
-        kzz = kernel(z, z) + (e * jitter)
-        l = torch.cholesky(kzz, upper=False)
-        super().__init__(kernel,
-                         n,
-                         n_inducing,
-                         likelihood,
-                         q_sqrt=l,
-                         whiten=whiten)
-        self.zs = zs
-
-    @property
-    def prms(self) -> Tuple[Tensor, Union[List[Tensor], nn.ParameterList]]:
-        zs = [z.prms for z in self.zs]
-        q_mu = self.q_mu
-        q_sqrt = torch.distributions.transform_to(
-            MultivariateNormal.arg_constraints['scale_tril'])(self.q_sqrt)
-        return q_mu, q_sqrt, zs
-
-    def _expand_z(self, zs: List[Tensor]) -> Tuple[List[Tensor]]:
-        zs = [z[None, ...] for z in zs]
-        return zs
-
-    def _expand_x(self, xs: List[Tensor]) -> Tuple[List[Tensor]]:
-        xs = [x[:, None, ...] for x in xs]
-        return xs
+#class SvgpComb(SvgpBase):
+#    def __init__(self,
+#                 kernel: Combination,
+#                 n: int,
+#                 zs: List[InducingPoints],
+#                 likelihood: Likelihood,
+#                 whiten: Optional[bool] = True):
+#        """
+#        __init__ method for Sparse GP with Combination Kernels
+#        Parameters
+#        ----------
+#        kernels : Combination Kernel
+#            combination kernel used for sparse GP (e.g., Product)
+#        n : int
+#            number of neurons
+#        m : int
+#            number of conditions
+#        zs : InducingPoints list
+#            list of inducing points
+#        likleihood: Likelihood
+#            likelihood p(y|f)
+#        whiten : Optional bool
+#            whiten q if true
+#        """
+#
+#        n_inducing = zs[0].n_inducing
+#        # check all the zs have the same n_inducing
+#        for z in zs:
+#            assert (z.n_inducing == n_inducing)
+#
+#        # initialize q_sqrt
+#        _zs = [z.prms for z in zs]
+#        _z = self._expand_z(_zs)
+#        e = torch.eye(n_inducing)
+#        kzz = kernel(z, z) + (e * jitter)
+#        l = torch.cholesky(kzz, upper=False)
+#        super().__init__(kernel,
+#                         n,
+#                         n_inducing,
+#                         likelihood,
+#                         q_sqrt=l,
+#                         whiten=whiten)
+#        self.zs = zs
+#
+#    @property
+#    def prms(self) -> Tuple[Tensor, Union[List[Tensor], nn.ParameterList]]:
+#        zs = [z.prms for z in self.zs]
+#        q_mu = self.q_mu
+#        q_sqrt = torch.distributions.transform_to(
+#            MultivariateNormal.arg_constraints['scale_tril'])(self.q_sqrt)
+#        return q_mu, q_sqrt, zs
+#
+#    def _expand_z(self, zs: List[Tensor]) -> Tuple[List[Tensor]]:
+#        zs = [z[None, ...] for z in zs]
+#        return zs
+#
+#    def _expand_x(self, xs: List[Tensor]) -> Tuple[List[Tensor]]:
+#        xs = [x[:, None, ...] for x in xs]
+#        return xs
+#

@@ -4,26 +4,34 @@ from mgplvm.utils import softplus
 from . import sgp, svgp
 from .. import rdist, kernels, utils
 import torch
-from torch import nn
+from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
 import mgplvm.lpriors as lpriors
+from ..inducing_variables import InducingPoints
+from ..kernels import Kernel
+from ..likelihoods import Likelihood
+from ..lpriors.common import Lprior
 
 
 class SvgpLvm(nn.Module):
     name = "Svgplvm"
 
-    def __init__(self, n, z, kernel, likelihood, lat_dist, lprior,
-                 whiten=True):
+    def __init__(self,
+                 n: int,
+                 z: InducingPoints,
+                 kernel: Kernel,
+                 likelihood: Likelihood,
+                 lat_dist,
+                 lprior=Lprior,
+                 whiten: bool = True):
         """
         __init__ method for Vanilla model
         Parameters
         ----------
         n : int
             number of neurons
-        m : int
-            number of conditions
         z : Inducing Points
             inducing points
         kernel : Kernel
@@ -95,22 +103,27 @@ class SvgpLvm(nn.Module):
 
     def calc_LL(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
         '''importance weighted log likelihood'''
-        
+
         data = data if batch_idxs is None else data[:, batch_idxs, :]
         ts = ts if None in [ts, batch_idxs] else ts[batch_idxs]
         _, _, n_samples = data.shape
-        
+
         #(n_b, m, d, ), (n_b, m, )
         g, lq = self.lat_dist.sample(torch.Size([n_mc]), batch_idxs)
-        
+
         #(n_b, ), (n_b, )
-        svgp_lik, svgp_kl = self.svgp.elbo(n_mc, data, g.permute(0, 2, 1), by_batch = True)
-        svgp_elbo = svgp_lik.to(data.device) - svgp_kl.to(data.device) #(n_b, )
-        
-        prior = self.lprior(g, ts)#(n_b, m, )
-        kl = lq - prior #(n_b, m, )
-        
+        svgp_lik, svgp_kl = self.svgp.elbo(n_mc,
+                                           data,
+                                           g.permute(0, 2, 1),
+                                           by_batch=True)
+        svgp_elbo = svgp_lik.to(data.device) - svgp_kl.to(
+            data.device)  #(n_b, )
+
+        prior = self.lprior(g, ts)  #(n_b, m, )
+        kl = lq - prior  #(n_b, m, )
+
         LLs = svgp_elbo - kl.sum(-1)  # LL for each batch (n_b, )
-        LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)) / (self.n * self.lat_dist.m) 
-        
+        LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)) / (self.n *
+                                                         self.lat_dist.m)
+
         return LL.detach().cpu().numpy()

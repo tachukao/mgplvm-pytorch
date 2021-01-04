@@ -4,8 +4,9 @@ import mgplvm
 from mgplvm.utils import softplus
 from mgplvm.manifolds import Torus, Euclid, So3
 import torch
-from torch import nn, optim
+from torch import optim, Tensor
 from torch.optim.lr_scheduler import LambdaLR
+from typing import List
 
 
 def sgp(Y,
@@ -34,10 +35,9 @@ def sgp(Y,
     data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
 
     # parameters to be optimized
-    if type(model) == mgplvm.models.SgpComb:
-        params = sort_params_prod(model, _Tlearn_hook, trainGP)
-    else:
-        params = sort_params(model, _Tlearn_hook, trainGP)
+    #if type(model) == mgplvm.models.SgpComb:
+    #    params = sort_params_prod(model, _Tlearn_hook, trainGP)
+    params = sort_params(model, _Tlearn_hook, trainGP)
     optimizer = optimizer(params[0], lr=lrate)  # instantiate optimizer
     optimizer.add_param_group({'params': params[1]})
 
@@ -87,21 +87,20 @@ def print_sgp_progress(model, i, n, m, sgp_elbo, kl, loss):
         mu_mag = np.mean(
             np.sqrt(np.sum(model.manif.prms.data.cpu().numpy()**2, axis=1)))
 
-    if type(model) == mgplvm.models.SgpComb:
-        sigs = [r.prms.data.cpu().numpy() for r in model.rdist]
-        sigs = [np.concatenate([np.diag(s) for s in sig]) for sig in sigs]
-        sig = np.median(np.concatenate(sigs))
-        alpha_mag = torch.stack([p[0] for p in model.kernel.prms
-                                 ]).mean().data.cpu().numpy()
-        ell_mag = torch.stack([p[1] for p in model.kernel.prms
-                               ]).mean().data.cpu().numpy()
-    else:
-        sig = np.median(
-            np.concatenate(
-                [np.diag(sig) for sig in model.rdist.prms.data.cpu().numpy()]))
-        alpha_mag, ell_mag = [
-            val.mean().data.cpu().numpy() for val in model.kernel.prms
-        ]
+    #if type(model) == mgplvm.models.SgpComb:
+    #    sigs = [r.prms.data.cpu().numpy() for r in model.rdist]
+    #    sigs = [np.concatenate([np.diag(s) for s in sig]) for sig in sigs]
+    #    sig = np.median(np.concatenate(sigs))
+    #    alpha_mag = torch.stack([p[0] for p in model.kernel.prms
+    #                             ]).mean().data.cpu().numpy()
+    #    ell_mag = torch.stack([p[1] for p in model.kernel.prms
+    #                           ]).mean().data.cpu().numpy()
+    sig = np.median(
+        np.concatenate(
+            [np.diag(sig) for sig in model.rdist.prms.data.cpu().numpy()]))
+    alpha_mag, ell_mag = [
+        val.mean().data.cpu().numpy() for val in model.kernel.prms
+    ]
 
     msg = (
         '\riter {:4d} | elbo {:.4f} | kl {:.4f} | loss {:.4f} | |mu| {:.4f} | alpha_sqr {:.4f} | ell {:.4f}'
@@ -118,10 +117,7 @@ def sort_params(model, hook, trainGP, svgp=False):
 
     # parameters to be optimized
 
-    if svgp:
-        params = [[], [], []]
-    else:
-        params = [[], []]
+    params: List[List[Tensor]] = [[]] * 3 if svgp else [[]] * 2
 
     for param in model.parameters():
         if (param.shape == model.lat_dist.gamma.shape) and torch.all(
@@ -129,7 +125,7 @@ def sort_params(model, hook, trainGP, svgp=False):
             param.register_hook(hook)  # option to mask gradients
             params[1].append(param)
         elif (param.shape == model.lat_dist.manif.mu.shape) and torch.all(
-            param == model.lat_dist.manif.mu):
+                param == model.lat_dist.manif.mu):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
         elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(
@@ -189,7 +185,7 @@ def svgp(Y,
          print_every=50,
          batch_size=None,
          n_svgp=0,
-        ts = None):
+         ts=None):
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
     ts = ts if ts is None else ts.to(device)
@@ -249,10 +245,13 @@ def svgp(Y,
         ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
 
         if batch_size is None:
-            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=None, ts = ts)
+            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=None, ts=ts)
         else:
             batch_idxs = generate_batch_idxs()
-            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=batch_idxs, ts =ts)
+            svgp_lik, svgp_kl, kl = model(data,
+                                          n_mc,
+                                          batch_idxs=batch_idxs,
+                                          ts=ts)
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo = svgp_lik - svgp_kl
@@ -263,7 +262,8 @@ def svgp(Y,
         if i % print_every == 0:
             mu_mag = np.mean(
                 np.sqrt(
-                    np.sum(model.lat_dist.manif.prms.data.cpu().numpy()[:]**2, axis=1)))
+                    np.sum(model.lat_dist.manif.prms.data.cpu().numpy()[:]**2,
+                           axis=1)))
             sig = np.median(
                 np.concatenate([
                     np.diag(sig)

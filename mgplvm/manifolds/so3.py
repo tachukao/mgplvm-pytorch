@@ -80,7 +80,7 @@ class So3(Manifold):
     @staticmethod
     def expmap(x: Tensor,
                dim: int = -1,
-               jitter=1e-8) -> Tuple[Tensor, Tensor, Tensor]:
+               jitter=1e-8) -> Tensor:
         '''
         x \in R^3 -> q \in R^4 s.t. ||q|| = 1
         '''
