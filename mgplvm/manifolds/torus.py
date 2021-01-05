@@ -89,7 +89,7 @@ class Torus(Manifold):
         zs = np.stack([z.flatten() for z in zs]).T * 2. * np.pi
         zs = torch.from_numpy(zs).float()
         zs = zs.to(x.device)  # meshgrid shape (2kmax+1)^n
-        y = x + zs[:, None, None, ...]  # meshgrid x n_b x m x n_samples
+        y = x + zs[:, None, None, ...]  # meshgrid x n_b x m x d
         lp = torch.logsumexp(log_base_prob(y), dim=0)  # n_b x m
         return lp
 

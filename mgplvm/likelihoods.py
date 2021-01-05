@@ -69,7 +69,7 @@ class Gaussian(Likelihood):
         if by_batch:
             exp = ve1.sum() / n_b + ve2.sum() / n_b + ve3.sum(1).sum(1).sum(
                 1) + ve4.sum(1).sum(1)
-            print(exp.shape)
+            #print(exp.shape)
         else:
             exp = ve1.sum() + ve2.sum() + ve3.sum() + ve4.sum()
         return exp
