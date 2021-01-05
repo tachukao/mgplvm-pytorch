@@ -1,6 +1,6 @@
 # PyTorch implementation of mGPLVM
+[Documentation](https://tachukao.github.io/mgplvm-pytorch) | [Examples](examples) | [Paper](https://papers.nips.cc/paper/2020/file/fedc604da8b0f9af74b6cfc0fab2163c-Paper.pdf)
 
-Examples can be found [here](examples).
 
 ## Setup
 
