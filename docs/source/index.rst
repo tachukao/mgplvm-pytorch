@@ -13,23 +13,17 @@ This is a library for learning Gaussian process latent variable models (GPLVMs) 
 
   
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
    :glob:
    :caption: API
 
-   mgplvm/mgplvm.models
-   mgplvm/mgplvm.training
-   mgplvm/mgplvm.manifolds
-   mgplvm/mgplvm.lpriors
-   mgplvm/mgplvm.kernels
-   mgplvm/mgplvm.likelihoods
+   mgplvm/mgplvm
 
+.. toctree::
+   :maxdepth:1
+   :caption: References
 
-
-
-References
-==========
-
+   references
 
 
 Indices and tables
