@@ -2,7 +2,7 @@
 #
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
-# http://www.sphinx-doc.org/en/master/config
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup --------------------------------------------------------------
 
@@ -10,16 +10,19 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../mgplvm'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'mGPLVM'
-copyright = '2020, Ta-Chu Kao and Kris Jensen'
+copyright = '2021, Ta-Chu Kao and Kris Jensen'
 author = 'Ta-Chu Kao and Kris Jensen'
+
+# The full version, including alpha/beta/rc tags
+release = '0.0.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -28,6 +31,11 @@ author = 'Ta-Chu Kao and Kris Jensen'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.viewcode',
+    'sphinx_autodoc_typehints',
+    'numpydoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
