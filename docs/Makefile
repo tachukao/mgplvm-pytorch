@@ -21,7 +21,17 @@ api:
 	rm -rf source/mgplvm/*
 	@$(SPHINXAPIDOC) -e -o "$(SOURCEDIR)/mgplvm" ../mgplvm/
 
-.PHONY: help Makefile
+huh:
+	cd $(BUILDDIR)/html && 
+
+deploy: html
+	touch $(BUILDDIR)/html/.nojekyll
+	cd $(BUILDDIR)/html/; echo "enter BUILDDIR"; \
+		git add .; \
+		git commit -m "rebuilding site `date`"; \
+		git push origin gh-pages
+
+.PHONY: help clean api deploy Makefile
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
