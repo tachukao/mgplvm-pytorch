@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.training module &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.utils module" href="mgplvm.utils.html" />
+    <link rel="prev" title="mgplvm.rdist module" href="mgplvm.rdist.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.base.html">mgplvm.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.inducing_variables.html">mgplvm.inducing_variables module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.kernels.html">mgplvm.kernels module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.likelihoods.html">mgplvm.likelihoods module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">mgplvm.training module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.utils.html">mgplvm.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+        
+      <li>mgplvm.training module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/mgplvm/mgplvm.training.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-mgplvm.training">
+<span id="mgplvm-training-module"></span><h1>mgplvm.training module<a class="headerlink" href="#module-mgplvm.training" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="mgplvm.training.print_sgp_progress">
+<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">print_sgp_progress</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">sgp_elbo</span></em>, <em class="sig-param"><span class="n">kl</span></em>, <em class="sig-param"><span class="n">loss</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#print_sgp_progress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.print_sgp_progress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="mgplvm.training.sgp">
+<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">sgp</code><span class="sig-paren">(</span><em class="sig-param">Y</em>, <em class="sig-param">model</em>, <em class="sig-param">device</em>, <em class="sig-param">optimizer=&lt;class 'torch.optim.adam.Adam'&gt;</em>, <em class="sig-param">outdir='results/vanilla'</em>, <em class="sig-param">max_steps=1000</em>, <em class="sig-param">n_b=128</em>, <em class="sig-param">burnin='default'</em>, <em class="sig-param">lrate=0.001</em>, <em class="sig-param">print_every=10</em>, <em class="sig-param">callback=None</em>, <em class="sig-param">trainGP=True</em>, <em class="sig-param">nbatch=1</em>, <em class="sig-param">Tfix=slice(None</em>, <em class="sig-param">0</em>, <em class="sig-param">None)</em>, <em class="sig-param">sigma_thresh=0.0001</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#sgp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.sgp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="mgplvm.training.sort_params">
+<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">sort_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">hook</span></em>, <em class="sig-param"><span class="n">trainGP</span></em>, <em class="sig-param"><span class="n">svgp</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#sort_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.sort_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply burnin period to Sigma_Q and alpha^2
+allow for masking of certain conditions for use in crossvalidation</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="mgplvm.training.sort_params_prod">
+<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">sort_params_prod</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">hook</span></em>, <em class="sig-param"><span class="n">trainGP</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#sort_params_prod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.sort_params_prod" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply burnin period to Sigma_Q and alpha^2
+allow for masking of certain conditions for use in crossvalidation</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="mgplvm.training.svgp">
+<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">svgp</code><span class="sig-paren">(</span><em class="sig-param">Y</em>, <em class="sig-param">model</em>, <em class="sig-param">device</em>, <em class="sig-param">optimizer=&lt;class 'torch.optim.adam.Adam'&gt;</em>, <em class="sig-param">outdir='results/vanilla'</em>, <em class="sig-param">max_steps=1000</em>, <em class="sig-param">n_mc=128</em>, <em class="sig-param">burnin=100</em>, <em class="sig-param">lrate=0.001</em>, <em class="sig-param">callback=None</em>, <em class="sig-param">print_every=50</em>, <em class="sig-param">batch_size=None</em>, <em class="sig-param">n_svgp=0</em>, <em class="sig-param">ts=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#svgp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.svgp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mgplvm.utils.html" class="btn btn-neutral float-right" title="mgplvm.utils module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mgplvm.rdist.html" class="btn btn-neutral float-left" title="mgplvm.rdist module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

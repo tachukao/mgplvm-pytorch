@@ -1,0 +1,655 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.lpriors.common &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>mgplvm.lpriors.common</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mgplvm.lpriors.common</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">torch.distributions</span> <span class="k">as</span> <span class="nn">dists</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">..base</span> <span class="kn">import</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">..manifolds.base</span> <span class="kn">import</span> <span class="n">Manifold</span>
+<span class="kn">from</span> <span class="nn">..rdist</span> <span class="kn">import</span> <span class="n">MVN</span>
+
+
+<div class="viewcode-block" id="Lprior"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Lprior">[docs]</a><span class="k">class</span> <span class="nc">Lprior</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base kernel class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">:</span> <span class="n">Manifold</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manif</span> <span class="o">=</span> <span class="n">manif</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Uniform"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Uniform">[docs]</a><span class="k">class</span> <span class="nc">Uniform</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;uniform&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        uniform prior for closed manifolds, Gaussian prior for Euclidean space</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Uniform.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Uniform.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">lp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">lprior</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lp</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Uniform.prms"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Uniform.prms">[docs]</a>    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Null"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Null">[docs]</a><span class="k">class</span> <span class="nc">Null</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;null&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        return 0; non-Bayesian point prior</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Null.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Null.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        g: (n_b x mx x d)</span>
+<span class="sd">        output: (n_b x mx)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Null.prms"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Null.prms">[docs]</a>    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="Gaussian"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Gaussian">[docs]</a><span class="k">class</span> <span class="nc">Gaussian</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;gaussian&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.5</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Gaussian prior for Euclidean space and wrapped Gaussian for other manifolds</span>
+<span class="sd">        Euclidean is fixed N(0, I) since the space can be scaled and rotated freely</span>
+<span class="sd">        non-Euclidean manifolds are parameterized as ReLie[N(0, Sigma)]</span>
+<span class="sd">        &#39;sigma = value&#39; initializes the sqrt diagonal elements of Sigma</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;Euclid&#39;</span> <span class="ow">in</span> <span class="n">manif</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="c1">#N(0,I) can always be recovered from a scaling/rotation of the space</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">MVN</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fixed_gamma</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#parameterize the covariance matrix</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">MVN</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">fixed_gamma</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist</span> <span class="o">=</span> <span class="n">dist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">prms</span>
+
+<div class="viewcode-block" id="Gaussian.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Gaussian.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        g: (n_b x mx x d)</span>
+<span class="sd">        output: (n_b x mx)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+            <span class="c1">#print(&#39;putting things on the same device&#39;)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="c1">#print(self.dist.gamma.device, &#39;\n&#39;)</span>
+
+        <span class="c1"># return reference distribution</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">()</span>
+        <span class="c1">#project onto tangent space</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">logmap</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="c1"># compute log prior</span>
+        <span class="n">lq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">log_q</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="n">kmax</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lq</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()]))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39; prior_sig </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Brownian"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Brownian">[docs]</a><span class="k">class</span> <span class="nc">Brownian</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Brownian&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">manif</span><span class="p">,</span>
+                 <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">brownian_eta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">brownian_c</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">fixed_brownian_eta</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">fixed_brownian_c</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        x_t = c + w_t</span>
+<span class="sd">        w_t = N(0, eta)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kmax</span> <span class="o">=</span> <span class="n">kmax</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span>
+
+        <span class="n">brownian_eta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">brownian_eta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">brownian_eta</span>
+        <span class="n">brownian_c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">brownian_c</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">brownian_c</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">brownian_eta</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">brownian_eta</span><span class="p">),</span>
+            <span class="n">requires_grad</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">fixed_brownian_eta</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">brownian_c</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">brownian_c</span><span class="p">,</span>
+                                       <span class="n">requires_grad</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">fixed_brownian_c</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">brownian_eta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">brownian_eta</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1E-16</span>
+        <span class="n">brownian_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">brownian_c</span>
+        <span class="k">return</span> <span class="n">brownian_c</span><span class="p">,</span> <span class="n">brownian_eta</span>
+
+<div class="viewcode-block" id="Brownian.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.Brownian.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">brownian_c</span><span class="p">,</span> <span class="n">brownian_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">ginv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">ginv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">logmap</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">brownian_c</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">brownian_eta</span><span class="p">))</span>
+        <span class="n">diagn</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">log_q</span><span class="p">(</span><span class="n">diagn</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span>
+                                <span class="n">dx</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span>
+                                <span class="n">kmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kmax</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">brownian_c</span><span class="p">,</span> <span class="n">brownian_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39; brownian_c </span><span class="si">{:.3f}</span><span class="s1"> | brownian_eta </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">brownian_c</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+            <span class="n">brownian_eta</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="AR1"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.AR1">[docs]</a><span class="k">class</span> <span class="nc">AR1</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;AR1&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ar1_phi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ar1_eta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ar1_c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        x_t = c + phi x_{t-1} + w_t</span>
+<span class="sd">        w_t = N(0, eta)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kmax</span> <span class="o">=</span> <span class="n">kmax</span>
+
+        <span class="n">ar1_phi</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar1_phi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ar1_phi</span>
+        <span class="n">ar1_eta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar1_eta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ar1_eta</span><span class="p">)</span>
+        <span class="n">ar1_c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar1_c</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ar1_c</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ar1_phi</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar1_phi</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ar1_eta</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar1_eta</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ar1_c</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar1_c</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ar1_c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ar1_phi</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ar1_eta</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AR1.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.AR1.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">ar1_c</span><span class="p">,</span> <span class="n">ar1_phi</span><span class="p">,</span> <span class="n">ar1_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">ginv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">ginv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">logmap</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">-</span> <span class="p">((</span><span class="n">ar1_phi</span> <span class="o">*</span> <span class="n">dx</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]))</span>
+        <span class="c1"># dy = torch.cat((dx[..., 0:1, :], dy), -2)</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">ar1_c</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ar1_eta</span><span class="p">))</span>
+        <span class="n">diagn</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">log_q</span><span class="p">(</span><span class="n">diagn</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span>
+                                <span class="n">dy</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span>
+                                <span class="n">kmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kmax</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ar1_c</span><span class="p">,</span> <span class="n">ar1_phi</span><span class="p">,</span> <span class="n">ar1_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39; ar1_c </span><span class="si">{:.3f}</span><span class="s1"> | ar1_phi </span><span class="si">{:.3f}</span><span class="s1"> | ar1_eta </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">ar1_c</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">ar1_phi</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">ar1_eta</span><span class="o">.</span><span class="n">item</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ARP"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.ARP">[docs]</a><span class="k">class</span> <span class="nc">ARP</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ARP&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">p</span><span class="p">,</span>
+                 <span class="n">manif</span><span class="p">:</span> <span class="n">Manifold</span><span class="p">,</span>
+                 <span class="n">kmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                 <span class="n">ar_phi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ar_eta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ar_c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        x_t = c + \sum_{j=1}^p phi_j x_{t-1} + w_t</span>
+<span class="sd">        w_t = N(0, eta)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kmax</span> <span class="o">=</span> <span class="n">kmax</span>
+
+        <span class="n">ar_phi</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar_phi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ar_phi</span>
+        <span class="n">ar_eta</span> <span class="o">=</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar_eta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ar_eta</span><span class="p">)</span>
+        <span class="n">ar_c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar_c</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ar_c</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ar_phi</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar_phi</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ar_eta</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar_eta</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ar_c</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar_c</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ar_c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ar_phi</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ar_eta</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ARP.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.ARP.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">ar_c</span><span class="p">,</span> <span class="n">ar_phi</span><span class="p">,</span> <span class="n">ar_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">ginv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">ginv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">logmap</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">ar_phi</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">dx</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">p</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">p</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">delta</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">ar_c</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ar_eta</span><span class="p">))</span>
+        <span class="n">diagn</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">log_q</span><span class="p">(</span><span class="n">diagn</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span>
+                                <span class="n">dy</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span>
+                                <span class="n">kmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kmax</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ar_c</span><span class="p">,</span> <span class="n">ar_phi</span><span class="p">,</span> <span class="n">ar_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">lp_msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39; ar_c </span><span class="si">{:.3f}</span><span class="s1"> | ar_phi_avg </span><span class="si">{:.3f}</span><span class="s1"> | ar_eta </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">ar_c</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ar_phi</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">ar_eta</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">lp_msg</span></div>
+
+
+<div class="viewcode-block" id="ARP_G"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.ARP_G">[docs]</a><span class="k">class</span> <span class="nc">ARP_G</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ARP&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">p</span><span class="p">,</span>
+                 <span class="n">manif</span><span class="p">:</span> <span class="n">Manifold</span><span class="p">,</span>
+                 <span class="n">kmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                 <span class="n">ar_phi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ar_eta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ar_c</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">learn_eta</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">learn_phi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">learn_c</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        g_t^tilde = g_c * \prod_{j=p}^1 exp(a_j*log(g_t-j*g_t-j-1)) * g_t-1</span>
+<span class="sd">        Log[ g_t^tilde g_(t-1)^(-1) ] ~ N(0, eta)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kmax</span> <span class="o">=</span> <span class="n">kmax</span>
+
+        <span class="c1">#ar_phi = 1e-3 * torch.randn(d, p-1) if ar_phi is None else ar_phi</span>
+        <span class="n">ar_phi</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar_phi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ar_phi</span>
+        <span class="c1">#ar_eta = 0.5 * torch.ones(d) if ar_eta is None else ar_eta</span>
+        <span class="n">ar_eta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar_eta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ar_eta</span>
+        <span class="n">ar_c</span> <span class="o">=</span> <span class="mf">1e-3</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">ar_c</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ar_c</span>
+
+        <span class="c1">### AR parameters</span>
+        <span class="k">if</span> <span class="n">learn_phi</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ar_phi</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar_phi</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ar_phi</span> <span class="o">=</span> <span class="n">ar_phi</span>
+
+        <span class="c1">#w_t \sim Exp[ N(0, eta) ]</span>
+        <span class="k">if</span> <span class="n">learn_eta</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ar_eta</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar_eta</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ar_eta</span> <span class="o">=</span> <span class="n">ar_eta</span>
+
+        <span class="c1">#parameterize as g_c = exp(x_c) for now</span>
+        <span class="k">if</span> <span class="n">learn_c</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ar_c</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">ar_c</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ar_c</span> <span class="o">=</span> <span class="n">ar_c</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ar_c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ar_phi</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ar_eta</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ARP_G.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.ARP_G.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        g is (n_b x mx x d2)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">mx</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="n">ar_c</span><span class="p">,</span> <span class="n">ar_phi</span><span class="p">,</span> <span class="n">ar_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">ginv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>  <span class="c1"># n_b x mx x d2 (on group)</span>
+
+        <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1">#if p &gt; 1 we need to consider past displacements</span>
+            <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">ginv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
+                                 <span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>  <span class="c1">#n_b x (mx-1) x d (on group)</span>
+
+            <span class="c1">#f_i(dg) = &#39;a_i dg&#39; = Exp[ a_i*Log[dg] ]</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">logmap</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span>  <span class="c1">#n_b x (mx-1) x d (on algebra)</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">ar_phi</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">dx</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">):(</span><span class="n">mx</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">2</span><span class="p">),</span> <span class="p">:]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
+                <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># n_b x (mx-p) x d x (p-1) (on algebra)</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+                                  <span class="mi">2</span><span class="p">)</span>  <span class="c1"># n_b x (mx-p) x (p-1) x d (on algebra)</span>
+            <span class="n">dg_phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">expmap</span><span class="p">(</span>
+                <span class="n">delta</span><span class="p">)</span>  <span class="c1">#n_b x (mx-p) x (p-1) x d2 (on group)</span>
+            <span class="c1">#print(delta.shape, dg_phi.shape)</span>
+
+        <span class="c1">#consider g_{t-1} for t = (p+1:T)</span>
+        <span class="n">g_tm1</span> <span class="o">=</span> <span class="n">g</span><span class="p">[:,</span> <span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># n_b x (mx-p) x d2 (on group)</span>
+
+        <span class="c1">#sequentially apply group elements</span>
+        <span class="n">g_pred</span> <span class="o">=</span> <span class="n">g_tm1</span>  <span class="c1">#n_b x (mx-p) x d2 (on group)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+            <span class="c1">#sequential multiplication ... g_t-1 * dg_t-1 * ... * dg_t-p+1</span>
+            <span class="n">g_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span>
+                <span class="n">g_pred</span><span class="p">,</span> <span class="n">dg_phi</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>  <span class="c1">#n_b x (mx-p) x d2 (on group)</span>
+
+        <span class="c1">#g_t-1 * dg_t-1 * ... * dg_t-p+1 * g_c</span>
+        <span class="n">g_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">expmap</span><span class="p">(</span><span class="n">ar_c</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>  <span class="c1">#1 x 1 x d2 (on group)</span>
+        <span class="n">g_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span>
+            <span class="n">g_pred</span><span class="p">,</span> <span class="n">g_c</span><span class="p">)</span>  <span class="c1">#n_b x (mx-p) x d2 (on group) -- add constant element</span>
+
+        <span class="c1">#g_t g_pred \approx I</span>
+        <span class="c1">#only consider timepoints we have sufficient data for</span>
+        <span class="n">g_true</span> <span class="o">=</span> <span class="n">g</span><span class="p">[:,</span> <span class="n">p</span><span class="p">:,</span> <span class="p">:]</span>  <span class="c1"># n_b x (mx-p) x d2 (on group)</span>
+        <span class="n">g_pred_inv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">g_pred</span><span class="p">)</span>  <span class="c1">#inverse prediction</span>
+        <span class="c1">#discrepancy between true and prediction</span>
+        <span class="n">g_err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">g_true</span><span class="p">,</span>
+                                <span class="n">g_pred_inv</span><span class="p">)</span>  <span class="c1"># n_b x (mx-p) x d2 (on group)</span>
+
+        <span class="c1">#likelihood of errors is given by a Gaussian projected onto the manifold</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                              <span class="n">scale</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span>
+                              <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ar_eta</span><span class="p">))</span>
+        <span class="n">diagn</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1">#assume diagonal covariance</span>
+
+        <span class="c1">#compute an x_err s.t. Exp(x_err) = g_err</span>
+        <span class="n">x_err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">logmap</span><span class="p">(</span><span class="n">g_err</span><span class="p">)</span>  <span class="c1"># n_b x (mx-p) x d (on group)</span>
+
+        <span class="c1">#sum over {x_err} s.t. Exp(x_err) = g_err by considering equivalent points in the algebra</span>
+        <span class="c1">#return log probability of each latent state -- (n_b x mx-p)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">log_q</span><span class="p">(</span><span class="n">diagn</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span>
+                                <span class="n">x_err</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span>
+                                <span class="n">kmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kmax</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ARP_G.generate_trajectory"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.common.html#mgplvm.lpriors.common.ARP_G.generate_trajectory">[docs]</a>    <span class="k">def</span> <span class="nf">generate_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">g0s</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        generate trajectory of length m drawn from the model.</span>
+<span class="sd">        must provide a &#39;seed&#39; of initial states</span>
+<span class="sd">        g0 of dim p x d2</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">ar_c</span><span class="p">,</span> <span class="n">ar_phi</span><span class="p">,</span> <span class="n">ar_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
+
+        <span class="n">gs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="n">p</span><span class="p">,</span> <span class="n">g0s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">gs</span><span class="p">[:</span><span class="n">p</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">g0s</span>
+
+        <span class="n">noise_dist</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">scale</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span>
+                                  <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ar_eta</span><span class="p">))</span>
+        <span class="n">noises</span> <span class="o">=</span> <span class="n">noise_dist</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="n">m</span> <span class="o">+</span> <span class="n">p</span><span class="p">,</span> <span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">noise</span><span class="p">:</span>
+            <span class="n">noises</span> <span class="o">*=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="n">p</span><span class="p">):</span>
+
+            <span class="n">gprevs</span> <span class="o">=</span> <span class="n">gs</span><span class="p">[</span><span class="n">t</span> <span class="o">-</span> <span class="n">p</span><span class="p">:</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1">#AR(p) -- need p most recent states</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">ginv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">gprevs</span><span class="p">)</span>  <span class="c1">#p x d2</span>
+                <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">ginv</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span>
+                                     <span class="n">gprevs</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>  <span class="c1">#(p-1) x d2s</span>
+                <span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">logmap</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span>  <span class="c1">#(p-1) x d (on algebra)</span>
+                <span class="c1">#print(ar_phi.shape, dx.shape)</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="n">ar_phi</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">dx</span>  <span class="c1">#(p-1) x d (on algebra)</span>
+                <span class="n">dg_phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">expmap</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>  <span class="c1">#(p-1) x d2 (on group)</span>
+
+            <span class="c1">#print(&#39;dg_phi&#39;, dg_phi.shape)</span>
+            <span class="n">g_pred</span> <span class="o">=</span> <span class="n">gprevs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># d2 (on group)</span>
+            <span class="c1">#print(&#39;g_pred&#39;, g_pred.shape)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+                <span class="c1">#sequential multiplication ... g_t-1 * dg_t-1 * ... * dg_t-p+1</span>
+                <span class="n">g_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">g_pred</span><span class="p">,</span> <span class="n">dg_phi</span><span class="p">[</span><span class="o">-</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>  <span class="c1">#d2 (on group)</span>
+
+            <span class="c1">#g_t-1 * dg_t-1 * ... * dg_t-p+1 * g_c</span>
+            <span class="n">g_c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">expmap</span><span class="p">(</span><span class="n">ar_c</span><span class="p">)</span>  <span class="c1"># d2 (on group)</span>
+            <span class="n">g_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span>
+                <span class="n">g_pred</span><span class="p">,</span> <span class="n">g_c</span><span class="p">)</span>  <span class="c1"># d2 (on group) -- add constant element</span>
+            <span class="c1">#print(g_c.shape, g_pred.shape)</span>
+
+            <span class="n">x_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">logmap</span><span class="p">(</span><span class="n">g_pred</span><span class="p">)</span>  <span class="c1"># d (on algebra)</span>
+            <span class="n">x_new</span> <span class="o">=</span> <span class="n">x_pred</span> <span class="o">+</span> <span class="n">noises</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># d (on algebra)</span>
+            <span class="c1">#print(x_pred.shape, x_new.shape)</span>
+            <span class="n">g_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">expmap</span><span class="p">(</span><span class="n">x_new</span><span class="p">)</span>  <span class="c1">#new state</span>
+            <span class="c1">#print(g_new.shape, gs.shape)</span>
+            <span class="n">gs</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">g_new</span>
+
+        <span class="k">return</span> <span class="n">gs</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ar_c</span><span class="p">,</span> <span class="n">ar_phi</span><span class="p">,</span> <span class="n">ar_eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">lp_msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39; ar_c </span><span class="si">{:.3f}</span><span class="s1"> | ar_phi_avg </span><span class="si">{:.3f}</span><span class="s1"> | ar_eta </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">ar_c</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ar_phi</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="n">ar_eta</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">lp_msg</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

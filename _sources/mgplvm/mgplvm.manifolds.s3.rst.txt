@@ -1,0 +1,7 @@
+mgplvm.manifolds.s3 module
+==========================
+
+.. automodule:: mgplvm.manifolds.s3
+   :members:
+   :undoc-members:
+   :show-inheritance:

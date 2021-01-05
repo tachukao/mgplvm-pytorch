@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.models.svgp module &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.models.svgplvm module" href="mgplvm.models.svgplvm.html" />
+    <link rel="prev" title="mgplvm.models.sgplvm module" href="mgplvm.models.sgplvm.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.models.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.models.html#module-mgplvm.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+        
+          <li><a href="mgplvm.models.html">mgplvm.models package</a> &raquo;</li>
+        
+      <li>mgplvm.models.svgp module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/mgplvm/mgplvm.models.svgp.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-mgplvm.models.svgp">
+<span id="mgplvm-models-svgp-module"></span><h1>mgplvm.models.svgp module<a class="headerlink" href="#module-mgplvm.models.svgp" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="mgplvm.models.svgp.Svgp">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.models.svgp.</code><code class="sig-name descname">Svgp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">z</span></em>, <em class="sig-param"><span class="n">likelihood</span></em>, <em class="sig-param"><span class="n">whiten</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#Svgp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.Svgp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.models.svgp.SvgpBase" title="mgplvm.models.svgp.SvgpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.models.svgp.SvgpBase</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.models.svgp.Svgp.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.models.svgp.Svgp.prms" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.models.svgp.Svgp.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.models.svgp.Svgp.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.models.svgp.SvgpBase">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.models.svgp.</code><code class="sig-name descname">SvgpBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">n_inducing</span></em>, <em class="sig-param"><span class="n">likelihood</span></em>, <em class="sig-param"><span class="n">q_mu</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">q_sqrt</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">whiten</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.base.html#mgplvm.base.Module" title="mgplvm.base.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.base.Module</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.models.svgp.SvgpBase.elbo">
+<code class="sig-name descname">elbo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_b</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">by_batch</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase.elbo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.elbo" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_b</strong><span class="classifier">int</span></dt><dd><p>batch size</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>data tensor with dimensions (n x m x n_samples)</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>input tensor(s) with dimensions (n_b x d x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>evidence lower bount</strong><span class="classifier">torch.Tensor</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Implementation largely follows derivation of the ELBO presented in <a class="reference external" href="https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html">here</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.models.svgp.SvgpBase.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">full_cov</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.predict" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>test input tensor(s) with dimensions (n_b x d x m)</p>
+</dd>
+<dt><strong>full_cov</strong><span class="classifier">bool</span></dt><dd><p>returns full covariance if true otherwise returns the diagonal</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mu</strong><span class="classifier">Tensor</span></dt><dd><p>mean of predictive density at test inputs [ s ]</p>
+</dd>
+<dt><strong>v</strong><span class="classifier">Tensor</span></dt><dd><p>variance/covariance of predictive density at test inputs [ s ]
+if full_cov is true returns full covariance, otherwise
+returns diagonal variance</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.models.svgp.SvgpBase.prior_kl">
+<code class="sig-name descname">prior_kl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase.prior_kl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.prior_kl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.models.svgp.SvgpBase.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.models.svgp.SvgpBase.tuning">
+<code class="sig-name descname">tuning</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query</span></em>, <em class="sig-param"><span class="n">n_b</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">square</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase.tuning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.tuning" title="Permalink to this definition">¶</a></dt>
+<dd><p>query is mxd
+return n_b samples from the full model (n_b x n x m)
+if square, the outputs are squared (useful e.g. when fitting sqrt spike counts with a Gaussian likelihood)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mgplvm.models.svgplvm.html" class="btn btn-neutral float-right" title="mgplvm.models.svgplvm module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mgplvm.models.sgplvm.html" class="btn btn-neutral float-left" title="mgplvm.models.sgplvm module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

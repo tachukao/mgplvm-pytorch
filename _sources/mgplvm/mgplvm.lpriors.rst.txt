@@ -1,0 +1,19 @@
+mgplvm.lpriors package
+======================
+
+Submodules
+----------
+
+.. toctree::
+
+   mgplvm.lpriors.common
+   mgplvm.lpriors.euclidean
+   mgplvm.lpriors.torus
+
+Module contents
+---------------
+
+.. automodule:: mgplvm.lpriors
+   :members:
+   :undoc-members:
+   :show-inheritance:

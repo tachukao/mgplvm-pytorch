@@ -1,0 +1,7 @@
+mgplvm.manifolds.torus module
+=============================
+
+.. automodule:: mgplvm.manifolds.torus
+   :members:
+   :undoc-members:
+   :show-inheritance:

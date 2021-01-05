@@ -1,0 +1,774 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.kernels module &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.likelihoods module" href="mgplvm.likelihoods.html" />
+    <link rel="prev" title="mgplvm.inducing_variables module" href="mgplvm.inducing_variables.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.base.html">mgplvm.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.inducing_variables.html">mgplvm.inducing_variables module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">mgplvm.kernels module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.likelihoods.html">mgplvm.likelihoods module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.training.html">mgplvm.training module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.utils.html">mgplvm.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+        
+      <li>mgplvm.kernels module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/mgplvm/mgplvm.kernels.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-mgplvm.kernels">
+<span id="mgplvm-kernels-module"></span><h1>mgplvm.kernels module<a class="headerlink" href="#module-mgplvm.kernels" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="mgplvm.kernels.Combination">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">Combination</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernels</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Combination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Combination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.Kernel" title="mgplvm.kernels.Kernel"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.Kernel</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.Combination.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Combination.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Combination.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Combination.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.kernels.Combination.prms" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.Combination.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Combination.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.Kernel">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">Kernel</code><a class="reference internal" href="../_modules/mgplvm/kernels.html#Kernel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.base.html#mgplvm.base.Module" title="mgplvm.base.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.base.Module</span></code></a></p>
+<p>Base kernel class</p>
+<dl class="py method">
+<dt id="mgplvm.kernels.Kernel.diagK">
+<em class="property">abstract static </em><code class="sig-name descname">diagK</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Kernel.diagK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Kernel.diagK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Kernel.trK">
+<em class="property">abstract static </em><code class="sig-name descname">trK</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Kernel.trK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Kernel.trK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.Kernel.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Kernel.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.Linear">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">Linear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">distance</span></em>, <em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_weights</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">Y</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.Kernel" title="mgplvm.kernels.Kernel"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.Kernel</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.Linear.K">
+<code class="sig-name descname">K</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Linear.K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Linear.K" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x my)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>kxy</strong><span class="classifier">Tensor</span></dt><dd><p>linear kernel with dims (… n x mx x my)</p>
+</dd>
+<dt>W: nxd</dt><dd></dd>
+<dt>X: n x d x mx</dt><dd></dd>
+<dt>x: d x mx</dt><dd></dd>
+<dt>x^T w_n w_n^T y (mx x my)</dt><dd></dd>
+<dt>K_n(x, y) = w_n X^T (mx x my)</dt><dd></dd>
+<dt>K(X, Y) (n x mx x my)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Linear.diagK">
+<code class="sig-name descname">diagK</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Linear.diagK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Linear.diagK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>diagK</strong><span class="classifier">Tensor</span></dt><dd><p>diagonal of kernel K(x,x) with dims (… n x mx )</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Linear.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Linear.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Linear.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Linear.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.kernels.Linear.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.Linear.name">
+<code class="sig-name descname">name</code><em class="property"> = 'Linear'</em><a class="headerlink" href="#mgplvm.kernels.Linear.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Linear.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.kernels.Linear.prms" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Linear.trK">
+<code class="sig-name descname">trK</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Linear.trK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Linear.trK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>trK</strong><span class="classifier">Tensor</span></dt><dd><p>trace of kernel K(x,x) with dims (… n)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.Linear.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Linear.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.Matern">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">Matern</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">distance</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">1.5</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Matern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Matern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.QuadExpBase" title="mgplvm.kernels.QuadExpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.QuadExpBase</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.Matern.K">
+<code class="sig-name descname">K</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Matern.K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Matern.K" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x my)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>kxy</strong><span class="classifier">Tensor</span></dt><dd><p>matern kernel with dims (… n x mx x my)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Matern.distance">
+<code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Matern.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Matern.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Matern.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Matern.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Matern.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Matern.k_r_3_2">
+<em class="property">static </em><code class="sig-name descname">k_r_3_2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sqr_alpha</span></em>, <em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">ell</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Matern.k_r_3_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Matern.k_r_3_2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Matern.k_r_5_2">
+<em class="property">static </em><code class="sig-name descname">k_r_5_2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sqr_alpha</span></em>, <em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">ell</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Matern.k_r_5_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Matern.k_r_5_2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Matern.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.kernels.Matern.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.Matern.name">
+<code class="sig-name descname">name</code><em class="property"> = 'Matern'</em><a class="headerlink" href="#mgplvm.kernels.Matern.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.Matern.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Matern.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.Product">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">Product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernels</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Product"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Product" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.Combination" title="mgplvm.kernels.Combination"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.Combination</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.Product.trK">
+<code class="sig-name descname">trK</code><span class="sig-paren">(</span><em class="sig-param">alpha_1^2 * alpha_2^2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Product.trK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Product.trK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.Product.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Product.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.QuadExp">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">QuadExp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">distance</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.QuadExpBase" title="mgplvm.kernels.QuadExpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.QuadExpBase</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExp.K">
+<code class="sig-name descname">K</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExp.K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExp.K" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x my)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>kxy</strong><span class="classifier">Tensor</span></dt><dd><p>quadratic exponential kernel with dims (… n x mx x my)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExp.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExp.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExp.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExp.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.kernels.QuadExp.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.QuadExp.name">
+<code class="sig-name descname">name</code><em class="property"> = 'QuadExp'</em><a class="headerlink" href="#mgplvm.kernels.QuadExp.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.QuadExp.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.QuadExp.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.QuadExpARD">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">QuadExpARD</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="n">ard_distance</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpARD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpARD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.QuadExpBase" title="mgplvm.kernels.QuadExpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.QuadExpBase</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExpARD.K">
+<code class="sig-name descname">K</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpARD.K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpARD.K" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x my)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>kxy</strong><span class="classifier">Tensor</span></dt><dd><p>quadratic exponential ARD kernel with dims (… n x mx x my)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExpARD.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpARD.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpARD.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExpARD.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.kernels.QuadExpARD.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.QuadExpARD.name">
+<code class="sig-name descname">name</code><em class="property"> = 'QuadExpARD'</em><a class="headerlink" href="#mgplvm.kernels.QuadExpARD.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.QuadExpARD.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.QuadExpARD.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.QuadExpBase">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">QuadExpBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.Kernel" title="mgplvm.kernels.Kernel"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.Kernel</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExpBase.K">
+<em class="property">abstract </em><code class="sig-name descname">K</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpBase.K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpBase.K" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExpBase.diagK">
+<code class="sig-name descname">diagK</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpBase.diagK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpBase.diagK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>diagK</strong><span class="classifier">Tensor</span></dt><dd><p>diagonal of kernel K(x,x) with dims (… n x mx )</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExpBase.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.kernels.QuadExpBase.prms" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.QuadExpBase.trK">
+<code class="sig-name descname">trK</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpBase.trK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpBase.trK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>trK</strong><span class="classifier">Tensor</span></dt><dd><p>trace of kernel K(x,x) with dims (… n)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.QuadExpBase.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.QuadExpBase.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.Sum">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">Sum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernels</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Sum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.Combination" title="mgplvm.kernels.Combination"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.Combination</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.Sum.trK">
+<code class="sig-name descname">trK</code><span class="sig-paren">(</span><em class="sig-param">alpha_1^2 + alpha_2^2</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Sum.trK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Sum.trK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.kernels.Sum.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Sum.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mgplvm.likelihoods.html" class="btn btn-neutral float-right" title="mgplvm.likelihoods module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mgplvm.inducing_variables.html" class="btn btn-neutral float-left" title="mgplvm.inducing_variables module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

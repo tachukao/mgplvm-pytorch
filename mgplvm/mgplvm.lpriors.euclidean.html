@@ -1,0 +1,284 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.lpriors.euclidean module &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.lpriors.torus module" href="mgplvm.lpriors.torus.html" />
+    <link rel="prev" title="mgplvm.lpriors.common module" href="mgplvm.lpriors.common.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.lpriors.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.lpriors.html#module-mgplvm.lpriors">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+        
+          <li><a href="mgplvm.lpriors.html">mgplvm.lpriors package</a> &raquo;</li>
+        
+      <li>mgplvm.lpriors.euclidean module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/mgplvm/mgplvm.lpriors.euclidean.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-mgplvm.lpriors.euclidean">
+<span id="mgplvm-lpriors-euclidean-module"></span><h1>mgplvm.lpriors.euclidean module<a class="headerlink" href="#module-mgplvm.lpriors.euclidean" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="mgplvm.lpriors.euclidean.GP">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.euclidean.</code><code class="sig-name descname">GP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manif</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">n_z</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">tmax</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/euclidean.html#GP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.euclidean.GP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.euclidean.LpriorEuclid" title="mgplvm.lpriors.euclidean.LpriorEuclid"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.euclidean.LpriorEuclid</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.euclidean.GP.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">ts</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/euclidean.html#GP.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.euclidean.GP.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>x is a latent of shape (n_b x mx x d)
+ts is the corresponding timepoints of shape (mx)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.euclidean.GP.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.euclidean.GP.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.euclidean.GP.name">
+<code class="sig-name descname">name</code><em class="property"> = 'GP'</em><a class="headerlink" href="#mgplvm.lpriors.euclidean.GP.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.euclidean.GP.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.euclidean.GP.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.euclidean.GP.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.euclidean.GP.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.lpriors.euclidean.LpriorEuclid">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.euclidean.</code><code class="sig-name descname">LpriorEuclid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manif</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/euclidean.html#LpriorEuclid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.euclidean.LpriorEuclid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.lpriors.common.html#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.euclidean.LpriorEuclid.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.euclidean.LpriorEuclid.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mgplvm.lpriors.torus.html" class="btn btn-neutral float-right" title="mgplvm.lpriors.torus module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mgplvm.lpriors.common.html" class="btn btn-neutral float-left" title="mgplvm.lpriors.common module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

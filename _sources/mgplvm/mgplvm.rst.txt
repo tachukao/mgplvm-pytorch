@@ -1,0 +1,34 @@
+mgplvm package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+
+   mgplvm.lpriors
+   mgplvm.manifolds
+   mgplvm.models
+   mgplvm.syndata
+
+Submodules
+----------
+
+.. toctree::
+
+   mgplvm.base
+   mgplvm.crossval
+   mgplvm.inducing_variables
+   mgplvm.kernels
+   mgplvm.likelihoods
+   mgplvm.rdist
+   mgplvm.training
+   mgplvm.utils
+
+Module contents
+---------------
+
+.. automodule:: mgplvm
+   :members:
+   :undoc-members:
+   :show-inheritance:

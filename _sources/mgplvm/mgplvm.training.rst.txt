@@ -1,0 +1,7 @@
+mgplvm.training module
+======================
+
+.. automodule:: mgplvm.training
+   :members:
+   :undoc-members:
+   :show-inheritance:

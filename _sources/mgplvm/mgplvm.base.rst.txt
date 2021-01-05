@@ -1,0 +1,7 @@
+mgplvm.base module
+==================
+
+.. automodule:: mgplvm.base
+   :members:
+   :undoc-members:
+   :show-inheritance:

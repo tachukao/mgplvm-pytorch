@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.likelihoods module &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.rdist module" href="mgplvm.rdist.html" />
+    <link rel="prev" title="mgplvm.kernels module" href="mgplvm.kernels.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.base.html">mgplvm.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.inducing_variables.html">mgplvm.inducing_variables module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.kernels.html">mgplvm.kernels module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">mgplvm.likelihoods module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.training.html">mgplvm.training module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.utils.html">mgplvm.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+        
+      <li>mgplvm.likelihoods module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/mgplvm/mgplvm.likelihoods.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-mgplvm.likelihoods">
+<span id="mgplvm-likelihoods-module"></span><h1>mgplvm.likelihoods module<a class="headerlink" href="#module-mgplvm.likelihoods" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="mgplvm.likelihoods.CMPoisson">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.likelihoods.</code><code class="sig-name descname">CMPoisson</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">inv_link=&lt;built-in method exp of type object&gt;</em>, <em class="sig-param">binsize=1</em>, <em class="sig-param">nu=None</em>, <em class="sig-param">c=None</em>, <em class="sig-param">d=None</em>, <em class="sig-param">fixed_nu=False</em>, <em class="sig-param">fixed_c=False</em>, <em class="sig-param">fixed_d=False</em>, <em class="sig-param">n_gh_locs=20</em>, <em class="sig-param">max_k=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#CMPoisson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.CMPoisson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.likelihoods.Likelihood" title="mgplvm.likelihoods.Likelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.likelihoods.Likelihood</span></code></a></p>
+<p>Conway-Maxwell-Poisson</p>
+<dl class="py method">
+<dt id="mgplvm.likelihoods.CMPoisson.log_prob">
+<code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nu</span></em>, <em class="sig-param"><span class="n">rate</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#CMPoisson.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.CMPoisson.log_prob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.CMPoisson.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.likelihoods.CMPoisson.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.CMPoisson.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#CMPoisson.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.CMPoisson.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.likelihoods.CMPoisson.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.likelihoods.CMPoisson.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.CMPoisson.variational_expectation">
+<code class="sig-name descname">variational_expectation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">fmu</span></em>, <em class="sig-param"><span class="n">fvar</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#CMPoisson.variational_expectation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.CMPoisson.variational_expectation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.likelihoods.Gaussian">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.likelihoods.</code><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">variance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_gh_locs</span><span class="o">=</span><span class="default_value">20</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.likelihoods.Likelihood" title="mgplvm.likelihoods.Likelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.likelihoods.Likelihood</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Gaussian.log_prob">
+<code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.log_prob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Gaussian.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Gaussian.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f_samps</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>f is n_b x n x m</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.likelihoods.Gaussian.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Gaussian.variational_expectation">
+<code class="sig-name descname">variational_expectation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">fmu</span></em>, <em class="sig-param"><span class="n">fvar</span></em>, <em class="sig-param"><span class="n">by_batch</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian.variational_expectation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.variational_expectation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.likelihoods.Likelihood">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.likelihoods.</code><code class="sig-name descname">Likelihood</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">n_gh_locs</span><span class="o">=</span><span class="default_value">20</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Likelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Likelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.base.html#mgplvm.base.Module" title="mgplvm.base.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.base.Module</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Likelihood.log_prob">
+<em class="property">abstract property </em><code class="sig-name descname">log_prob</code><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.log_prob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Likelihood.sample">
+<em class="property">abstract static </em><code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Likelihood.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.likelihoods.Likelihood.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Likelihood.variational_expectation">
+<em class="property">abstract property </em><code class="sig-name descname">variational_expectation</code><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.variational_expectation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.likelihoods.NegativeBinomial">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.likelihoods.</code><code class="sig-name descname">NegativeBinomial</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">inv_link=&lt;function NegativeBinomial.&lt;lambda&gt;&gt;</em>, <em class="sig-param">binsize=1</em>, <em class="sig-param">total_count=None</em>, <em class="sig-param">c=None</em>, <em class="sig-param">d=None</em>, <em class="sig-param">fixed_total_count=False</em>, <em class="sig-param">fixed_c=True</em>, <em class="sig-param">fixed_d=False</em>, <em class="sig-param">n_gh_locs=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.likelihoods.Likelihood" title="mgplvm.likelihoods.Likelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.likelihoods.Likelihood</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.likelihoods.NegativeBinomial.log_prob">
+<code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">total_count</span></em>, <em class="sig-param"><span class="n">rate</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.log_prob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.NegativeBinomial.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.NegativeBinomial.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f_samps</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>f_samps is n_b x n x m</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.likelihoods.NegativeBinomial.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.NegativeBinomial.variational_expectation">
+<code class="sig-name descname">variational_expectation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">fmu</span></em>, <em class="sig-param"><span class="n">fvar</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial.variational_expectation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.variational_expectation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.likelihoods.Poisson">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.likelihoods.</code><code class="sig-name descname">Poisson</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">inv_link=&lt;built-in method exp of type object&gt;</em>, <em class="sig-param">binsize=1</em>, <em class="sig-param">c=None</em>, <em class="sig-param">d=None</em>, <em class="sig-param">fixed_c=True</em>, <em class="sig-param">fixed_d=False</em>, <em class="sig-param">n_gh_locs=20</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.likelihoods.Likelihood" title="mgplvm.likelihoods.Likelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.likelihoods.Likelihood</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Poisson.log_prob">
+<code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lamb</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson.log_prob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Poisson.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.likelihoods.Poisson.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Poisson.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f_samps</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.likelihoods.Poisson.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.likelihoods.Poisson.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.likelihoods.Poisson.variational_expectation">
+<code class="sig-name descname">variational_expectation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">fmu</span></em>, <em class="sig-param"><span class="n">fvar</span></em>, <em class="sig-param"><span class="n">gh</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson.variational_expectation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson.variational_expectation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mgplvm.rdist.html" class="btn btn-neutral float-right" title="mgplvm.rdist module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mgplvm.kernels.html" class="btn btn-neutral float-left" title="mgplvm.kernels module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

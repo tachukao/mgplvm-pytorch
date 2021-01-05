@@ -1,0 +1,578 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.models.svgp &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>mgplvm.models.svgp</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mgplvm.models.svgp</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">mgplvm.utils</span> <span class="kn">import</span> <span class="n">softplus</span>
+<span class="kn">from</span> <span class="nn">..base</span> <span class="kn">import</span> <span class="n">Module</span>
+<span class="kn">from</span> <span class="nn">..kernels</span> <span class="kn">import</span> <span class="n">Kernel</span><span class="p">,</span> <span class="n">Combination</span>
+<span class="kn">from</span> <span class="nn">..inducing_variables</span> <span class="kn">import</span> <span class="n">InducingPoints</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="kn">import</span> <span class="n">MultivariateNormal</span><span class="p">,</span> <span class="n">kl_divergence</span><span class="p">,</span> <span class="n">transform_to</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">Normal</span>
+<span class="kn">from</span> <span class="nn">..likelihoods</span> <span class="kn">import</span> <span class="n">Likelihood</span>
+
+<span class="n">jitter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1E-8</span>
+<span class="n">log2pi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SvgpBase"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.SvgpBase">[docs]</a><span class="k">class</span> <span class="nc">SvgpBase</span><span class="p">(</span><span class="n">Module</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">kernel</span><span class="p">:</span> <span class="n">Kernel</span><span class="p">,</span>
+                 <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">n_inducing</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">likelihood</span><span class="p">:</span> <span class="n">Likelihood</span><span class="p">,</span>
+                 <span class="n">q_mu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">q_sqrt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__ method for Base Sparse Variational GP Class</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            number of neurons</span>
+<span class="sd">        m : int</span>
+<span class="sd">            number of conditions</span>
+<span class="sd">        n_inducing : int</span>
+<span class="sd">            number of inducing points</span>
+<span class="sd">        q_mu : Optional Tensor</span>
+<span class="sd">            optional Tensor for initialization</span>
+<span class="sd">        q_sqrt : Optional Tensor</span>
+<span class="sd">            optional Tensor for initialization</span>
+<span class="sd">        whiten : Optional bool</span>
+<span class="sd">            whiten q if true</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_inducing</span> <span class="o">=</span> <span class="n">n_inducing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+
+        <span class="n">q_mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_inducing</span><span class="p">)</span> <span class="k">if</span> <span class="n">q_mu</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">q_mu</span>
+        <span class="n">q_sqrt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">n_inducing</span><span class="p">))</span> <span class="k">if</span> <span class="n">q_sqrt</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">transform_to</span><span class="p">(</span>
+                <span class="n">constraints</span><span class="o">.</span><span class="n">lower_cholesky</span><span class="p">)</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">q_sqrt</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_mu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">q_mu</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_sqrt</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">q_sqrt</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">whiten</span> <span class="o">=</span> <span class="n">whiten</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_expand_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_expand_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_prior_kl</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">q_mu</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_z</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_inducing</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">q_mu</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">kzz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span> <span class="n">jitter</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">kzz</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># [ k1 ] has sims (1 x n x n_inducing)</span>
+        <span class="n">k1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">dim1</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim2</span><span class="o">=-</span><span class="mi">2</span><span class="p">))</span>
+        <span class="c1"># [ k2 ] has sims (1 x n x n_inducing)</span>
+        <span class="n">k2</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">q_sqrt</span><span class="p">,</span> <span class="n">dim1</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim2</span><span class="o">=-</span><span class="mi">2</span><span class="p">))</span>
+        <span class="c1"># trace term</span>
+        <span class="n">k3</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">triangular_solve</span><span class="p">(</span><span class="n">q_sqrt</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># mean term</span>
+        <span class="n">k4</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">triangular_solve</span><span class="p">(</span><span class="n">q_mu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">l</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">k5</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_inducing</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span>
+        <span class="k">return</span> <span class="n">k1</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">k2</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">k3</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">k4</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">k5</span>
+
+<div class="viewcode-block" id="SvgpBase.prior_kl"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.SvgpBase.prior_kl">[docs]</a>    <span class="k">def</span> <span class="nf">prior_kl</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">q_mu</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_z</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_inducing</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">q_mu</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">whiten</span><span class="p">:</span>
+            <span class="n">kzz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span> <span class="n">jitter</span><span class="p">)</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">kzz</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">q_mu</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="n">q_sqrt</span><span class="p">)</span>
+        <span class="n">p_mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_inducing</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">q_mu</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">whiten</span><span class="p">:</span>
+            <span class="n">prior</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">p_mu</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prior</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">p_mu</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">kl_divergence</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">prior</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SvgpBase.elbo"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.SvgpBase.elbo">[docs]</a>    <span class="k">def</span> <span class="nf">elbo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">n_b</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+             <span class="n">y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+             <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+             <span class="n">by_batch</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_b : int</span>
+<span class="sd">            batch size</span>
+<span class="sd">        y : Tensor</span>
+<span class="sd">            data tensor with dimensions (n x m x n_samples)</span>
+<span class="sd">        x : Tensor (single kernel) or Tensor list (product kernels)</span>
+<span class="sd">            input tensor(s) with dimensions (n_b x d x m)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        evidence lower bount : torch.Tensor</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Implementation largely follows derivation of the ELBO presented in `here &lt;https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html&gt;`_.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span>
+        <span class="n">n_inducing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_inducing</span>  <span class="c1"># inducing points</span>
+        <span class="n">prior_kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_kl</span><span class="p">()</span>  <span class="c1"># prior KL(q(u) || p(u))</span>
+        <span class="c1"># predictive mean and var at x</span>
+        <span class="n">f_mean</span><span class="p">,</span> <span class="n">f_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">full_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">lik</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">variational_expectation</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span>
+                                                      <span class="n">y</span><span class="p">,</span>
+                                                      <span class="n">f_mean</span><span class="p">,</span>
+                                                      <span class="n">f_var</span><span class="p">,</span>
+                                                      <span class="n">by_batch</span><span class="o">=</span><span class="n">by_batch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">by_batch</span><span class="p">:</span>
+            <span class="c1">#print(&#39;svgp:&#39;, lik.shape, prior_kl.shape, f_mean.shape, f_var.shape)</span>
+            <span class="k">return</span> <span class="n">lik</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_b</span><span class="p">)</span> <span class="o">*</span> <span class="n">prior_kl</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lik</span> <span class="o">=</span> <span class="n">lik</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">lik</span><span class="p">,</span> <span class="n">prior_kl</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">n_b</span></div>
+
+<div class="viewcode-block" id="SvgpBase.tuning"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.SvgpBase.tuning">[docs]</a>    <span class="k">def</span> <span class="nf">tuning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">n_b</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">square</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        query is mxd</span>
+<span class="sd">        return n_b samples from the full model (n_b x n x m)</span>
+<span class="sd">        if square, the outputs are squared (useful e.g. when fitting sqrt spike counts with a Gaussian likelihood)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1">#add batch dimension</span>
+
+        <span class="n">mu</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>  <span class="c1">#1xnxmx1, 1xnxm</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1">#n x m,</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>  <span class="c1"># nxm</span>
+
+        <span class="c1">#sample from p(f|u)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="n">f_samps</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="n">n_b</span><span class="p">,</span> <span class="p">))</span>  <span class="c1">#n_b x n x m</span>
+
+        <span class="c1">#sample from observation function p(y|f)</span>
+        <span class="n">y_samps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">f_samps</span><span class="p">)</span>
+        <span class="c1">#mu, std = y_samps.mean(dim = 0), y_samps.std(dim = 0)</span>
+
+        <span class="k">if</span> <span class="n">square</span><span class="p">:</span>
+            <span class="n">y_samps</span> <span class="o">=</span> <span class="n">y_samps</span><span class="o">**</span><span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">y_samps</span></div>
+
+<div class="viewcode-block" id="SvgpBase.predict"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.SvgpBase.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">full_cov</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : Tensor (single kernel) or Tensor list (product kernels)</span>
+<span class="sd">            test input tensor(s) with dimensions (n_b x d x m)</span>
+<span class="sd">        full_cov : bool</span>
+<span class="sd">            returns full covariance if true otherwise returns the diagonal</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mu : Tensor </span>
+<span class="sd">            mean of predictive density at test inputs [ s ]</span>
+<span class="sd">        v : Tensor </span>
+<span class="sd">            variance/covariance of predictive density at test inputs [ s ]</span>
+<span class="sd">            if full_cov is true returns full covariance, otherwise</span>
+<span class="sd">            returns diagonal variance</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">q_mu</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span>
+        <span class="n">q_mu</span> <span class="o">=</span> <span class="n">q_mu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="c1"># see ELBO for explanation of _expand</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_z</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_x</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">kzz</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>  <span class="c1"># dims: (1 x n x n_inducing x n_inducing)</span>
+        <span class="n">kzx</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>  <span class="c1"># dims: (1 x n x n_inducing x m)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_inducing</span><span class="p">,</span>
+                      <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">get_default_dtype</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">kzz</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># [ l ] has dims: (1 x n x n_inducing x n_inducing)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">kzz</span> <span class="o">+</span> <span class="p">(</span><span class="n">jitter</span> <span class="o">*</span> <span class="n">e</span><span class="p">),</span> <span class="n">upper</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># [ alpha ] has dims: (n_b x n x n_inducing x m)</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">triangular_solve</span><span class="p">(</span><span class="n">kzx</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">alphat</span> <span class="o">=</span> <span class="n">alpha</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">whiten</span><span class="p">:</span>
+            <span class="c1"># [ mu ] has dims : (n_b x n x m x 1)</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">alphat</span><span class="p">,</span> <span class="n">q_mu</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># [ beta ] has dims : (n_b x n x n_inducing x m)</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">triangular_solve</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span>
+                                          <span class="n">l</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                                          <span class="n">upper</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># [ betat ] has dims : (n_b x n x m x n_inducing)</span>
+            <span class="n">betat</span> <span class="o">=</span> <span class="n">beta</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">betat</span><span class="p">,</span> <span class="n">q_mu</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">full_cov</span><span class="p">:</span>
+            <span class="c1"># [ tmp1 ] has dims : (n_b x n x m x n_inducing)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">whiten</span><span class="p">:</span>
+                <span class="n">tmp1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">alphat</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tmp1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">betat</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">)</span>
+            <span class="c1"># [ v1 ] has dims : (n_b x n x m x m)</span>
+            <span class="n">v1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="c1"># [ v2 ] has dims : (n_b x n x m x m)</span>
+            <span class="n">v2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">alphat</span><span class="p">,</span> <span class="n">alphat</span><span class="p">)</span>
+            <span class="c1"># [ kxx ] has dims : (n_b x n x m x m)</span>
+            <span class="n">kxx</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">kxx</span> <span class="o">+</span> <span class="n">v1</span> <span class="o">-</span> <span class="n">v2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># [ kxx ] has dims : (n_b x n x m)</span>
+            <span class="n">kxx</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">diagK</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="c1"># [ tmp1 ] has dims : (n_b x n x m x n_inducing)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">whiten</span><span class="p">:</span>
+                <span class="n">tmp1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">alphat</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tmp1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">betat</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">)</span>
+            <span class="c1"># [ v1 ] has dims : (n_b x n x m)</span>
+            <span class="n">v1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">tmp1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># [ v2 ] has dims : (n_b x n x m)</span>
+            <span class="n">v2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">kxx</span> <span class="o">+</span> <span class="n">v1</span> <span class="o">-</span> <span class="n">v2</span>
+
+        <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">v</span></div></div>
+
+
+<div class="viewcode-block" id="Svgp"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.Svgp">[docs]</a><span class="k">class</span> <span class="nc">Svgp</span><span class="p">(</span><span class="n">SvgpBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">kernel</span><span class="p">:</span> <span class="n">Kernel</span><span class="p">,</span>
+                 <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">z</span><span class="p">:</span> <span class="n">InducingPoints</span><span class="p">,</span>
+                 <span class="n">likelihood</span><span class="p">:</span> <span class="n">Likelihood</span><span class="p">,</span>
+                 <span class="n">whiten</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__ method for Sparse GP Class</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kernel : Kernel</span>
+<span class="sd">            kernel used for sparse GP (e.g., QuadExp)</span>
+<span class="sd">        n : int</span>
+<span class="sd">            number of neurons</span>
+<span class="sd">        m : int</span>
+<span class="sd">            number of conditions</span>
+<span class="sd">        z : InducingPoints</span>
+<span class="sd">            inducing points for sparse GP</span>
+<span class="sd">        likelihood : Likelihood</span>
+<span class="sd">            likleihood p(y | f) </span>
+<span class="sd">        whiten : Optional bool</span>
+<span class="sd">            whiten q if true</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># initalize q_sqrt^2 at the prior kzz</span>
+        <span class="n">n_inducing</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">n_z</span>
+        <span class="n">_z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_z</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">prms</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n_inducing</span><span class="p">)</span>
+        <span class="n">kzz</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">(</span><span class="n">_z</span><span class="p">,</span> <span class="n">_z</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span> <span class="n">jitter</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">kzz</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span>
+                         <span class="n">n</span><span class="p">,</span>
+                         <span class="n">n_inducing</span><span class="p">,</span>
+                         <span class="n">likelihood</span><span class="p">,</span>
+                         <span class="n">q_sqrt</span><span class="o">=</span><span class="n">l</span><span class="p">,</span>
+                         <span class="n">whiten</span><span class="o">=</span><span class="n">whiten</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">z</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">q_mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_mu</span>
+        <span class="n">q_sqrt</span> <span class="o">=</span> <span class="n">transform_to</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">lower_cholesky</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_sqrt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">q_mu</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">,</span> <span class="n">z</span>
+
+    <span class="k">def</span> <span class="nf">_expand_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">z</span>
+
+    <span class="k">def</span> <span class="nf">_expand_x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+<span class="c1">#class SvgpComb(SvgpBase):</span>
+<span class="c1">#    def __init__(self,</span>
+<span class="c1">#                 kernel: Combination,</span>
+<span class="c1">#                 n: int,</span>
+<span class="c1">#                 zs: List[InducingPoints],</span>
+<span class="c1">#                 likelihood: Likelihood,</span>
+<span class="c1">#                 whiten: Optional[bool] = True):</span>
+<span class="c1">#        &quot;&quot;&quot;</span>
+<span class="c1">#        __init__ method for Sparse GP with Combination Kernels</span>
+<span class="c1">#        Parameters</span>
+<span class="c1">#        ----------</span>
+<span class="c1">#        kernels : Combination Kernel</span>
+<span class="c1">#            combination kernel used for sparse GP (e.g., Product)</span>
+<span class="c1">#        n : int</span>
+<span class="c1">#            number of neurons</span>
+<span class="c1">#        m : int</span>
+<span class="c1">#            number of conditions</span>
+<span class="c1">#        zs : InducingPoints list</span>
+<span class="c1">#            list of inducing points</span>
+<span class="c1">#        likleihood: Likelihood</span>
+<span class="c1">#            likelihood p(y|f)</span>
+<span class="c1">#        whiten : Optional bool</span>
+<span class="c1">#            whiten q if true</span>
+<span class="c1">#        &quot;&quot;&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#        n_inducing = zs[0].n_inducing</span>
+<span class="c1">#        # check all the zs have the same n_inducing</span>
+<span class="c1">#        for z in zs:</span>
+<span class="c1">#            assert (z.n_inducing == n_inducing)</span>
+<span class="c1">#</span>
+<span class="c1">#        # initialize q_sqrt</span>
+<span class="c1">#        _zs = [z.prms for z in zs]</span>
+<span class="c1">#        _z = self._expand_z(_zs)</span>
+<span class="c1">#        e = torch.eye(n_inducing)</span>
+<span class="c1">#        kzz = kernel(z, z) + (e * jitter)</span>
+<span class="c1">#        l = torch.cholesky(kzz, upper=False)</span>
+<span class="c1">#        super().__init__(kernel,</span>
+<span class="c1">#                         n,</span>
+<span class="c1">#                         n_inducing,</span>
+<span class="c1">#                         likelihood,</span>
+<span class="c1">#                         q_sqrt=l,</span>
+<span class="c1">#                         whiten=whiten)</span>
+<span class="c1">#        self.zs = zs</span>
+<span class="c1">#</span>
+<span class="c1">#    @property</span>
+<span class="c1">#    def prms(self) -&gt; Tuple[Tensor, Union[List[Tensor], nn.ParameterList]]:</span>
+<span class="c1">#        zs = [z.prms for z in self.zs]</span>
+<span class="c1">#        q_mu = self.q_mu</span>
+<span class="c1">#        q_sqrt = torch.distributions.transform_to(</span>
+<span class="c1">#            MultivariateNormal.arg_constraints[&#39;scale_tril&#39;])(self.q_sqrt)</span>
+<span class="c1">#        return q_mu, q_sqrt, zs</span>
+<span class="c1">#</span>
+<span class="c1">#    def _expand_z(self, zs: List[Tensor]) -&gt; Tuple[List[Tensor]]:</span>
+<span class="c1">#        zs = [z[None, ...] for z in zs]</span>
+<span class="c1">#        return zs</span>
+<span class="c1">#</span>
+<span class="c1">#    def _expand_x(self, xs: List[Tensor]) -&gt; Tuple[List[Tensor]]:</span>
+<span class="c1">#        xs = [x[:, None, ...] for x in xs]</span>
+<span class="c1">#        return xs</span>
+<span class="c1">#</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+mgplvm.kernels module
+=====================
+
+.. automodule:: mgplvm.kernels
+   :members:
+   :undoc-members:
+   :show-inheritance:

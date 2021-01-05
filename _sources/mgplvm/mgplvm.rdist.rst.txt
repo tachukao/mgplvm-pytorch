@@ -1,0 +1,7 @@
+mgplvm.rdist module
+===================
+
+.. automodule:: mgplvm.rdist
+   :members:
+   :undoc-members:
+   :show-inheritance:

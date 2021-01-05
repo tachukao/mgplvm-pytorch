@@ -1,0 +1,17 @@
+mgplvm.syndata package
+======================
+
+Submodules
+----------
+
+.. toctree::
+
+   mgplvm.syndata.gen_data
+
+Module contents
+---------------
+
+.. automodule:: mgplvm.syndata
+   :members:
+   :undoc-members:
+   :show-inheritance:

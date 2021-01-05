@@ -1,0 +1,498 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.syndata.gen_data module &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.base module" href="mgplvm.base.html" />
+    <link rel="prev" title="mgplvm.syndata package" href="mgplvm.syndata.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.syndata.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.syndata.html#module-mgplvm.syndata">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+        
+          <li><a href="mgplvm.syndata.html">mgplvm.syndata package</a> &raquo;</li>
+        
+      <li>mgplvm.syndata.gen_data module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/mgplvm/mgplvm.syndata.gen_data.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-mgplvm.syndata.gen_data">
+<span id="mgplvm-syndata-gen-data-module"></span><h1>mgplvm.syndata.gen_data module<a class="headerlink" href="#module-mgplvm.syndata.gen_data" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="mgplvm.syndata.gen_data.Euclid">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.syndata.gen_data.</code><code class="sig-name descname">Euclid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Euclid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Euclid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.syndata.gen_data.Manif" title="mgplvm.syndata.gen_data.Manif"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.syndata.gen_data.Manif</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Euclid.distance">
+<code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Euclid.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Euclid.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Euclid.gen">
+<code class="sig-name descname">gen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sig</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Euclid.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Euclid.gen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Euclid.gen_ginit">
+<code class="sig-name descname">gen_ginit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Euclid.gen_ginit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Euclid.gen_ginit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Euclid.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#mgplvm.syndata.gen_data.Euclid.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Euclid.noisy_conds">
+<code class="sig-name descname">noisy_conds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gs</span></em>, <em class="sig-param"><span class="n">variability</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Euclid.noisy_conds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Euclid.noisy_conds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.syndata.gen_data.Gen">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.syndata.gen_data.</code><code class="sig-name descname">Gen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manifold</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">l</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">variability</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">n_samples</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Gen.gen_data">
+<code class="sig-name descname">gen_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_samples</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">gs_in</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">gprefs_in</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'Gaussian'</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sig</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">rate</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Gen.gen_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Gen.gen_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>tbin is time of each time step (by default each time step is 1 ms)
+gs_in is optional input latent signal, otherwise random points on manifold
+generate Gaussian noise neural activities
+generate IPP spiking from Gaussian bump rate model
+rate is the mean peak firing rate across neurons</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Gen.gen_gconds">
+<code class="sig-name descname">gen_gconds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sig</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Gen.gen_gconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Gen.gen_gconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate conditions for each neuron</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Gen.gen_gprefs">
+<code class="sig-name descname">gen_gprefs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Gen.gen_gprefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Gen.gen_gprefs" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate prefered directions for each neuron</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Gen.get_data">
+<code class="sig-name descname">get_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Gen.get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Gen.get_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Gen.get_params">
+<code class="sig-name descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Gen.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Gen.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>return parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Gen.noisy_conds">
+<code class="sig-name descname">noisy_conds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Gen.noisy_conds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Gen.noisy_conds" title="Permalink to this definition">¶</a></dt>
+<dd><p>add noise to the conditions</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Gen.set_param">
+<code class="sig-name descname">set_param</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Gen.set_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Gen.set_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>set the value of a parameter</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.syndata.gen_data.Manif">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.syndata.gen_data.</code><code class="sig-name descname">Manif</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Manif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Manif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Manif.distance">
+<em class="property">abstract </em><code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Manif.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Manif.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Manif.gen">
+<em class="property">abstract </em><code class="sig-name descname">gen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">sig</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Manif.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Manif.gen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Manif.name">
+<em class="property">abstract </em><code class="sig-name descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Manif.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Manif.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.syndata.gen_data.Product">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.syndata.gen_data.</code><code class="sig-name descname">Product</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manifs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Product"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Product" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.syndata.gen_data.Manif" title="mgplvm.syndata.gen_data.Manif"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.syndata.gen_data.Manif</span></code></a></p>
+<p>Does not support product of products at the moment</p>
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Product.add_tangent_vector">
+<code class="sig-name descname">add_tangent_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gs</span></em>, <em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="n">delta</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Product.add_tangent_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Product.add_tangent_vector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Product.distance">
+<code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xs</span></em>, <em class="sig-param"><span class="n">ys</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Product.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Product.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Product.distance_scaled">
+<code class="sig-name descname">distance_scaled</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xs</span></em>, <em class="sig-param"><span class="n">ys</span></em>, <em class="sig-param"><span class="n">ls</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Product.distance_scaled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Product.distance_scaled" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Product.gen">
+<code class="sig-name descname">gen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sig</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Product.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Product.gen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Product.gen_ginit">
+<code class="sig-name descname">gen_ginit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Product.gen_ginit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Product.gen_ginit" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate a series of points at the origin</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Product.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#mgplvm.syndata.gen_data.Product.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.syndata.gen_data.So3">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.syndata.gen_data.</code><code class="sig-name descname">So3</code><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#So3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.So3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.syndata.gen_data.Manif" title="mgplvm.syndata.gen_data.Manif"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.syndata.gen_data.Manif</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.So3.distance">
+<code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#So3.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.So3.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.So3.gen">
+<code class="sig-name descname">gen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sig</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#So3.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.So3.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate random points in spherical space according to the prior</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.So3.gen_ginit">
+<code class="sig-name descname">gen_ginit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#So3.gen_ginit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.So3.gen_ginit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.So3.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#mgplvm.syndata.gen_data.So3.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.So3.noisy_conds">
+<code class="sig-name descname">noisy_conds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gs</span></em>, <em class="sig-param"><span class="n">variability</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#So3.noisy_conds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.So3.noisy_conds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.So3.norm">
+<code class="sig-name descname">norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#So3.norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.So3.norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.syndata.gen_data.Sphere">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.syndata.gen_data.</code><code class="sig-name descname">Sphere</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Sphere"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Sphere" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.syndata.gen_data.Manif" title="mgplvm.syndata.gen_data.Manif"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.syndata.gen_data.Manif</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Sphere.distance">
+<code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Sphere.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Sphere.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Sphere.gen">
+<code class="sig-name descname">gen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sig</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Sphere.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Sphere.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate random points in spherical space according to the prior</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Sphere.gen_ginit">
+<code class="sig-name descname">gen_ginit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Sphere.gen_ginit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Sphere.gen_ginit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Sphere.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#mgplvm.syndata.gen_data.Sphere.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Sphere.noisy_conds">
+<code class="sig-name descname">noisy_conds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gs</span></em>, <em class="sig-param"><span class="n">variability</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Sphere.noisy_conds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Sphere.noisy_conds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Sphere.norm">
+<code class="sig-name descname">norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Sphere.norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Sphere.norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.syndata.gen_data.Torus">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.syndata.gen_data.</code><code class="sig-name descname">Torus</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Torus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Torus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.syndata.gen_data.Manif" title="mgplvm.syndata.gen_data.Manif"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.syndata.gen_data.Manif</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Torus.distance">
+<code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Torus.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Torus.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Torus.gen">
+<code class="sig-name descname">gen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sig</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Torus.gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Torus.gen" title="Permalink to this definition">¶</a></dt>
+<dd><p>if l is none, draw random samples - otherwise draw from an RBF GP with ell = l</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Torus.gen_ginit">
+<code class="sig-name descname">gen_ginit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Torus.gen_ginit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Torus.gen_ginit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Torus.name">
+<em class="property">property </em><code class="sig-name descname">name</code><a class="headerlink" href="#mgplvm.syndata.gen_data.Torus.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Torus.noisy_conds">
+<code class="sig-name descname">noisy_conds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gs</span></em>, <em class="sig-param"><span class="n">variability</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Torus.noisy_conds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Torus.noisy_conds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.syndata.gen_data.Torus.norm">
+<code class="sig-name descname">norm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#Torus.norm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.Torus.norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="mgplvm.syndata.gen_data.draw_GP">
+<code class="sig-prename descclassname">mgplvm.syndata.gen_data.</code><code class="sig-name descname">draw_GP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="n">sig</span></em>, <em class="sig-param"><span class="n">ell</span></em>, <em class="sig-param"><span class="n">jitter</span><span class="o">=</span><span class="default_value">1e-06</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/syndata/gen_data.html#draw_GP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.syndata.gen_data.draw_GP" title="Permalink to this definition">¶</a></dt>
+<dd><p>draw RBF GP samples with N samples, ell = l (in units of samples)</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mgplvm.base.html" class="btn btn-neutral float-right" title="mgplvm.base module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mgplvm.syndata.html" class="btn btn-neutral float-left" title="mgplvm.syndata package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

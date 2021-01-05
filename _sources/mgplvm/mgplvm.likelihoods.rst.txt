@@ -1,0 +1,7 @@
+mgplvm.likelihoods module
+=========================
+
+.. automodule:: mgplvm.likelihoods
+   :members:
+   :undoc-members:
+   :show-inheritance:

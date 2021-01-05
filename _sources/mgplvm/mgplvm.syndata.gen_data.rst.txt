@@ -1,0 +1,7 @@
+mgplvm.syndata.gen\_data module
+===============================
+
+.. automodule:: mgplvm.syndata.gen_data
+   :members:
+   :undoc-members:
+   :show-inheritance:

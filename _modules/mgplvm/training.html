@@ -1,0 +1,491 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.training &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>mgplvm.training</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mgplvm.training</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">mgplvm</span>
+<span class="kn">from</span> <span class="nn">mgplvm.utils</span> <span class="kn">import</span> <span class="n">softplus</span>
+<span class="kn">from</span> <span class="nn">mgplvm.manifolds</span> <span class="kn">import</span> <span class="n">Torus</span><span class="p">,</span> <span class="n">Euclid</span><span class="p">,</span> <span class="n">So3</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span><span class="p">,</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LambdaLR</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+
+<div class="viewcode-block" id="sgp"><a class="viewcode-back" href="../../mgplvm/mgplvm.training.html#mgplvm.training.sgp">[docs]</a><span class="k">def</span> <span class="nf">sgp</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="o">=</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span>
+        <span class="n">outdir</span><span class="o">=</span><span class="s2">&quot;results/vanilla&quot;</span><span class="p">,</span>
+        <span class="n">max_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">n_b</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+        <span class="n">burnin</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
+        <span class="n">lrate</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+        <span class="n">print_every</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">trainGP</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">nbatch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">Tfix</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+        <span class="n">sigma_thresh</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_Tlearn_hook</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; used to &#39;mask&#39; some gradients for cv&#39;&#39;&#39;</span>
+        <span class="n">grad</span><span class="p">[</span><span class="n">Tfix</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">grad</span>
+
+    <span class="k">if</span> <span class="n">burnin</span> <span class="o">==</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
+        <span class="n">burnin</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">/</span> <span class="n">lrate</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># neurons, conditions, samples</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">get_default_dtype</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="c1"># parameters to be optimized</span>
+    <span class="c1">#if type(model) == mgplvm.models.SgpComb:</span>
+    <span class="c1">#    params = sort_params_prod(model, _Tlearn_hook, trainGP)</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">sort_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">_Tlearn_hook</span><span class="p">,</span> <span class="n">trainGP</span><span class="p">)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="n">lrate</span><span class="p">)</span>  <span class="c1"># instantiate optimizer</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">({</span><span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+
+    <span class="c1"># set learning rate schedule so sigma updates have a burn-in period</span>
+    <span class="k">def</span> <span class="nf">fburn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">burnin</span><span class="p">))</span>
+
+    <span class="n">LRfuncs</span> <span class="o">=</span> <span class="p">[</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fburn</span><span class="p">]</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">LambdaLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">lr_lambda</span><span class="o">=</span><span class="n">LRfuncs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">nbatch</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">n_b</span> <span class="o">/</span> <span class="n">nbatch</span><span class="p">))</span>
+    <span class="n">i_step</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">Ls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">i_step</span> <span class="o">&lt;</span> <span class="n">max_steps</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">sigma_thresh</span> <span class="ow">or</span> <span class="n">i_step</span> <span class="o">&lt;</span>
+                                    <span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">burnin</span><span class="p">)):</span>
+        <span class="n">i_step</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">ramp</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">i_step</span> <span class="o">/</span> <span class="n">burnin</span><span class="p">)</span>  <span class="c1"># ramp the entropy</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbatch</span><span class="p">):</span>
+            <span class="n">sgp_elbo</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_b</span><span class="p">)</span>  <span class="c1"># log p(Y|G), KL(Q(G), p(G))</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">sgp_elbo</span> <span class="o">+</span> <span class="p">(</span><span class="n">ramp</span> <span class="o">*</span> <span class="n">kl</span><span class="p">))</span>  <span class="c1"># -LL</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">i_step</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">print_sgp_progress</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i_step</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">sgp_elbo</span><span class="p">,</span> <span class="n">kl</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callback</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i_step</span><span class="p">)</span>
+
+        <span class="n">Ls</span><span class="p">[</span><span class="n">i_step</span> <span class="o">%</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="print_sgp_progress"><a class="viewcode-back" href="../../mgplvm/mgplvm.training.html#mgplvm.training.print_sgp_progress">[docs]</a><span class="k">def</span> <span class="nf">print_sgp_progress</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">sgp_elbo</span><span class="p">,</span> <span class="n">kl</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">manif</span><span class="p">)</span> <span class="o">==</span> <span class="n">So3</span><span class="p">:</span>
+        <span class="n">mu_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">manif</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="n">ms</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">manif</span><span class="p">]</span>
+        <span class="n">mu_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">m</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">ms</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mu_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c1">#if type(model) == mgplvm.models.SgpComb:</span>
+    <span class="c1">#    sigs = [r.prms.data.cpu().numpy() for r in model.rdist]</span>
+    <span class="c1">#    sigs = [np.concatenate([np.diag(s) for s in sig]) for sig in sigs]</span>
+    <span class="c1">#    sig = np.median(np.concatenate(sigs))</span>
+    <span class="c1">#    alpha_mag = torch.stack([p[0] for p in model.kernel.prms</span>
+    <span class="c1">#                             ]).mean().data.cpu().numpy()</span>
+    <span class="c1">#    ell_mag = torch.stack([p[1] for p in model.kernel.prms</span>
+    <span class="c1">#                           ]).mean().data.cpu().numpy()</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">rdist</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()]))</span>
+    <span class="n">alpha_mag</span><span class="p">,</span> <span class="n">ell_mag</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">val</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">prms</span>
+    <span class="p">]</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">iter </span><span class="si">{:4d}</span><span class="s1"> | elbo </span><span class="si">{:.4f}</span><span class="s1"> | kl </span><span class="si">{:.4f}</span><span class="s1"> | loss </span><span class="si">{:.4f}</span><span class="s1"> | |mu| </span><span class="si">{:.4f}</span><span class="s1"> | alpha_sqr </span><span class="si">{:.4f}</span><span class="s1"> | ell </span><span class="si">{:.4f}</span><span class="s1">&#39;</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span>
+             <span class="n">sgp_elbo</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
+             <span class="n">kl</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
+             <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span> <span class="n">mu_mag</span><span class="p">,</span> <span class="n">alpha_mag</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">ell_mag</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s2">&quot; | &quot;</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">lprior</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sort_params"><a class="viewcode-back" href="../../mgplvm/mgplvm.training.html#mgplvm.training.sort_params">[docs]</a><span class="k">def</span> <span class="nf">sort_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">hook</span><span class="p">,</span> <span class="n">trainGP</span><span class="p">,</span> <span class="n">svgp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;apply burnin period to Sigma_Q and alpha^2</span>
+<span class="sd">    allow for masking of certain conditions for use in crossvalidation&#39;&#39;&#39;</span>
+
+    <span class="c1"># parameters to be optimized</span>
+
+    <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[]]</span> <span class="k">if</span> <span class="n">svgp</span> <span class="k">else</span> <span class="p">[[],</span> <span class="p">[]]</span> 
+
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                <span class="n">param</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">gamma</span><span class="p">):</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">register_hook</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>  <span class="c1"># option to mask gradients</span>
+            <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                <span class="n">param</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">mu</span><span class="p">):</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">register_hook</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>  <span class="c1"># option to mask gradients</span>
+            <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">svgp</span> <span class="ow">and</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_mu</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                <span class="n">param</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_mu</span><span class="p">):</span>
+            <span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">svgp</span> <span class="ow">and</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_sqrt</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                <span class="n">param</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_sqrt</span><span class="p">):</span>
+            <span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">trainGP</span><span class="p">:</span>  <span class="c1"># only update GP parameters if trainGP</span>
+            <span class="c1"># add ell to group 2</span>
+            <span class="k">if</span> <span class="p">((</span><span class="s1">&#39;QuadExp&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">ell</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">param</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">ell</span><span class="p">)):</span>
+                <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">params</span></div>
+
+
+<div class="viewcode-block" id="sort_params_prod"><a class="viewcode-back" href="../../mgplvm/mgplvm.training.html#mgplvm.training.sort_params_prod">[docs]</a><span class="k">def</span> <span class="nf">sort_params_prod</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">hook</span><span class="p">,</span> <span class="n">trainGP</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;apply burnin period to Sigma_Q and alpha^2</span>
+<span class="sd">    allow for masking of certain conditions for use in crossvalidation&#39;&#39;&#39;</span>
+
+    <span class="c1"># parameters to be optimized</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[]]</span>
+    <span class="k">for</span> <span class="n">lat_dist</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="p">:</span>  <span class="c1"># variational widths</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="n">lat_dist</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">register_hook</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>
+        <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">manif</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">manif</span><span class="p">:</span>  <span class="c1"># varriational maens</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="n">manif</span><span class="o">.</span><span class="n">mu</span>
+        <span class="n">param</span><span class="o">.</span><span class="n">register_hook</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>
+        <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">kernel</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">kernels</span><span class="p">:</span>  <span class="c1"># kerernels</span>
+        <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">ell</span><span class="p">)</span>
+        <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">z</span><span class="p">:</span>  <span class="c1"># inducingg points</span>
+        <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+
+    <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">sgp</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span>  <span class="c1"># noise variance</span>
+
+    <span class="k">return</span> <span class="n">params</span></div>
+
+
+<div class="viewcode-block" id="svgp"><a class="viewcode-back" href="../../mgplvm/mgplvm.training.html#mgplvm.training.svgp">[docs]</a><span class="k">def</span> <span class="nf">svgp</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span>
+         <span class="n">model</span><span class="p">,</span>
+         <span class="n">device</span><span class="p">,</span>
+         <span class="n">optimizer</span><span class="o">=</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span>
+         <span class="n">outdir</span><span class="o">=</span><span class="s2">&quot;results/vanilla&quot;</span><span class="p">,</span>
+         <span class="n">max_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+         <span class="n">n_mc</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+         <span class="n">burnin</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+         <span class="n">lrate</span><span class="o">=</span><span class="mf">1E-3</span><span class="p">,</span>
+         <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">print_every</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+         <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">n_svgp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+         <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># neurons, conditions, samples</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span> <span class="k">if</span> <span class="n">ts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ts</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">data_size</span> <span class="o">=</span> <span class="n">m</span>  <span class="c1">#total conditions</span>
+
+    <span class="k">def</span> <span class="nf">generate_batch_idxs</span><span class="p">():</span>
+        <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">lprior</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Brownian&quot;</span><span class="p">:</span>
+            <span class="c1"># if prior is Brownian, then batches have to be contiguous</span>
+
+            <span class="n">i0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">data_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i0</span> <span class="o">&lt;</span> <span class="n">batch_size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">batch_idxs</span> <span class="o">=</span> <span class="n">idxs</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i0</span><span class="p">))]</span>
+            <span class="k">elif</span> <span class="n">i0</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">data_size</span> <span class="o">-</span> <span class="n">batch_size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">batch_idxs</span> <span class="o">=</span> <span class="n">idxs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">i0</span> <span class="o">-</span> <span class="n">batch_size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)):]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">batch_idxs</span> <span class="o">=</span> <span class="n">idxs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">i0</span> <span class="o">-</span> <span class="n">batch_size</span> <span class="o">/</span>
+                                            <span class="mi">2</span><span class="p">)):</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">i0</span> <span class="o">+</span>
+                                                          <span class="n">batch_size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))]</span>
+            <span class="c1">#print(len(batch_idxs))</span>
+            <span class="k">return</span> <span class="n">batch_idxs</span>
+
+            <span class="c1">#start = np.random.randint(data_size - batch_size)</span>
+            <span class="c1">#return idxs[start:start + batch_size]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">idxs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">batch_size</span><span class="p">]</span>
+
+    <span class="c1">#opt = optimizer(model.parameters(), lr=lrate)</span>
+
+    <span class="k">def</span> <span class="nf">_Tlearn_hook</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">grad</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="n">sort_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">_Tlearn_hook</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">svgp</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">opt</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="n">lrate</span><span class="p">)</span>  <span class="c1"># instantiate optimizer</span>
+    <span class="n">opt</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">({</span><span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+    <span class="n">opt</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">({</span><span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]})</span>
+
+    <span class="c1"># set learning rate schedule so sigma updates have a burn-in period</span>
+    <span class="k">def</span> <span class="nf">fburn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">n_svgp</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="c1">#only optimize</span>
+        <span class="n">x</span> <span class="o">-=</span> <span class="n">n_svgp</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">burnin</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">finit</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">n_svgp</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="n">LRfuncs</span> <span class="o">=</span> <span class="p">[</span><span class="n">finit</span><span class="p">,</span> <span class="n">fburn</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">LambdaLR</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">lr_lambda</span><span class="o">=</span><span class="n">LRfuncs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_steps</span><span class="p">):</span>  <span class="c1"># come up with a different stopping condition</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">ramp</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">i</span> <span class="o">/</span> <span class="n">burnin</span><span class="p">)</span>  <span class="c1"># ramp the entropy</span>
+
+        <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">svgp_lik</span><span class="p">,</span> <span class="n">svgp_kl</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">batch_idxs</span> <span class="o">=</span> <span class="n">generate_batch_idxs</span><span class="p">()</span>
+            <span class="n">svgp_lik</span><span class="p">,</span> <span class="n">svgp_kl</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                          <span class="n">n_mc</span><span class="p">,</span>
+                                          <span class="n">batch_idxs</span><span class="o">=</span><span class="n">batch_idxs</span><span class="p">,</span>
+                                          <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_idxs</span><span class="p">)</span>  <span class="c1">#use for printing likelihoods etc.</span>
+
+        <span class="n">svgp_elbo</span> <span class="o">=</span> <span class="n">svgp_lik</span> <span class="o">-</span> <span class="n">svgp_kl</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">svgp_elbo</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">ramp</span> <span class="o">*</span> <span class="n">kl</span><span class="p">)</span>  <span class="c1"># -LL</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">mu_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+                           <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                <span class="p">]))</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">iter </span><span class="si">{:3d}</span><span class="s1"> | elbo </span><span class="si">{:.3f}</span><span class="s1"> | svgp_kl</span><span class="si">{:.3f}</span><span class="s1"> | kl </span><span class="si">{:.3f}</span><span class="s1"> | loss </span><span class="si">{:.3f}</span><span class="s1"> &#39;</span>
+                <span class="o">+</span> <span class="s1">&#39;| |mu| </span><span class="si">{:.3f}</span><span class="s1"> | sig </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">i</span><span class="p">,</span>
+                    <span class="n">svgp_elbo</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
+                    <span class="n">svgp_kl</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
+                    <span class="n">kl</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
+                    <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span> <span class="n">mu_mag</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">msg</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">lprior</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callback</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

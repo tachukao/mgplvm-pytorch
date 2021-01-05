@@ -1,0 +1,523 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mgplvm.lpriors.common module &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.lpriors.euclidean module" href="mgplvm.lpriors.euclidean.html" />
+    <link rel="prev" title="mgplvm.lpriors package" href="mgplvm.lpriors.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.lpriors.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.lpriors.html#module-mgplvm.lpriors">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+        
+          <li><a href="mgplvm.lpriors.html">mgplvm.lpriors package</a> &raquo;</li>
+        
+      <li>mgplvm.lpriors.common module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/mgplvm/mgplvm.lpriors.common.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-mgplvm.lpriors.common">
+<span id="mgplvm-lpriors-common-module"></span><h1>mgplvm.lpriors.common module<a class="headerlink" href="#module-mgplvm.lpriors.common" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="mgplvm.lpriors.common.AR1">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">AR1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manif</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">ar1_phi</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar1_eta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar1_c</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#AR1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.AR1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.AR1.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#AR1.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.AR1.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.AR1.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.AR1.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.AR1.name">
+<code class="sig-name descname">name</code><em class="property"> = 'AR1'</em><a class="headerlink" href="#mgplvm.lpriors.common.AR1.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.AR1.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.AR1.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.AR1.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.AR1.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.lpriors.common.ARP">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">ARP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">manif</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">ar_phi</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar_eta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar_c</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#ARP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.ARP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.ARP.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#ARP.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.ARP.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.ARP.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.ARP.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.ARP.name">
+<code class="sig-name descname">name</code><em class="property"> = 'ARP'</em><a class="headerlink" href="#mgplvm.lpriors.common.ARP.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.ARP.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.ARP.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.ARP.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.ARP.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.lpriors.common.ARP_G">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">ARP_G</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">manif</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">ar_phi</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar_eta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar_c</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_eta</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">learn_phi</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">learn_c</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#ARP_G"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.ARP_G.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#ARP_G.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>g is (n_b x mx x d2)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.ARP_G.generate_trajectory">
+<code class="sig-name descname">generate_trajectory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">g0s</span></em>, <em class="sig-param"><span class="n">noise</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#ARP_G.generate_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G.generate_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate trajectory of length m drawn from the model.
+must provide a ‘seed’ of initial states
+g0 of dim p x d2</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.ARP_G.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.ARP_G.name">
+<code class="sig-name descname">name</code><em class="property"> = 'ARP'</em><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.ARP_G.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.ARP_G.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.lpriors.common.Brownian">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">Brownian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manif</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">brownian_eta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">brownian_c</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fixed_brownian_eta</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fixed_brownian_c</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Brownian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Brownian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Brownian.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Brownian.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Brownian.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Brownian.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.Brownian.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Brownian.name">
+<code class="sig-name descname">name</code><em class="property"> = 'Brownian'</em><a class="headerlink" href="#mgplvm.lpriors.common.Brownian.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Brownian.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.Brownian.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Brownian.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Brownian.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.lpriors.common.Gaussian">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">Gaussian</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manif</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">1.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Gaussian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Gaussian.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">5</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Gaussian.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>g: (n_b x mx x d)
+output: (n_b x mx)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Gaussian.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Gaussian.name">
+<code class="sig-name descname">name</code><em class="property"> = 'gaussian'</em><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Gaussian.prms">
+<em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Gaussian.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.lpriors.common.Lprior">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">Lprior</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manif</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Lprior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Lprior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.base.html#mgplvm.base.Module" title="mgplvm.base.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.base.Module</span></code></a></p>
+<p>Base kernel class</p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Lprior.msg">
+<em class="property">abstract property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.Lprior.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Lprior.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Lprior.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.lpriors.common.Null">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">Null</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manif</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Null"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Null" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Null.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Null.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Null.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>g: (n_b x mx x d)
+output: (n_b x mx)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Null.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.Null.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Null.name">
+<code class="sig-name descname">name</code><em class="property"> = 'null'</em><a class="headerlink" href="#mgplvm.lpriors.common.Null.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Null.prms">
+<code class="sig-name descname">prms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Null.prms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Null.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Null.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Null.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.lpriors.common.Uniform">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">Uniform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">manif</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Uniform.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Uniform.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Uniform.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Uniform.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.Uniform.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Uniform.name">
+<code class="sig-name descname">name</code><em class="property"> = 'uniform'</em><a class="headerlink" href="#mgplvm.lpriors.common.Uniform.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.lpriors.common.Uniform.prms">
+<code class="sig-name descname">prms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Uniform.prms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Uniform.prms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mgplvm.lpriors.common.Uniform.training">
+<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Uniform.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mgplvm.lpriors.euclidean.html" class="btn btn-neutral float-right" title="mgplvm.lpriors.euclidean module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mgplvm.lpriors.html" class="btn btn-neutral float-left" title="mgplvm.lpriors package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
