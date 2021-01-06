@@ -41,7 +41,7 @@ class GP(LpriorEuclid):
         #separate inducing points for each latent dimension
         z = InducingPoints(d, 1, n_z, z=zinit.repeat(d, 1, 1))
         lik = Gaussian(
-            d, variance=np.square(0.5)
+            d, variance=np.square(0.2), learn_sigma = False
         )  #.to(kernel.alpha.device) #consider fixing this to a small value as in GPFA
         self.svgp = Svgp(kernel, d, z, lik, whiten=True)  #construct svgp
 

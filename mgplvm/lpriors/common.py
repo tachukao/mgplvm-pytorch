@@ -224,7 +224,10 @@ class ARP(Lprior):
                  kmax: int = 5,
                  ar_phi=None,
                  ar_eta=None,
-                 ar_c=None):
+                 ar_c=None,
+                learn_phi = True,
+                learn_eta = True,
+                learn_c = True):
         '''
         x_t = c + \sum_{j=1}^p phi_j x_{t-1} + w_t
         w_t = N(0, eta)
@@ -235,11 +238,11 @@ class ARP(Lprior):
         self.kmax = kmax
 
         ar_phi = 0.0 * torch.ones(d, p) if ar_phi is None else ar_phi
-        ar_eta = 0.05 * torch.ones(d) if ar_eta is None else torch.sqrt(ar_eta)
+        ar_eta = 0.05 * torch.ones(d) if ar_eta is None else ar_eta
         ar_c = torch.zeros(d) if ar_c is None else ar_c
-        self.ar_phi = nn.Parameter(data=ar_phi, requires_grad=True)
-        self.ar_eta = nn.Parameter(data=ar_eta, requires_grad=True)
-        self.ar_c = nn.Parameter(data=ar_c, requires_grad=True)
+        self.ar_phi = nn.Parameter(data=ar_phi, requires_grad= (True if learn_phi else False) )
+        self.ar_eta = nn.Parameter(data=ar_eta, requires_grad= (True if learn_eta else False))
+        self.ar_c = nn.Parameter(data=ar_c, requires_grad= (True if learn_c else False))
 
     @property
     def prms(self):
@@ -266,7 +269,7 @@ class ARP(Lprior):
         ar_c, ar_phi, ar_eta = self.prms
         lp_msg = (' ar_c {:.3f} | ar_phi_avg {:.3f} | ar_eta {:.3f} |').format(
             ar_c.item(),
-            torch.mean(ar_phi).item(), ar_eta.item())
+            torch.mean(ar_phi).item(), ar_eta.sqrt().item())
         return lp_msg
 
 
