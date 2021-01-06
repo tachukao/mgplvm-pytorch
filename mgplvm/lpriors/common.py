@@ -33,8 +33,8 @@ class Uniform(Lprior):
         super().__init__(manif)
 
     def forward(self, g: Tensor, ts=None):
-        lp = self.manif.lprior(g)
-        return lp.to(g.device)
+        lp = self.manif.lprior(g) #(n_b, m)
+        return lp.to(g.device).sum(-1) #(n_b)
 
     def prms(self):
         pass
@@ -56,9 +56,9 @@ class Null(Lprior):
     def forward(self, g: Tensor, ts=None):
         '''
         g: (n_b x mx x d)
-        output: (n_b x mx)
+        output: (n_b)
         '''
-        return 0 * torch.ones(g.shape[:2])
+        return 0 * torch.ones(g.shape[0])
 
     def prms(self):
         pass
@@ -96,7 +96,7 @@ class Gaussian(Lprior):
     def forward(self, g, ts=None, kmax=5):
         '''
         g: (n_b x mx x d)
-        output: (n_b x mx)
+        output: (n_b)
         '''
         if g.device != self.dist.gamma.device:
             #print('putting things on the same device')
@@ -108,8 +108,8 @@ class Gaussian(Lprior):
         #project onto tangent space
         x = self.manif.logmap(g)
         # compute log prior
-        lq = self.manif.log_q(q.log_prob, g, self.manif.d, kmax)
-        return lq
+        lq = self.manif.log_q(q.log_prob, g, self.manif.d, kmax) #(n_b, m)
+        return lq.sum(-1)
 
     @property
     def msg(self):
@@ -158,10 +158,12 @@ class Brownian(Lprior):
         dx = self.manif.logmap(dg)
         normal = dists.Normal(loc=brownian_c, scale=torch.sqrt(brownian_eta))
         diagn = dists.Independent(normal, 1)
-        return self.manif.log_q(diagn.log_prob,
+        lq = self.manif.log_q(diagn.log_prob,
                                 dx,
                                 self.manif.d,
                                 kmax=self.kmax)
+        #(n_b, m) -> (n_b)
+        return lq.sum(-1)
 
     @property
     def msg(self):
@@ -203,10 +205,12 @@ class AR1(Lprior):
         # dy = torch.cat((dx[..., 0:1, :], dy), -2)
         normal = dists.Normal(loc=ar1_c, scale=torch.sqrt(ar1_eta))
         diagn = dists.Independent(normal, 1)
-        return self.manif.log_q(diagn.log_prob,
+        lq = self.manif.log_q(diagn.log_prob,
                                 dy,
                                 self.manif.d,
                                 kmax=self.kmax)
+        #(n_b, m) -> (n_b)
+        return lq.sum(-1)
 
     @property
     def msg(self):
@@ -240,9 +244,9 @@ class ARP(Lprior):
         ar_phi = 0.0 * torch.ones(d, p) if ar_phi is None else ar_phi
         ar_eta = 0.05 * torch.ones(d) if ar_eta is None else ar_eta
         ar_c = torch.zeros(d) if ar_c is None else ar_c
-        self.ar_phi = nn.Parameter(data=ar_phi, requires_grad= (True if learn_phi else False) )
-        self.ar_eta = nn.Parameter(data=ar_eta, requires_grad= (True if learn_eta else False))
-        self.ar_c = nn.Parameter(data=ar_c, requires_grad= (True if learn_c else False))
+        self.ar_phi = nn.Parameter(data=ar_phi, requires_grad= learn_phi )
+        self.ar_eta = nn.Parameter(data=ar_eta, requires_grad= learn_eta )
+        self.ar_c = nn.Parameter(data=ar_c, requires_grad= learn_c )
 
     @property
     def prms(self):
@@ -259,10 +263,15 @@ class ARP(Lprior):
         dy = dx[..., p:, :] - delta.sum(-1)
         normal = dists.Normal(loc=ar_c, scale=torch.sqrt(ar_eta))
         diagn = dists.Independent(normal, 1)
-        return self.manif.log_q(diagn.log_prob,
+        
+        #(nb, mx - p - 1)
+        lq = self.manif.log_q(diagn.log_prob,
                                 dy,
                                 self.manif.d,
                                 kmax=self.kmax)
+        
+        #in the future, we may want an explicit prior over the p initial points
+        return lq.sum(-1)
 
     @property
     def msg(self):
@@ -302,22 +311,13 @@ class ARP_G(Lprior):
         ar_c = 1e-3 * torch.randn(d) if ar_c is None else ar_c
 
         ### AR parameters
-        if learn_phi:
-            self.ar_phi = nn.Parameter(data=ar_phi, requires_grad=True)
-        else:
-            self.ar_phi = ar_phi
+        self.ar_phi = nn.Parameter(data=ar_phi, requires_grad=learn_phi)
 
         #w_t \sim Exp[ N(0, eta) ]
-        if learn_eta:
-            self.ar_eta = nn.Parameter(data=ar_eta, requires_grad=True)
-        else:
-            self.ar_eta = ar_eta
+        self.ar_eta = nn.Parameter(data=ar_eta, requires_grad=learn_eta)
 
         #parameterize as g_c = exp(x_c) for now
-        if learn_c:
-            self.ar_c = nn.Parameter(data=ar_c, requires_grad=True)
-        else:
-            self.ar_c = ar_c
+        self.ar_c = nn.Parameter(data=ar_c, requires_grad=learn_c)
 
     @property
     def prms(self):
@@ -382,11 +382,13 @@ class ARP_G(Lprior):
         x_err = self.manif.logmap(g_err)  # n_b x (mx-p) x d (on group)
 
         #sum over {x_err} s.t. Exp(x_err) = g_err by considering equivalent points in the algebra
-        #return log probability of each latent state -- (n_b x mx-p)
-        return self.manif.log_q(diagn.log_prob,
+        #compute log probability of each latent state -- (n_b x mx-p)
+        lq = self.manif.log_q(diagn.log_prob,
                                 x_err,
                                 self.manif.d,
                                 kmax=self.kmax)
+        #return sum over m -- probability of each trajectory
+        return lq.sum(-1)
 
     def generate_trajectory(self, m, g0s, noise=True):
         '''

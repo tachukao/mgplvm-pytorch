@@ -121,10 +121,10 @@ class SvgpLvm(nn.Module):
         svgp_elbo = svgp_lik.to(data.device) - svgp_kl.to(
             data.device)  #(n_b, )
 
-        prior = self.lprior(g, ts)  #(n_b, m, )
-        kl = lq - prior  #(n_b, m, )
+        prior = self.lprior(g, ts)  #(n_b, )
+        kl = lq.sum(-1) - prior  #(n_b, )
 
-        LLs = svgp_elbo - kl.sum(-1)  # LL for each batch (n_b, )
+        LLs = svgp_elbo - kl  # LL for each batch (n_b, )
         LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)) / (self.n *
                                                          self.lat_dist.m)
 

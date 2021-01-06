@@ -68,8 +68,10 @@ class GP(LpriorEuclid):
         #LLs = torch.stack([LL[0] - LL[1] for LL in LLs], dim = 0)
 
         lik, kl = self.svgp.elbo(x.shape[0], x.permute(2, 1, 0),
-                                 ts.reshape(1, 1, -1))
-        LLs = lik - kl
+                                 ts.reshape(1, 1, -1), by_sample = True)
+
+        #print(lik.shape, kl.shape, lik.device, kl.device)
+        LLs = lik - kl #(n_b)
 
         return LLs
 

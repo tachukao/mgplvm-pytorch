@@ -83,16 +83,17 @@ class Product(Combination):
 
 
 class QuadExpBase(Kernel):
-    def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True):
+    def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True, Y = None):
         super().__init__()
 
-        alpha = inv_softplus(torch.ones(
-            n, )) if alpha is None else inv_softplus(
-                torch.tensor(alpha, dtype=torch.get_default_dtype()))
-        if learn_alpha:
-            self.alpha = nn.Parameter(data=alpha, requires_grad=True)
+        if alpha is not None:
+            alpha = inv_softplus(torch.tensor(alpha, dtype=torch.get_default_dtype()))
+        elif Y is not None:
+            alpha = inv_softplus(torch.tensor(np.mean(Y[:, :, 0]**2, axis = 1)).sqrt())
         else:
-            self.alpha = nn.Parameter(data=alpha, requires_grad=False)
+            alpha = inv_softplus(torch.ones(n, ))            
+
+        self.alpha = nn.Parameter(data=alpha, requires_grad = learn_alpha)
 
         ell = inv_softplus(torch.ones(n, )) if ell is None else inv_softplus(
             torch.tensor(ell, dtype=torch.get_default_dtype()))
@@ -161,8 +162,9 @@ class QuadExp(QuadExpBase):
                  distance,
                  ell=None,
                  alpha=None,
-                 learn_alpha=True):
-        super().__init__(n, ell, alpha, learn_alpha)
+                 learn_alpha=True,
+                Y : np.ndarray = None):
+        super().__init__(n, ell, alpha, learn_alpha, Y = Y)
         self.distance = distance
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -354,19 +356,12 @@ class Linear(Kernel):
             alpha = torch.tensor(np.sqrt(np.var(Y[:, :, 0], axis=1) / d))
         else:
             alpha = torch.ones(n, )  #one per neuron
-
-        if learn_alpha:
-            self.alpha = nn.Parameter(data=alpha, requires_grad=True)
-        else:
-            self.alpha = nn.Parameter(data=alpha, requires_grad=False)
+        self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
 
         self.learn_weights = learn_weights
         #W = torch.ones(n, d ) #full weight matrix
         W = torch.randn(n, d) * 0.1
-        if learn_weights:
-            self.W = nn.Parameter(data=W, requires_grad=True)
-        else:
-            self.W = nn.Parameter(data=W, requires_grad=False)
+        self.W = nn.Parameter(data=W, requires_grad=learn_weights)
 
     def diagK(self, x: Tensor) -> Tensor:
         """

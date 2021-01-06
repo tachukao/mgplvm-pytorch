@@ -64,7 +64,7 @@ class Gaussian(Likelihood):
         y_samps = dist.sample()
         return y_samps
 
-    def variational_expectation(self, n_samples, y, fmu, fvar, by_batch=False):
+    def variational_expectation(self, n_samples, y, fmu, fvar, by_batch=False, by_sample = False):
         n_b, m = fmu.shape[0], fmu.shape[2]
         variance = self.prms
         ve1 = -0.5 * log2pi * m * self.n * n_samples * n_b
@@ -75,6 +75,9 @@ class Gaussian(Likelihood):
             exp = ve1.sum() / n_b + ve2.sum() / n_b + ve3.sum(1).sum(1).sum(
                 1) + ve4.sum(1).sum(1)
             #print(exp.shape)
+        elif by_sample: #return separate likelihood for each sample
+            exp = ve1.sum() / n_samples + ve2.sum() / n_samples + ve3.sum(0).sum(0).sum(
+                0) + ve4.sum()/n_samples
         else:
             exp = ve1.sum() + ve2.sum() + ve3.sum() + ve4.sum()
         return exp

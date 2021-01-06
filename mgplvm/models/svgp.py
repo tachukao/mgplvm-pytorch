@@ -105,7 +105,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
              n_b: int,
              y: Tensor,
              x: Tensor,
-             by_batch=False) -> Tuple[Tensor, Tensor]:
+             by_batch: bool = False,
+            by_sample: bool = False) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -136,10 +137,13 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                                                       y,
                                                       f_mean,
                                                       f_var,
-                                                      by_batch=by_batch)
+                                                      by_batch=by_batch,
+                                                     by_sample = by_sample)
         if by_batch:
             #print('svgp:', lik.shape, prior_kl.shape, f_mean.shape, f_var.shape)
-            return lik, torch.ones(n_b) * prior_kl.sum()
+            return lik, torch.ones(n_b).to(lik.device) * prior_kl.sum()
+        elif by_sample:
+            return lik, torch.ones(lik.shape).to(lik.device) * prior_kl.sum()
         else:
             lik = lik.sum()
             return lik, prior_kl.sum() * n_b
