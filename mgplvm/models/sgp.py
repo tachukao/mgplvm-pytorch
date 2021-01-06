@@ -72,8 +72,7 @@ class SgpBase(Module, metaclass=abc.ABCMeta):
 
         Notes
         -----
-        Implementation largely follows derivation of the ELBO presented in 
-        https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html
+        Implementation largely follows derivation of the ELBO presented `here <https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html>`_.
 
         """
 
@@ -171,8 +170,7 @@ class SgpBase(Module, metaclass=abc.ABCMeta):
 
         Notes
         -----
-        Implementation largely follows derivation of the predictive density presented in 
-        https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html
+        Implementation largely follows derivation of the predictive density presented `here <https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html>`_.
 
         """
 

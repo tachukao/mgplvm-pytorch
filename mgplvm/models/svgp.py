@@ -115,13 +115,14 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             data tensor with dimensions (n x m x n_samples)
         x : Tensor (single kernel) or Tensor list (product kernels)
             input tensor(s) with dimensions (n_b x d x m)
+
         Returns
         -------
         evidence lower bount : torch.Tensor
+
         Notes
         -----
-        Implementation largely follows derivation of the ELBO presented in 
-        https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html
+        Implementation largely follows derivation of the ELBO presented in `here <https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html>`_.
         """
 
         n_samples = y.shape[2]
@@ -177,6 +178,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             test input tensor(s) with dimensions (n_b x d x m)
         full_cov : bool
             returns full covariance if true otherwise returns the diagonal
+
         Returns
         -------
         mu : Tensor 
@@ -185,6 +187,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             variance/covariance of predictive density at test inputs [ s ]
             if full_cov is true returns full covariance, otherwise
             returns diagonal variance
+
         Notes
         -----
         """
@@ -272,6 +275,10 @@ class Svgp(SvgpBase):
             likleihood p(y | f) 
         whiten : Optional bool
             whiten q if true
+
+        Returns
+        -------
+        
         """
         # initalize q_sqrt^2 at the prior kzz
         n_inducing = z.n_z

@@ -1,23 +1,29 @@
-.. mGPLVM documentation master file, created by
-   sphinx-quickstart on Mon Dec 21 15:38:34 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+mGPLVM Documentation
+====================
 
-Welcome to mGPLVM's documentation!
-==================================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+This is a library for learning Gaussian process latent variable models (GPLVMs) with non-Euclidean latent variables, as proposed `here <https://papers.nips.cc/paper/2020/file/fedc604da8b0f9af74b6cfc0fab2163c-Paper.pdf>`_.
 
 .. toctree::
    :maxdepth: 1
-   :caption: mGPLVM API:
+   :glob:
+   :caption: Getting Started
 
-   mgplvm
-   mgplvm.models
-   mgplvm.lpriors
-   mgplvm.manifolds
+   install
+   example
+
+  
+.. toctree::
+   :maxdepth: 3
+   :glob:
+   :caption: API
+
+   mgplvm/mgplvm
+
+.. toctree::
+   :maxdepth:1
+   :caption: References
+
+   references
 
 
 Indices and tables

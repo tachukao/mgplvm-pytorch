@@ -5,6 +5,7 @@
 # from the environment for the first two.
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
+SPHINXAPIDOC  ?= sphinx-apidoc
 SOURCEDIR     = source
 BUILDDIR      = build
 
@@ -12,9 +13,28 @@ BUILDDIR      = build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
+clean:
+	rm -rf build
+
+api:
+	mkdir -p source/mgplvm
+	rm -rf source/mgplvm/*
+	@$(SPHINXAPIDOC) -e -o "$(SOURCEDIR)/mgplvm" ../mgplvm/
+
+huh:
+	cd $(BUILDDIR)/html && 
+
+deploy: html
+	touch $(BUILDDIR)/html/.nojekyll
+	cd $(BUILDDIR)/html/; echo "enter BUILDDIR"; \
+		git add .; \
+		git commit -m "rebuilding site `date`"; \
+		git push origin gh-pages
+
+.PHONY: help clean api deploy Makefile
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+

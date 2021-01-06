@@ -74,6 +74,7 @@ class SvgpLvm(nn.Module):
         batch_idxs: Optional int list
             if None then use all data and (batch_size == m)
             otherwise, (batch_size == len(batch_idxs))
+
         Returns
         -------
         svgp_elbo : Tensor
@@ -82,6 +83,7 @@ class SvgpLvm(nn.Module):
             estimated KL divergence per batch between variational distribution 
             and a manifold-specific prior (uniform for all manifolds except 
             Euclidean, for which we have a Gaussian N(0,I) prior)
+
         Notes
         ----
         ELBO of the model per batch is [ svgp_elbo - kl ]
