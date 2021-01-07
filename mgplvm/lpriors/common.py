@@ -255,20 +255,19 @@ class ARP(Lprior):
     def forward(self, g, ts=None):
         p = self.p
         ar_c, ar_phi, ar_eta = self.prms
-        ginv = self.manif.inverse(g)
-        dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
-        dx = self.manif.logmap(dg)
+        ginv = self.manif.inverse(g) # n_b x mx x d2 (on group)
+        dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :]) # n_b x (mx-1) x d2 (on group)
+        dx = self.manif.logmap(dg) # n_b x (mx-1) x d2 (on algebra)
         delta = ar_phi * torch.stack(
             [dx[..., p - j - 1:-j - 1, :] for j in range(p)], dim=-1)
-        dy = dx[..., p:, :] - delta.sum(-1)
-        normal = dists.Normal(loc=ar_c, scale=torch.sqrt(ar_eta))
-        diagn = dists.Independent(normal, 1)
+        dy = dx[..., p:, :] - delta.sum(-1) # n_b x (mx-1-p) x d2 (on group)
         
-        #(nb, mx - p - 1)
-        lq = self.manif.log_q(diagn.log_prob,
-                                dy,
-                                self.manif.d,
-                                kmax=self.kmax)
+        lq = 0
+        scale = torch.sqrt(ar_eta)
+        for j in range(self.d):
+            q_d = dists.Normal(ar_c[j], scale[j])
+            newlq = self.manif.log_q(q_d.log_prob, dy[..., j, None], 1, kmax = self.kmax)
+            lq += newlq.sum(dim = -1) #(n_b, m_x-p-1)
         
         #in the future, we may want an explicit prior over the p initial points
         return lq.sum(-1)
@@ -372,21 +371,17 @@ class ARP_G(Lprior):
         g_err = self.manif.gmul(g_true,
                                 g_pred_inv)  # n_b x (mx-p) x d2 (on group)
 
-        #likelihood of errors is given by a Gaussian projected onto the manifold
-        normal = dists.Normal(loc=0,
-                              scale=torch.ones(self.manif.d) *
-                              torch.sqrt(ar_eta))
-        diagn = dists.Independent(normal, 1)  #assume diagonal covariance
-
         #compute an x_err s.t. Exp(x_err) = g_err
         x_err = self.manif.logmap(g_err)  # n_b x (mx-p) x d (on group)
 
-        #sum over {x_err} s.t. Exp(x_err) = g_err by considering equivalent points in the algebra
-        #compute log probability of each latent state -- (n_b x mx-p)
-        lq = self.manif.log_q(diagn.log_prob,
-                                x_err,
-                                self.manif.d,
-                                kmax=self.kmax)
+        #likelihood of errors is given by a diagonal Gaussian projected onto the manifold
+        lq = 0
+        scale = torch.ones(self.manif.d) * torch.sqrt(ar_eta)
+        for j in range(self.d):
+            q_d = dists.Normal(scale[j])
+            newlq = self.manif.log_q(q_d.log_prob, dy[..., j, None], 1, kmax = self.kmax)
+            lq += newlq.sum(dim = -1) #(n_b x mx-p)
+        
         #return sum over m -- probability of each trajectory
         return lq.sum(-1)
 
