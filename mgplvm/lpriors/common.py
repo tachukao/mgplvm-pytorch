@@ -277,8 +277,8 @@ class ARP(Lprior):
     def msg(self):
         ar_c, ar_phi, ar_eta = self.prms
         lp_msg = (' ar_c {:.3f} | ar_phi_avg {:.3f} | ar_eta {:.3f} |').format(
-            ar_c.item(),
-            torch.mean(ar_phi).item(), ar_eta.sqrt().item())
+            ar_c.detach().cpu().mean(),
+            ar_phi.detach().cpu().mean(), ar_eta.detach().cpu().sqrt().mean())
         return lp_msg
 
 
