@@ -207,7 +207,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         kzx = kernel(z, x)  # dims: (1 x n x n_inducing x m)
         e = torch.eye(self.n_inducing,
                       dtype=torch.get_default_dtype()).to(kzz.device)
-
+        
         # [ l ] has dims: (1 x n x n_inducing x n_inducing)
         l = torch.cholesky(kzz + (jitter * e), upper=False)
         # [ alpha ] has dims: (n_b x n x n_inducing x m)

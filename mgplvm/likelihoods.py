@@ -86,7 +86,7 @@ class Gaussian(Likelihood):
 class Poisson(Likelihood):
     def __init__(self,
                  n: int,
-                 inv_link=torch.exp,
+                 inv_link='exp',#torch.exp,
                  binsize=1,
                  c: Optional[Tensor] = None,
                  d: Optional[Tensor] = None,
@@ -115,23 +115,39 @@ class Poisson(Likelihood):
 
     def sample(self, f_samps):
         c, d = self.prms
-        lambd = self.binsize * self.inv_link(c[None, ..., None] * f_samps +
+        
+        #######
+        if self.inv_link == 'exp':
+            lambd = self.binsize * torch.exp(c[None, ..., None] * f_samps +
                                              d[None, ..., None])
+        else:    
+            lambd = self.binsize * self.inv_link(c[None, ..., None] * f_samps +
+                                             d[None, ..., None])
+        #######
+            
+        #lambd = self.binsize * self.inv_link(c[None, ..., None] * f_samps +
+        #                                     d[None, ..., None])
         #sample from p(y|f)
         dist = torch.distributions.Poisson(lambd)
         y_samps = dist.sample()
         return y_samps
 
-    def variational_expectation(self, n_samples, y, fmu, fvar, gh=False):
+    def variational_expectation(self, n_samples, y, fmu, fvar, gh=False,
+                               by_batch=False, by_sample = False):
         c, d = self.prms
         fmu = c[..., None, None] * fmu + d[..., None, None]
         fvar = fvar * torch.square(c[..., None])
-        if self.inv_link == torch.exp and (not gh):
+        #if self.inv_link == torch.exp and (not gh):
+        if self.inv_link == 'exp' and (not gh):
             n_b = fmu.shape[0]
             v1 = (y * fmu) - (self.binsize *
                               torch.exp(fmu + 0.5 * fvar[..., None]))
             v2 = (y * np.log(self.binsize) - torch.lgamma(y + 1)) * n_b
-            return v1.sum() + v2.sum()
+            #print(v1.shape, v2.shape)
+            if by_batch:
+                return v1.sum(-1).sum(-1).sum(-1) + v2.sum()/n_b
+            else:
+                return v1.sum() + v2.sum()
         else:
             # use Gauss-Hermite quadrature to approximate integral
             locs, ws = np.polynomial.hermite.hermgauss(self.n_gh_locs)
@@ -197,7 +213,7 @@ class NegativeBinomial(Likelihood):
                                        logits=rate[..., None, :])
             return p.log_prob(y[..., None])
 
-    def variational_expectation(self, n_samples, y, fmu, fvar):
+    def variational_expectation(self, n_samples, y, fmu, fvar, by_batch=False, by_sample = False):
         total_count, c, d = self.prms
         fmu = c[..., None, None] * fmu + d[..., None, None]
         fvar = fvar * torch.square(c[..., None])
@@ -272,7 +288,7 @@ class CMPoisson(Likelihood):
         lp = p - M
         return lp
 
-    def variational_expectation(self, n_samples, y, fmu, fvar):
+    def variational_expectation(self, n_samples, y, fmu, fvar, by_batch=False, by_sample = False):
         warnings.warn(
             "CMP variational expectation not properly tested: use with caution"
         )

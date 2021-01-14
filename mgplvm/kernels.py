@@ -385,8 +385,9 @@ class Linear(Kernel):
 
         if self.learn_weights:
             x = (W[:, :, None] * x).sum(dim=-2, keepdim=True)  # n x 1 x mx
+            
         #x = W[:, :, None] * x
-
+        
         sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
         diag = (sqr_alpha * torch.square(x)).sum(dim=-2)
 
@@ -442,10 +443,11 @@ class Linear(Kernel):
 
         #x = W[:, :, None] * x
         #y = W[:, :, None] * y
+        
         sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
         distance = self.distance(x, y)  # dims (... n x mx x my)
-
         kxy = sqr_alpha * distance
+
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:

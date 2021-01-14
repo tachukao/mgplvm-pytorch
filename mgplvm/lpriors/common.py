@@ -267,7 +267,10 @@ class ARP(Lprior):
                              dy[..., j, None],
                              1,
                              kmax=self.kmax).sum(-1) for j in range(self.d)
-        ]).sum(0)
+        ]) #(1 x n_b x m-p-1)
+        
+        #print(lq.shape)
+        lq = lq.sum(0).sum(-1)
 
         #in the future, we may want an explicit prior over the p initial points
         return lq

@@ -90,7 +90,7 @@ class SvgpLvm(nn.Module):
         """
 
         data = data if batch_idxs is None else data[:, batch_idxs, :]
-        ts = ts if None in [ts, batch_idxs] else ts[batch_idxs]
+        ts = ts if (ts is None or batch_idxs is None) else ts[batch_idxs]
 
         _, _, n_samples = data.shape  #n x mx x n_samples
         g, lq = self.lat_dist.sample(torch.Size([n_mc]), batch_idxs)
