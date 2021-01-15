@@ -81,7 +81,7 @@ class ReLie(Module):
                  gammas=None,
                  Tinds=None,
                  fixed_gamma=False,
-                diagonal = False):
+                 diagonal=False):
         '''
         gammas is the reference distribution which is inverse transformed before storing
         since it's transformed by constraints.tril when used.
@@ -98,21 +98,21 @@ class ReLie(Module):
         d = self.d
         self.with_mu = with_mu  # also learn a mean parameter
         self.diagonal = diagonal
-        
+
         if self.with_mu:
             self.mu = nn.Parameter(data=torch.Tensor(m, d), requires_grad=True)
             self.mu.data = torch.randn(m, d) * 0.001
 
-        gamma = torch.ones(m,d)*sigma
+        gamma = torch.ones(m, d) * sigma
         gamma = inv_softplus(gamma) if diagonal else torch.diag_embed(gamma)
         if gammas is not None:
             gamma[Tinds, ...] = torch.tensor(gammas,
                                              dtype=torch.get_default_dtype())
-        
+
         if not diagonal:
             gamma = transform_to(constraints.lower_cholesky).inv(gamma)
 
-        if fixed_gamma: #don't update the covariance matrix
+        if fixed_gamma:  #don't update the covariance matrix
             self.gamma = nn.Parameter(data=gamma, requires_grad=False)
         else:
             self.gamma = nn.Parameter(data=gamma, requires_grad=True)
@@ -147,22 +147,22 @@ class ReLie(Module):
         q = self.mvn(batch_idxs)
         # sample a batch with dims: (n_mc x batch_size x d)
         x = q.rsample(size)
-        
-        if self.diagonal: #consider factorized variational distribution
+
+        if self.diagonal:  #consider factorized variational distribution
             gamma = self.prms
             mu = torch.zeros(self.m).to(gamma.device)
             if batch_idxs is not None:
                 gamma, mu = gamma[batch_idxs], mu[batch_idxs]
-            lq = 0 #E_Q[logQ]
+            lq = 0  #E_Q[logQ]
             for j in range(self.d):
                 tril_d = gamma[..., j, j]
                 q_d = Normal(mu[..., None], tril_d[..., None])
-                newlq = self.manif.log_q(q_d.log_prob, x[..., j, None], 1, self.kmax)
+                newlq = self.manif.log_q(q_d.log_prob, x[..., j, None], 1,
+                                         self.kmax)
                 #print(newlq.shape)
-                lq += newlq.sum(dim = -1)
+                lq += newlq.sum(dim=-1)
         else:
             lq = self.manif.log_q(q.log_prob, x, self.manif.d, self.kmax)
-            print(lq.shape)
 
         # transform x to group with dims (n_mc x m x d)
         gtilde = self.manif.expmap(x)

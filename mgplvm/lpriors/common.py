@@ -33,8 +33,8 @@ class Uniform(Lprior):
         super().__init__(manif)
 
     def forward(self, g: Tensor, ts=None):
-        lp = self.manif.lprior(g) #(n_b, m)
-        return lp.to(g.device).sum(-1) #(n_b)
+        lp = self.manif.lprior(g)  #(n_b, m)
+        return lp.to(g.device).sum(-1)  #(n_b)
 
     def prms(self):
         pass
@@ -108,7 +108,7 @@ class Gaussian(Lprior):
         #project onto tangent space
         x = self.manif.logmap(g)
         # compute log prior
-        lq = self.manif.log_q(q.log_prob, g, self.manif.d, kmax) #(n_b, m)
+        lq = self.manif.log_q(q.log_prob, g, self.manif.d, kmax)  #(n_b, m)
         return lq.sum(-1)
 
     @property
@@ -158,10 +158,7 @@ class Brownian(Lprior):
         dx = self.manif.logmap(dg)
         normal = dists.Normal(loc=brownian_c, scale=torch.sqrt(brownian_eta))
         diagn = dists.Independent(normal, 1)
-        lq = self.manif.log_q(diagn.log_prob,
-                                dx,
-                                self.manif.d,
-                                kmax=self.kmax)
+        lq = self.manif.log_q(diagn.log_prob, dx, self.manif.d, kmax=self.kmax)
         #(n_b, m) -> (n_b)
         return lq.sum(-1)
 
@@ -205,10 +202,7 @@ class AR1(Lprior):
         # dy = torch.cat((dx[..., 0:1, :], dy), -2)
         normal = dists.Normal(loc=ar1_c, scale=torch.sqrt(ar1_eta))
         diagn = dists.Independent(normal, 1)
-        lq = self.manif.log_q(diagn.log_prob,
-                                dy,
-                                self.manif.d,
-                                kmax=self.kmax)
+        lq = self.manif.log_q(diagn.log_prob, dy, self.manif.d, kmax=self.kmax)
         #(n_b, m) -> (n_b)
         return lq.sum(-1)
 
@@ -229,12 +223,16 @@ class ARP(Lprior):
                  ar_phi=None,
                  ar_eta=None,
                  ar_c=None,
-                learn_phi = True,
-                learn_eta = True,
-                learn_c = True):
+                 learn_phi=True,
+                 learn_eta=True,
+                 learn_c=True):
         '''
-        x_t = c + \sum_{j=1}^p phi_j x_{t-1} + w_t
-        w_t = N(0, eta)
+        ..math::
+          :nowrap:
+          \\begin{eqnarray}
+          x_t &= c + \\sum_{j=1}^p phi_j x_{t-1} + w_t \\\\
+          w_t &= N(0, eta)
+          \\end{eqnarray}
         '''
         super().__init__(manif)
         d = self.d
@@ -244,9 +242,9 @@ class ARP(Lprior):
         ar_phi = 0.0 * torch.ones(d, p) if ar_phi is None else ar_phi
         ar_eta = 0.05 * torch.ones(d) if ar_eta is None else ar_eta
         ar_c = torch.zeros(d) if ar_c is None else ar_c
-        self.ar_phi = nn.Parameter(data=ar_phi, requires_grad= learn_phi )
-        self.ar_eta = nn.Parameter(data=ar_eta, requires_grad= learn_eta )
-        self.ar_c = nn.Parameter(data=ar_c, requires_grad= learn_c )
+        self.ar_phi = nn.Parameter(data=ar_phi, requires_grad=learn_phi)
+        self.ar_eta = nn.Parameter(data=ar_eta, requires_grad=learn_eta)
+        self.ar_c = nn.Parameter(data=ar_c, requires_grad=learn_c)
 
     @property
     def prms(self):
@@ -255,29 +253,35 @@ class ARP(Lprior):
     def forward(self, g, ts=None):
         p = self.p
         ar_c, ar_phi, ar_eta = self.prms
-        ginv = self.manif.inverse(g) # n_b x mx x d2 (on group)
-        dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :]) # n_b x (mx-1) x d2 (on group)
-        dx = self.manif.logmap(dg) # n_b x (mx-1) x d2 (on algebra)
+        ginv = self.manif.inverse(g)  # n_b x mx x d2 (on group)
+        dg = self.manif.gmul(ginv[..., 0:-1, :],
+                             g[..., 1:, :])  # n_b x (mx-1) x d2 (on group)
+        dx = self.manif.logmap(dg)  # n_b x (mx-1) x d2 (on algebra)
         delta = ar_phi * torch.stack(
             [dx[..., p - j - 1:-j - 1, :] for j in range(p)], dim=-1)
-        dy = dx[..., p:, :] - delta.sum(-1) # n_b x (mx-1-p) x d2 (on group)
-        
-        lq = 0
+        dy = dx[..., p:, :] - delta.sum(-1)  # n_b x (mx-1-p) x d2 (on group)
+
         scale = torch.sqrt(ar_eta)
-        for j in range(self.d):
-            q_d = dists.Normal(ar_c[j], scale[j])
-            newlq = self.manif.log_q(q_d.log_prob, dy[..., j, None], 1, kmax = self.kmax)
-            lq += newlq.sum(dim = -1) #(n_b, m_x-p-1)
+        lq = torch.stack([
+            self.manif.log_q(dists.Normal(ar_c[j], scale[j]).log_prob,
+                             dy[..., j, None],
+                             1,
+                             kmax=self.kmax).sum(-1) for j in range(self.d)
+        ]) #(1 x n_b x m-p-1)
         
+        #print(lq.shape)
+        lq = lq.sum(0).sum(-1)
+
         #in the future, we may want an explicit prior over the p initial points
-        return lq.sum(-1)
+        return lq
 
     @property
     def msg(self):
         ar_c, ar_phi, ar_eta = self.prms
         lp_msg = (' ar_c {:.3f} | ar_phi_avg {:.3f} | ar_eta {:.3f} |').format(
             ar_c.detach().cpu().mean(),
-            ar_phi.detach().cpu().mean(), ar_eta.detach().cpu().sqrt().mean())
+            ar_phi.detach().cpu().mean(),
+            ar_eta.detach().cpu().sqrt().mean())
         return lp_msg
 
 
@@ -295,8 +299,10 @@ class ARP_G(Lprior):
                  learn_phi=True,
                  learn_c=True):
         '''
-        g_t^tilde = g_c * \prod_{j=p}^1 exp(a_j*log(g_t-j*g_t-j-1)) * g_t-1
-        Log[ g_t^tilde g_(t-1)^(-1) ] ~ N(0, eta)
+        .. math::
+
+            \\tilde{g}_t &= g_c \\prod_{j=p}^1 \\exp(a_j \\log(g_t-j*g_{t-j-1})) g_{t-1}
+            \\text{Log}[ \\tilde{g}_t g_{t-1}^(-1) ] \\sim N(0, \\eta)
         '''
         super().__init__(manif)
         d = self.d
@@ -375,15 +381,17 @@ class ARP_G(Lprior):
         x_err = self.manif.logmap(g_err)  # n_b x (mx-p) x d (on group)
 
         #likelihood of errors is given by a diagonal Gaussian projected onto the manifold
-        lq = 0
         scale = torch.ones(self.manif.d) * torch.sqrt(ar_eta)
-        for j in range(self.d):
-            q_d = dists.Normal(scale[j])
-            newlq = self.manif.log_q(q_d.log_prob, dy[..., j, None], 1, kmax = self.kmax)
-            lq += newlq.sum(dim = -1) #(n_b x mx-p)
-        
+
+        lq = torch.stack([
+            self.manif.log_q(dists.Normal(ar_c[j], scale[j]).log_prob,
+                             x_err[..., j, None],
+                             1,
+                             kmax=self.kmax).sum(-1) for j in range(self.d)
+        ]).sum(0)
+
         #return sum over m -- probability of each trajectory
-        return lq.sum(-1)
+        return lq
 
     def generate_trajectory(self, m, g0s, noise=True):
         '''
