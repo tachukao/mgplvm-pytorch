@@ -118,10 +118,9 @@ def sort_params(model, hook, trainGP, svgp=False):
     # parameters to be optimized
 
     params: List[List[Tensor]] = [[], [], []] if svgp else [[], []]
-
     for param in model.parameters():
-        if (param.shape == model.lat_dist.gamma.shape) and torch.all(
-                param == model.lat_dist.gamma):
+        if (param.shape == model.lat_dist.prms[1].shape) and torch.all(
+                param == model.lat_dist.prms[1]):
             param.register_hook(hook)  # option to mask gradients
             params[1].append(param)
         elif (param.shape == model.lat_dist.prms[0].shape) and torch.all(

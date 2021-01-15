@@ -6,41 +6,24 @@ from typing import Tuple
 
 
 class Rdist(Module, metaclass=abc.ABCMeta):
-    def __init__(self, manif: Manifold, m: int, kmax: int):
+    def __init__(self, manif: Manifold, kmax: int):
         super(Rdist, self).__init__()
         self.manif = manif
         self.d = manif.d
-        self.m = m
         self.kmax = kmax
 
     @abc.abstractmethod
-    def lat_gmu(self) -> Tensor:
+    def lat_gmu(self, Y, batch_idxs) -> Tensor:
         pass
 
     @abc.abstractmethod
-    def lat_gamma(self) -> Tensor:
+    def lat_gamma(self, Y, batch_idxs) -> Tensor:
         pass
 
     @abc.abstractmethod
-    def lat_prms(self) -> Tuple[Tensor, Tensor]:
-        pass
-
-
-class RdistAmortized(Module, metaclass=abc.ABCMeta):
-    def __init__(self, manif: Manifold, kmax: int):
-        super(RdistAmortized, self).__init__()
-        self.manif = manif
-        self.d = manif.d
-        self.kmax = kmax
-
-    @abc.abstractmethod
-    def lat_gmu(self, Y) -> Tensor:
+    def lat_prms(self, Y, batch_idxs) -> Tuple[Tensor, Tensor]:
         pass
 
     @abc.abstractmethod
-    def lat_gamma(self, Y) -> Tensor:
-        pass
-
-    @abc.abstractmethod
-    def lat_prms(self, Y) -> Tuple[Tensor, Tensor]:
+    def sample(self, size, Y, batch_idxs, kmax) -> Tuple[Tensor, Tensor]:
         pass

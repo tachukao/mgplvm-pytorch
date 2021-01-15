@@ -71,7 +71,7 @@ def test_GP_prior():
     data = torch.tensor(Y).to(device)
     ts = torch.arange(m).to(device)
     _, _, n_samples = data.shape  #n x mx x n_samples
-    g, lq = mod.lat_dist.sample(torch.Size([n_mc]), None)
+    g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
 
     x = g  #input to prior
 

@@ -88,12 +88,12 @@ class SvgpLvm(nn.Module):
         ELBO of the model per batch is [ svgp_lik - svgp_kl - kl ]
         """
 
+        _, _, n_samples = data.shape  #n x mx x n_samples
+        g, lq = self.lat_dist.sample(torch.Size([n_mc]), data, batch_idxs)
+        # g is shape (n_mc, m, d)
+
         data = data if batch_idxs is None else data[:, batch_idxs, :]
         ts = ts if (ts is None or batch_idxs is None) else ts[batch_idxs]
-
-        _, _, n_samples = data.shape  #n x mx x n_samples
-        g, lq = self.lat_dist.sample(torch.Size([n_mc]), batch_idxs)
-        # g is shape (n_mc, m, d)
 
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions

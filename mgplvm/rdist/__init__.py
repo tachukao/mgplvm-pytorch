@@ -1,2 +1,2 @@
-from .common import Rdist, RdistAmortized
+from .common import Rdist
 from .relie import (ReLie, ReLieAmortized)
