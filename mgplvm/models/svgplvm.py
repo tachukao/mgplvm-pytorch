@@ -60,7 +60,7 @@ class SvgpLvm(nn.Module):
         self.lat_dist = lat_dist
         self.lprior = lprior
 
-    def elbo(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
+    def elbo(self, data, n_mc, kmax=5, batch_idxs=None, ts=None, neuron_idxs = None):
         """
         Parameters
         ----------
@@ -84,7 +84,7 @@ class SvgpLvm(nn.Module):
 
         Notes
         -----
-        ELBO of the model per batch is [ svgp_lik - svgp_kl - kl ]
+        ELBO of the model per batch is [ svgp_elbo - kl ]
         """
         
         data = data if batch_idxs is None else data[:, batch_idxs, :]
@@ -97,6 +97,8 @@ class SvgpLvm(nn.Module):
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
         svgp_elbo = self.svgp.elbo(n_mc, data, g.permute(0, 2, 1)) #(n_mc x n x n_samples)
+        if neuron_idxs is not None:
+            svgp_elbo = svgp_elbo[:, neuron_idxs, :]
         
         # compute kl term for the latents (n_mc, )
         prior = self.lprior(g, ts)  #(n_mc, )
@@ -104,7 +106,7 @@ class SvgpLvm(nn.Module):
         
         return svgp_elbo, kl
         
-    def forward(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
+    def forward(self, data, n_mc, kmax=5, batch_idxs=None, ts=None, neuron_idxs = None):
         """
         Parameters
         ----------
@@ -126,7 +128,7 @@ class SvgpLvm(nn.Module):
         """
 
         #(n_mc, n, n_samples), (n_mc, n, n_samples), (n_mc)
-        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, batch_idxs = batch_idxs, ts = ts)
+        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, batch_idxs = batch_idxs, ts = ts, neuron_idxs = neuron_idxs)
         
         #sum over neurons, mean over  MC samples
         svgp_elbo = svgp_elbo.sum()/n_mc
