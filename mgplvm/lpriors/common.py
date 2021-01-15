@@ -2,10 +2,12 @@ import abc
 import torch
 from torch import Tensor, nn
 import torch.distributions as dists
+from torch.distributions.multivariate_normal import MultivariateNormal
+from torch.distributions.normal import Normal
+from torch.distributions import transform_to, constraints
 import numpy as np
 from ..base import Module
 from ..manifolds.base import Manifold
-from ..rdist import MVN
 
 
 class Lprior(Module, metaclass=abc.ABCMeta):
@@ -71,7 +73,7 @@ class Null(Lprior):
 class Gaussian(Lprior):
     name = "gaussian"
 
-    def __init__(self, manif, sigma=1.5):
+    def __init__(self, manif, sigma: float = 1.5):
         '''
         Gaussian prior for Euclidean space and wrapped Gaussian for other manifolds
         Euclidean is fixed N(0, I) since the space can be scaled and rotated freely
@@ -80,31 +82,38 @@ class Gaussian(Lprior):
         '''
         super().__init__(manif)
 
-        if 'Euclid' in manif.name:
-            #N(0,I) can always be recovered from a scaling/rotation of the space
-            dist = MVN(1, manif.d, sigma=1, fixed_gamma=True)
-        else:
-            #parameterize the covariance matrix
-            dist = MVN(1, manif.d, sigma=sigma, fixed_gamma=False)
+        #N(0,I) can always be recovered from a scaling/rotation of the space
+        sigma, fixed_gamma = (1, True) if 'Euclid' in manif.name else (sigma,
+                                                                       False)
+        gamma = torch.diag_embed(torch.ones(1, manif.d) * sigma)
+        gamma = transform_to(constraints.lower_cholesky).inv(gamma)
 
-        self.dist = dist
+        if fixed_gamma:
+            #don't update the covariance matrix
+            self.gamma = gamma
+        else:
+            self.gamma = nn.Parameter(data=gamma, requires_grad=True)
+        mu = torch.zeros(1, manif.d).to(gamma.device)
+        self.dist = MultivariateNormal(mu, scale_tril=gamma)
 
     @property
     def prms(self):
-        return self.dist.prms
+        gamma = transform_to(MultivariateNormal.arg_constraints['scale_tril'])(
+            self.gamma)
+        return gamma
 
     def forward(self, g, ts=None, kmax=5):
         '''
         g: (n_b x mx x d)
         output: (n_b)
         '''
-        if g.device != self.dist.gamma.device:
+        if g.device != self.gamma.device:
             #print('putting things on the same device')
-            self.dist.gamma = self.dist.gamma.to(g.device)
+            self.gamma = self.gamma.to(g.device)
             #print(self.dist.gamma.device, '\n')
 
         # return reference distribution
-        q = self.dist()
+        q = self.dist
         #project onto tangent space
         x = self.manif.logmap(g)
         # compute log prior
@@ -267,8 +276,8 @@ class ARP(Lprior):
                              dy[..., j, None],
                              1,
                              kmax=self.kmax).sum(-1) for j in range(self.d)
-        ]) #(1 x n_b x m-p-1)
-        
+        ])  #(1 x n_b x m-p-1)
+
         #print(lq.shape)
         lq = lq.sum(0).sum(-1)
 
