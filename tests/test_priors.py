@@ -76,31 +76,24 @@ def test_GP_prior():
         mod.lprior.svgp.elbo(1, x[i, :, :, None].permute(1, 0, 2),
                              ts.reshape(1, 1, -1)) for i in range(x.shape[0])
     ]
-    lik1_b = torch.stack([LL[0] for LL in LLs1],
-                       dim=0)  #sum likelihood across samples of x
-    kl1_b = torch.stack([LL[1] for LL in LLs1],
-                      dim=0)  #sum KL across samples of x
-    lik1, kl1 = lik1_b.sum(), kl1_b.sum()
+    elbo1_b = torch.stack([LL.sum() for LL in LLs1],dim=0)
+
 
     #### try to batch things ####
-    lik2_b, kl2_b = mod.lprior.svgp.elbo(x.shape[0], x.permute(2, 1, 0),
-                                     ts.reshape(1, 1, -1), by_sample = True)
-    lik2, kl2 = lik2_b.sum(), kl2_b.sum()
-    print(lik1_b.shape, kl1_b.shape, lik2_b.shape, kl2_b.shape)
+    elbo2_b = mod.lprior.svgp.elbo(x.shape[0], x.permute(2, 1, 0),
+                                     ts.reshape(1, 1, -1))
+    elbo2_b = elbo2_b.sum(0).sum(0)
+    print(elbo1_b.shape, elbo2_b.shape)    
     
 
     ### print comparison ###
-    print('ELBOs:', (lik1 - kl1).detach().data, (lik2 - kl2).detach().data)
-    print('likelihoods:', lik1.detach().data, lik2.detach().data)
-    print('KLs:', kl1.detach().data, kl2.detach().data)
-    assert torch.isclose((lik1 - kl1).detach().data,
-                         (lik2 - kl2).detach().data)
+    print('ELBOs:', elbo1_b.sum().detach().data, elbo2_b.sum().detach().data)
+    assert all(torch.isclose(elbo1_b.detach().data,
+                         elbo2_b.detach().data))
     
     
-    print(kl1_b[:5])
-    print(kl2_b[:5])
-    print(lik1_b[:5])
-    print(lik2_b[:5])
+    print(elbo1_b[:5])
+    print(elbo2_b[:5])
 
 
 if __name__ == '__main__':

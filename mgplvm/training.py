@@ -245,16 +245,15 @@ def svgp(Y,
         ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
 
         if batch_size is None:
-            svgp_lik, svgp_kl, kl = model(data, n_mc, batch_idxs=None, ts=ts)
+            svgp_elbo, kl = model(data, n_mc, batch_idxs=None, ts=ts)
         else:
             batch_idxs = generate_batch_idxs()
-            svgp_lik, svgp_kl, kl = model(data,
+            svgp_elbo, kl = model(data,
                                           n_mc,
                                           batch_idxs=batch_idxs,
                                           ts=ts)
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
-        svgp_elbo = svgp_lik - svgp_kl
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
         loss.backward()
         opt.step()
@@ -270,11 +269,10 @@ def svgp(Y,
                     for sig in model.lat_dist.prms.data.cpu().numpy()
                 ]))
             msg = (
-                '\riter {:3d} | elbo {:.3f} | svgp_kl{:.3f} | kl {:.3f} | loss {:.3f} '
+                '\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} '
                 + '| |mu| {:.3f} | sig {:.3f} |').format(
                     i,
                     svgp_elbo.item() / (n * m),
-                    svgp_kl.item() / (n * m),
                     kl.item() / (n * m),
                     loss.item() / (n * m), mu_mag, sig)
             print(msg + model.kernel.msg + model.lprior.msg, end="\r")
