@@ -3,13 +3,54 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.distributions.normal import Normal
 from torch.distributions import transform_to, constraints
-from .base import Module
-from .manifolds.base import Manifold
-from .utils import softplus, inv_softplus
+from ..utils import softplus, inv_softplus
+from ..manifolds.base import Manifold
+from .common import Rdist
 from typing import Optional
 
 
-class ReLie(Module):
+class ReLieBase(Rdist):
+    name = "ReLieBase"
+
+    def __init__(self, manif: Manifold, m: int, kmax: int = 5):
+        super(ReLieBase, self).__init__(manif, m, kmax)
+
+    def mvn(self, gamma, batch_idxs=None):
+        mu = torch.zeros(self.m, self.d).to(gamma.device)
+
+        if batch_idxs is not None:
+            mu = mu[batch_idxs]
+            gamma = gamma[batch_idxs]
+        return MultivariateNormal(mu, scale_tril=gamma)
+
+    def sample(self, gmu, gamma, size, batch_idxs=None, kmax=5):
+        """
+        generate samples and computes its log entropy
+        """
+        q = self.mvn(gamma, batch_idxs)
+        # sample a batch with dims: (n_mc x batch_size x d)
+        x = q.rsample(size)
+        gamma = self.prms
+        mu = torch.zeros(self.m).to(gamma.device)
+        if batch_idxs is not None:
+            gamma, mu = gamma[batch_idxs], mu[batch_idxs]
+        mu = mu[..., None]
+        lq = torch.stack([
+            self.manif.log_q(
+                Normal(mu, gamma[..., j, j][..., None]).log_prob,
+                x[..., j, None], 1, self.kmax).sum(dim=-1)
+            for j in range(self.d)
+        ]).sum(dim=0)
+
+        # transform x to group with dims (n_mc x m x d)
+        gtilde = self.manif.expmap(x)
+
+        # apply g_mu with dims: (n_mc x m x d)
+        g = self.manif.gmul(gmu[batch_idxs], gtilde)
+        return g, lq
+
+
+class ReLie(ReLieBase):
     name = "ReLie"
 
     def __init__(self,
@@ -31,15 +72,10 @@ class ReLie(Module):
         The diagonal approximation is useful for T^n as it saves an exponentially growing ReLie complexity
         The diagonal approximation only works for T^n and R^n
         '''
-        super(ReLie, self).__init__()
-        self.manif = manif
-        self.m = m
-        self.d = manif.d
-        self.kmax = kmax
-        d = self.d
+        super(ReLie, self).__init__(manif, m, kmax)
         self.diagonal = diagonal
 
-        gamma = torch.ones(m, d) * sigma
+        gamma = torch.ones(m, self.d) * sigma
         gamma = inv_softplus(gamma) if diagonal else torch.diag_embed(gamma)
         if gammas is not None:
             gamma[Tinds, ...] = torch.tensor(gammas,
