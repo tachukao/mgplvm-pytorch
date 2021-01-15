@@ -102,24 +102,22 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         return kl_divergence(q, prior)
 
     def elbo(self,
-             n_b: int,
+             n_mc: int,
              y: Tensor,
-             x: Tensor,
-             by_batch: bool = False,
-            by_sample: bool = False) -> Tuple[Tensor, Tensor]:
+             x: Tensor) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
-        n_b : int
-            batch size
+        n_mc : int
+            number of monte carlo samples
         y : Tensor
             data tensor with dimensions (n x m x n_samples)
         x : Tensor (single kernel) or Tensor list (product kernels)
-            input tensor(s) with dimensions (n_b x d x m)
+            input tensor(s) with dimensions (n_mc x d x m)
 
         Returns
         -------
-        evidence lower bount : torch.Tensor
+        evidence lower bound : torch.Tensor (n_mc x n x n_samples)
 
         Notes
         -----
@@ -129,24 +127,19 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         n_samples = y.shape[2]
         kernel = self.kernel
         n_inducing = self.n_inducing  # inducing points
-        prior_kl = self.prior_kl()  # prior KL(q(u) || p(u))
+        prior_kl = self.prior_kl()  # prior KL(q(u) || p(u)) (1 x n)
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
 
+        #(n_mc, n, n_samples)
         lik = self.likelihood.variational_expectation(n_samples,
                                                       y,
                                                       f_mean,
-                                                      f_var)#,
-                                                      #by_batch=by_batch,
-                                                     #by_sample = by_sample)
-        if by_batch:
-            #print('svgp:', lik.shape, prior_kl.shape, f_mean.shape, f_var.shape)
-            return lik, torch.ones(n_b).to(lik.device) * prior_kl.sum()
-        elif by_sample:
-            return lik, torch.ones(lik.shape).to(lik.device) * prior_kl.sum()
-        else:
-            lik = lik.sum()
-            return lik, prior_kl.sum() * n_b
+                                                      f_var)
+        #print(prior_kl.shape)
+        #prior_kl = prior_kl()
+        svgp_elbo = lik - prior_kl.mean(0)[None, :, None]
+        return svgp_elbo
 
     def tuning(self, query, n_b=1000, square=False):
         '''

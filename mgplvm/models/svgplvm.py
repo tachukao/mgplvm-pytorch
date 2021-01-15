@@ -60,7 +60,7 @@ class SvgpLvm(nn.Module):
         self.lat_dist = lat_dist
         self.lprior = lprior
 
-    def forward(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
+    def elbo(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
         """
         Parameters
         ----------
@@ -78,15 +78,13 @@ class SvgpLvm(nn.Module):
         Returns
         -------
         svgp_elbo : Tensor
-            evidence lower bound of sparse GP per batch
+            evidence lower bound of sparse GP per neuron, batch and sample (n_mc x n x n_samples)
         kl : Tensor
-            estimated KL divergence per batch between variational distribution 
-            and a manifold-specific prior (uniform for all manifolds except 
-            Euclidean, for which we have a Gaussian N(0,I) prior)
+            estimated KL divergence per batch between variational distribution and prior (n_mc)
 
         Notes
-        ----
-        ELBO of the model per batch is [ svgp_elbo - kl ]
+        -----
+        ELBO of the model per batch is [ svgp_lik - svgp_kl - kl ]
         """
         
         data = data if batch_idxs is None else data[:, batch_idxs, :]
@@ -94,38 +92,77 @@ class SvgpLvm(nn.Module):
 
         _, _, n_samples = data.shape  #n x mx x n_samples
         g, lq = self.lat_dist.sample(torch.Size([n_mc]), batch_idxs)
-        # d is shape (n_mc, m, d)
-        # sparse GP elbo summed over all batches
+        # g is shape (n_mc, m, d)
+        
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
-        svgp_lik, svgp_kl = self.svgp.elbo(n_mc, data, g.permute(0, 2, 1))
-        # KL(Q(G) || p(G)) ~ logQ - logp(G)
-        kl = lq.sum() - self.lprior(g, ts).sum()
-        return svgp_lik / n_mc, svgp_kl / n_mc, (kl / n_mc)
+        svgp_elbo = self.svgp.elbo(n_mc, data, g.permute(0, 2, 1)) #(n_mc x n x n_samples)
+        
+        # compute kl term for the latents (n_mc, )
+        prior = self.lprior(g, ts)  #(n_mc, )
+        kl = lq.sum(-1) - prior  #(n_mc, )
+        
+        return svgp_elbo, kl
+        
+    def forward(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
+        """
+        Parameters
+        ----------
+        data : Tensor
+            data with dimensionality (n x m x n_samples)
+        n_mc : int
+            number of MC samples
+        kmax : int
+            parameter for estimating entropy for several manifolds
+            (not used for some manifolds)
+        batch_idxs: Optional int list
+            if None then use all data and (batch_size == m)
+            otherwise, (batch_size == len(batch_idxs))
+
+        Returns
+        -------
+        elbo : Tensor
+            evidence lower bound of the GPLVM model averaged across MC samples (scalar)
+        """
+
+        #(n_mc, n, n_samples), (n_mc, n, n_samples), (n_mc)
+        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, batch_idxs = batch_idxs, ts = ts)
+        
+        #sum over neurons, mean over  MC samples
+        svgp_elbo = svgp_elbo.sum()/n_mc
+        kl = kl.sum()/n_mc
+        
+        return svgp_elbo, kl #mean across batches
 
     def calc_LL(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
-        '''importance weighted log likelihood'''
+        """
+        Parameters
+        ----------
+        data : Tensor
+            data with dimensionality (n x m x n_samples)
+        n_mc : int
+            number of MC samples
+        kmax : int
+            parameter for estimating entropy for several manifolds
+            (not used for some manifolds)
+        batch_idxs: Optional int list
+            if None then use all data and (batch_size == m)
+            otherwise, (batch_size == len(batch_idxs))
+
+        Returns
+        -------
+        LL : Tensor
+            E_mc[p(Y)] (burda et al.) (scalar)
+        """
         
-        data = data if batch_idxs is None else data[:, batch_idxs, :]
-        ts = ts if None in [ts, batch_idxs] else ts[batch_idxs]
-        _, _, n_samples = data.shape
-
-        #(n_b, m, d, ), (n_b, m, )
-        g, lq = self.lat_dist.sample(torch.Size([n_mc]), batch_idxs)
-
-        #(n_b, ), (n_b, )
-        svgp_lik, svgp_kl = self.svgp.elbo(n_mc,
-                                           data,
-                                           g.permute(0, 2, 1),
-                                           by_batch=True)
-        svgp_elbo = svgp_lik.to(data.device) - svgp_kl.to(
-            data.device)  #(n_b, )
-
-        prior = self.lprior(g, ts)  #(n_b, )
-        kl = lq.sum(-1) - prior  #(n_b, )
-
-        LLs = svgp_elbo - kl  # LL for each batch (n_b, )
+        #(n_mc, n, n_samples), (n_mc, n, n_samples), (n_mc)
+        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, batch_idxs = batch_idxs, ts = ts)
+        
+        
+        svgp_elbo = svgp_elbo.sum(-1).sum(-1) #(n_mc)
+        LLs = svgp_elbo - kl  # LL for each batch (n_mc, )
         LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)) / (self.n *
                                                          self.lat_dist.m)
+        
+        return LL.detach().cpu()
 
-        return LL.detach().cpu().numpy()
