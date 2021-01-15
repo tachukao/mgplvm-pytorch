@@ -1,89 +1,30 @@
 import torch
-import torch.nn as nn
+from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.distributions.normal import Normal
 from torch.distributions import transform_to, constraints
 from .base import Module
+from .manifolds.base import Manifold
 from .utils import softplus, inv_softplus
-
-
-class MVN(Module):
-    """ Parameterised zero-mean multivariate normal
-    TODO: with_mu a bit hacky
-    """
-    name = "MVN"
-
-    def __init__(self,
-                 m,
-                 d,
-                 with_mu=False,
-                 sigma=1.5,
-                 gammas=None,
-                 Tinds=None,
-                 fixed_gamma=False):
-        '''
-        gammas is the base distribution which is inverse transformed before storing
-        since it's transformed by constraints.tril when used.
-        If no gammas is None, it is initialized as a diagonal matrix with value sigma
-        '''
-        super(MVN, self).__init__()
-        self.m = m
-        self.d = d
-        self.with_mu = with_mu  # also learn a mean parameter
-
-        if self.with_mu:
-            self.mu = nn.Parameter(data=torch.Tensor(m, d), requires_grad=True)
-            self.mu.data = torch.randn(m, d) * 0.001
-
-        gamma = torch.diag_embed(torch.ones(m, d) * sigma)
-        if gammas is not None:
-            gamma[Tinds, ...] = torch.tensor(gammas,
-                                             dtype=torch.get_default_dtype())
-
-        gamma = transform_to(constraints.lower_cholesky).inv(gamma)
-
-        if fixed_gamma:
-            #don't update the covariance matrix
-            self.gamma = gamma
-        else:
-            self.gamma = nn.Parameter(data=gamma, requires_grad=True)
-
-    @property
-    def prms(self):
-        gamma = torch.distributions.transform_to(
-            MultivariateNormal.arg_constraints['scale_tril'])(self.gamma)
-        if self.with_mu:
-            return self.mu, gamma
-        return gamma
-
-    def forward(self, batch_idxs=None):
-        if self.with_mu:
-            mu, gamma = self.prms
-        else:
-            gamma = self.prms
-            mu = torch.zeros(self.m, self.d).to(gamma.device)
-
-        if batch_idxs is not None:
-            mu = mu[batch_idxs]
-            gamma = gamma[batch_idxs]
-        return MultivariateNormal(mu, scale_tril=gamma)
+from typing import Optional
 
 
 class ReLie(Module):
     name = "ReLie"
 
     def __init__(self,
-                 manif,
-                 m,
-                 with_mu=False,
-                 kmax=5,
-                 sigma=1.5,
-                 gammas=None,
+                 manif: Manifold,
+                 m: int,
+                 kmax: int = 5,
+                 sigma: float = 1.5,
+                 gammas: Optional[Tensor] = None,
                  Tinds=None,
                  fixed_gamma=False,
                  diagonal=False):
         '''
-        gammas is the reference distribution which is inverse transformed before storing
+        Notes
+        -----
+        gamma is the reference distribution which is inverse transformed before storing
         since it's transformed by constraints.tril when used.
         If no gammas is None, it is initialized as a diagonal matrix with value sigma
         If diagonal, constrain the covariance to be diagonal.
@@ -96,12 +37,7 @@ class ReLie(Module):
         self.d = manif.d
         self.kmax = kmax
         d = self.d
-        self.with_mu = with_mu  # also learn a mean parameter
         self.diagonal = diagonal
-
-        if self.with_mu:
-            self.mu = nn.Parameter(data=torch.Tensor(m, d), requires_grad=True)
-            self.mu.data = torch.randn(m, d) * 0.001
 
         gamma = torch.ones(m, d) * sigma
         gamma = inv_softplus(gamma) if diagonal else torch.diag_embed(gamma)
@@ -124,16 +60,11 @@ class ReLie(Module):
         else:
             gamma = torch.distributions.transform_to(
                 MultivariateNormal.arg_constraints['scale_tril'])(self.gamma)
-        if self.with_mu:
-            return self.mu, gamma
         return gamma
 
     def mvn(self, batch_idxs=None):
-        if self.with_mu:
-            mu, gamma = self.prms
-        else:
-            gamma = self.prms
-            mu = torch.zeros(self.m, self.d).to(gamma.device)
+        gamma = self.prms
+        mu = torch.zeros(self.m, self.d).to(gamma.device)
 
         if batch_idxs is not None:
             mu = mu[batch_idxs]
@@ -153,14 +84,13 @@ class ReLie(Module):
             mu = torch.zeros(self.m).to(gamma.device)
             if batch_idxs is not None:
                 gamma, mu = gamma[batch_idxs], mu[batch_idxs]
-            lq = 0  #E_Q[logQ]
-            for j in range(self.d):
-                tril_d = gamma[..., j, j]
-                q_d = Normal(mu[..., None], tril_d[..., None])
-                newlq = self.manif.log_q(q_d.log_prob, x[..., j, None], 1,
-                                         self.kmax)
-                #print(newlq.shape)
-                lq += newlq.sum(dim=-1)
+            mu = mu[..., None]
+            lq = torch.stack([
+                self.manif.log_q(
+                    Normal(mu, gamma[..., j, j][..., None]).log_prob,
+                    x[..., j, None], 1, self.kmax).sum(dim=-1)
+                for j in range(self.d)
+            ]).sum(dim=0)
         else:
             lq = self.manif.log_q(q.log_prob, x, self.manif.d, self.kmax)
 
