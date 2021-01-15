@@ -135,12 +135,9 @@ class ReLieAmortized(RdistAmortized):
     def lat_gamma(self, Y):
         return self.lat_prms(Y)[1]
 
-
     @property
     def prms(self):
         self.f.prms
-
-
 
     def mvn(self, gamma, batch_idxs=None):
         mu = torch.zeros(self.m, self.d).to(gamma.device)
@@ -150,27 +147,21 @@ class ReLieAmortized(RdistAmortized):
             gamma = gamma[batch_idxs]
         return MultivariateNormal(mu, scale_tril=gamma)
 
-    def sample(self, gmu, gamma, size, batch_idxs=None, kmax=5):
+    def sample(self, Y, size, kmax=5):
         """
         generate samples and computes its log entropy
         """
+        gmu, gamma = self.lat_prms(Y)
         q = self.mvn(gamma, batch_idxs)
         # sample a batch with dims: (n_mc x batch_size x d)
         x = q.rsample(size)
-        gamma = self.prms
-        mu = torch.zeros(self.m).to(gamma.device)
-        if batch_idxs is not None:
-            gamma, mu = gamma[batch_idxs], mu[batch_idxs]
-        mu = mu[..., None]
+        mu = torch.zeros(self.m).to(gamma.device)[..., None]
         lq = torch.stack([
             self.manif.log_q(
                 Normal(mu, gamma[..., j, j][..., None]).log_prob,
                 x[..., j, None], 1, self.kmax).sum(dim=-1)
             for j in range(self.d)
         ]).sum(dim=0)
-
-        # transform x to group with dims (n_mc x m x d)
-        gtilde = self.manif.expmap(x)
 
         # apply g_mu with dims: (n_mc x m x d)
         g = self.manif.gmul(gmu[batch_idxs], gtilde)
