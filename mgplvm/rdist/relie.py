@@ -3,19 +3,10 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 from torch.distributions.normal import Normal
 from torch.distributions import transform_to, constraints
-from .base import Module
-from .manifolds.base import Manifold
-from .utils import softplus, inv_softplus
+from ..utils import softplus, inv_softplus
+from ..manifolds.base import Manifold
+from .common import Rdist
 from typing import Optional
-
-
-class Rdist(Module):
-    def __init__(self, manif, m, kmax):
-        super(Rdist, self).__init__()
-        self.manif = manif
-        self.d = manif.d
-        self.m = manif.m
-        self.kmax = kmax
 
 
 class ReLieBase(Rdist):
