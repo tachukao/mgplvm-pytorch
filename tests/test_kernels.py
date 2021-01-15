@@ -72,15 +72,15 @@ def test_kernels_run():
     sig0 = 1.5
     Y = gen.gen_data(ell=25, sig=1)
 
-    mydists = [Euclid.distance, Euclid.distance, Euclid.linear_distance]
-    mykernels = [QuadExp, Matern, Linear]
-    for i in [1]:
+    kernels = [
+        QuadExp(n, Euclid.distance),
+        Linear(n, Euclid.linear_distance, d),
+        # Matern(n, Euclid.distance)
+    ]
+    for kernel in kernels:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d, initialization='random')
-
         lat_dist = mgplvm.rdist.ReLie(manif, m)
-        kernel = mykernels[i](n, mydists[i], nu=5 / 2)
-        print('\n\n', kernel.name)
         # generate model
         lik = likelihoods.Gaussian(n)
         lprior = lpriors.Uniform(manif)
