@@ -14,24 +14,11 @@ class S3(Manifold):
     # log of the uniform prior (negative log volume)
     log_uniform = (special.loggamma(2) - np.log(2) - 2 * np.log(np.pi))
 
-    def __init__(self,
-                 m: int,
-                 d: Optional[int] = None,
-                 mu: Optional[np.ndarray] = None,
-                 Tinds: Optional[np.ndarray] = None,
-                 initialization: Optional[str] = 'identity',
-                 Y: Optional[np.ndarray] = None):
+    def __init__(self, m: int, d: Optional[int] = None):
         super().__init__(d=3)
 
         self.m = m
         self.d2 = 4  # dimensionality of the group parameterization
-
-        mudata = self.initialize(initialization, m, d, Y)
-        if mu is not None:
-            mudata[Tinds, ...] = torch.tensor(mu,
-                                              dtype=torch.get_default_dtype())
-
-        self.mu = nn.Parameter(data=mudata, requires_grad=True)
 
         # per condition
         self.lprior_const = torch.tensor(
@@ -57,24 +44,11 @@ class S3(Manifold):
                               parameterise=lambda x: self.expmap2(x, dim=-2))
 
     @property
-    def prms(self) -> Tensor:
-        mu = self.mu
-        norms = torch.norm(mu, dim=1, keepdim=True)
-        return mu / norms
-
-    @property
     def name(self):
         return 'S(' + str(self.d) + ')'
 
     def lprior(self, g):
         return self.lprior_const * torch.ones(g.shape[:2])
-
-    def transform(self, x: Tensor,
-                  batch_idxs: Optional[List[int]] = None) -> Tensor:
-        mu = self.prms
-        if batch_idxs is not None:
-            mu = mu[batch_idxs]
-        return self.gmul(mu, x)  # group multiplication
 
     @staticmethod
     def parameterise(x) -> Tensor:

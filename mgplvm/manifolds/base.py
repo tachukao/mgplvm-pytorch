@@ -6,11 +6,10 @@ from ..base import Module
 from typing import Optional
 
 
-class Manifold(Module, metaclass=abc.ABCMeta):
-    def __init__(self, d: int, initialization='random'):
+class Manifold(metaclass=abc.ABCMeta):
+    def __init__(self, d: int):
         """
         :param d: dimensionality of the manifold
-        initialization: specifies how the latent states are initialized
         """
         super().__init__()
         self.d = d
@@ -26,10 +25,6 @@ class Manifold(Module, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def inverse(self, x: Tensor) -> Tensor:
-        pass
-
-    @abc.abstractmethod
-    def transform(self, x: Tensor) -> Tensor:
         pass
 
     @staticmethod
