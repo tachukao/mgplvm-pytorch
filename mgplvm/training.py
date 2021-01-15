@@ -185,14 +185,27 @@ def svgp(Y,
          print_every=50,
          batch_size=None,
          n_svgp=0,
-         ts=None):
+         ts=None,
+        batch_pool = None,
+        hook = None,
+        neuron_idxs = None):
+    '''
+    batch_pool [optional] : None or int list
+        pool of indices from which to batch (used to train a partial model)
+    '''
+    
+    
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
     ts = ts if ts is None else ts.to(device)
     data_size = m  #total conditions
 
-    def generate_batch_idxs():
-        idxs = np.arange(data_size)
+    def generate_batch_idxs(batch_pool = None):
+        if batch_pool is None:
+            idxs = np.arange(data_size)
+        else:
+            idxs = copy.copy(batch_pool)
+            data_size = len(idxs)
         if model.lprior.name == "Brownian":
             # if prior is Brownian, then batches have to be contiguous
 
@@ -214,43 +227,42 @@ def svgp(Y,
             np.random.shuffle(idxs)
             return idxs[0:batch_size]
 
-    #opt = optimizer(model.parameters(), lr=lrate)
+    #optionally mask some time points
+    if hook is None:
+        def hook(grad):
+            return grad
 
-    def _Tlearn_hook(grad):
-        return grad
-
-    params = sort_params(model, _Tlearn_hook, True, svgp=True)
+    params = sort_params(model, hook, True, svgp=True)
     opt = optimizer(params[0], lr=lrate)  # instantiate optimizer
     opt.add_param_group({'params': params[1]})
     opt.add_param_group({'params': params[2]})
 
     # set learning rate schedule so sigma updates have a burn-in period
     def fburn(x):
-        if x < n_svgp:
-            return 0
-        #only optimize
-        x -= n_svgp
         return 1 - np.exp(-x / (3 * burnin))
 
-    def finit(x):
-        if x < n_svgp:
-            return 0
-        return 1
-
-    LRfuncs = [finit, fburn, lambda x: 1]
+    LRfuncs = [lambda x: 1, fburn, lambda x: 1]
     scheduler = LambdaLR(opt, lr_lambda=LRfuncs)
 
     for i in range(max_steps):  # come up with a different stopping condition
         opt.zero_grad()
         ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
 
-        if batch_size is None:
-            svgp_elbo, kl = model(data, n_mc, batch_idxs=None, ts=ts)
+        if (batch_size is None and batch_pool is None):
+            batch_idxs = None
+        elif batch_size is None:
+            batch_idxs = batch_pool
+            m = len(batch_idxs)
         else:
-            batch_idxs = generate_batch_idxs()
-            svgp_elbo, kl = model(data, n_mc, batch_idxs=batch_idxs, ts=ts)
+            batch_idxs = generate_batch_idxs(batch_pool = batch_pool)
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
+        svgp_elbo, kl = model(data,
+                            n_mc,
+                            batch_idxs=batch_idxs,
+                            ts=ts,
+                             neuron_idxs = neuron_idxs)
+            
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
         loss.backward()
         opt.step()
