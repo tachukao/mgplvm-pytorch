@@ -34,7 +34,8 @@ class Combination(Kernel):
 
         Notes
         -----
-        Implementation largely follows thats described `here <https://github.com/GPflow/GPflow/blob/develop/gpflow/kernels/base.py>`_
+        Implementation largely follows thats described in 
+        https://github.com/GPflow/GPflow/blob/develop/gpflow/kernels/base.py
         """
         super().__init__()
         self.kernels = kernels
@@ -82,19 +83,17 @@ class Product(Combination):
 
 
 class QuadExpBase(Kernel):
-    def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True, Y=None):
+    def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True, Y = None):
         super().__init__()
 
         if alpha is not None:
-            alpha = inv_softplus(
-                torch.tensor(alpha, dtype=torch.get_default_dtype()))
+            alpha = inv_softplus(torch.tensor(alpha, dtype=torch.get_default_dtype()))
         elif Y is not None:
-            alpha = inv_softplus(
-                torch.tensor(np.mean(Y[:, :, 0]**2, axis=1)).sqrt())
+            alpha = inv_softplus(torch.tensor(np.mean(Y[:, :, 0]**2, axis = 1)).sqrt())
         else:
-            alpha = inv_softplus(torch.ones(n, ))
+            alpha = inv_softplus(torch.ones(n, ))            
 
-        self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
+        self.alpha = nn.Parameter(data=alpha, requires_grad = learn_alpha)
 
         ell = inv_softplus(torch.ones(n, )) if ell is None else inv_softplus(
             torch.tensor(ell, dtype=torch.get_default_dtype()))
@@ -164,8 +163,8 @@ class QuadExp(QuadExpBase):
                  ell=None,
                  alpha=None,
                  learn_alpha=True,
-                 Y: np.ndarray = None):
-        super().__init__(n, ell, alpha, learn_alpha, Y=Y)
+                Y : np.ndarray = None):
+        super().__init__(n, ell, alpha, learn_alpha, Y = Y)
         self.distance = distance
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -189,6 +188,56 @@ class QuadExp(QuadExpBase):
         sqr_ell = torch.square(ell)[:, None, None]
         #print(sqr_alpha.device, distance.device, sqr_ell.device)
         kxy = sqr_alpha * torch.exp(-0.5 * distance / sqr_ell)
+        return kxy
+
+    def forward(self, x: Tensor, y: Tensor) -> Tensor:
+        return self.K(x, y)
+
+    @property
+    def msg(self):
+        alpha_mag, ell_mag = [
+            np.mean(val.data.cpu().numpy()) for val in self.prms
+        ]
+        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
+            alpha_mag**2, ell_mag)
+
+
+class Exp(QuadExpBase):
+    name = "Exp"
+
+    def __init__(self,
+                 n: int,
+                 distance,
+                 ell=None,
+                 alpha=None,
+                 learn_alpha=True,
+                Y : np.ndarray = None):
+        super().__init__(n, ell, alpha, learn_alpha, Y = Y)
+        self.distance = distance
+
+    def K(self, x: Tensor, y: Tensor) -> Tensor:
+        """
+        Parameters
+        ----------
+        x : Tensor
+            input tensor of dims (... n x d x mx)
+        y : Tensor
+            input tensor of dims (... n x d x my)
+
+        Returns
+        -------
+        kxy : Tensor
+            exponential kernel with dims (... n x mx x my)
+
+        """
+        alpha, ell = self.prms
+        distance = self.distance(x, y)  # dims (... n x mx x my)
+        sqr_alpha = torch.square(alpha)[:, None, None]
+        expand_ell = ell[:, None, None]
+        
+        # NOTE: distance means squared distance ||x-y||^2 ?
+        stable_distance = torch.sqrt(distance+1e-12) # numerically stabilized
+        kxy = sqr_alpha * torch.exp(-stable_distance / expand_ell)
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
@@ -258,7 +307,7 @@ class Matern(QuadExpBase):
         Returns
         -------
         kxy : Tensor
-              matern kernel with dims (... n x mx x my)
+            matern kernel with dims (... n x mx x my)
 
         """
 
@@ -335,8 +384,8 @@ class Linear(Kernel):
                  distance,
                  d: int,
                  alpha=None,
-                 learn_weights: bool = False,
-                 learn_alpha: bool = False,
+                 learn_weights=False,
+                 learn_alpha=False,
                  Y=None):
         '''
         n is number of neurons/readouts
@@ -385,9 +434,8 @@ class Linear(Kernel):
 
         if self.learn_weights:
             x = (W[:, :, None] * x).sum(dim=-2, keepdim=True)  # n x 1 x mx
-            
         #x = W[:, :, None] * x
-        
+
         sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
         diag = (sqr_alpha * torch.square(x)).sum(dim=-2)
 
@@ -422,18 +470,20 @@ class Linear(Kernel):
 
         Returns
         -------
-        kxy : Tensor 
-              linear kernel with dims (... n x mx x my)
-
-        Notes
-        -----
-
+        kxy : Tensor
+            linear kernel with dims (... n x mx x my)
+        
+        
         W: nxd
         X: n x d x mx
+        
         x: d x mx
         x^T w_n w_n^T y (mx x my)
+        
+        
         K_n(x, y) = w_n X^T (mx x my)
         K(X, Y) (n x mx x my)
+
         """
         W, alpha = self.prms
 
@@ -443,11 +493,11 @@ class Linear(Kernel):
 
         #x = W[:, :, None] * x
         #y = W[:, :, None] * y
-        
+
         sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
         distance = self.distance(x, y)  # dims (... n x mx x my)
-        kxy = sqr_alpha * distance
 
+        kxy = sqr_alpha * distance
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
@@ -455,14 +505,7 @@ class Linear(Kernel):
 
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
-        """
-        Returns
-        -------
-        W : Tensor
-           Weight matrix
-        alpha : Tensor
-           alpha parameter
-        """
+        #return softplus(self.input_scale), softplus(self.output_scale)
         return self.W, self.alpha
 
     @property
