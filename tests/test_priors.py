@@ -76,22 +76,18 @@ def test_GP_prior():
         mod.lprior.svgp.elbo(1, x[i, :, :, None].permute(1, 0, 2),
                              ts.reshape(1, 1, -1)) for i in range(x.shape[0])
     ]
-    elbo1_b = torch.stack([LL.sum() for LL in LLs1],dim=0)
-
+    elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
     #### try to batch things ####
     elbo2_b = mod.lprior.svgp.elbo(x.shape[0], x.permute(2, 1, 0),
-                                     ts.reshape(1, 1, -1))
+                                   ts.reshape(1, 1, -1))
     elbo2_b = elbo2_b.sum(0).sum(0)
-    print(elbo1_b.shape, elbo2_b.shape)    
-    
+    print(elbo1_b.shape, elbo2_b.shape)
 
     ### print comparison ###
     print('ELBOs:', elbo1_b.sum().detach().data, elbo2_b.sum().detach().data)
-    assert all(torch.isclose(elbo1_b.detach().data,
-                         elbo2_b.detach().data))
-    
-    
+    assert all(torch.isclose(elbo1_b.detach().data, elbo2_b.detach().data))
+
     print(elbo1_b[:5])
     print(elbo2_b[:5])
 

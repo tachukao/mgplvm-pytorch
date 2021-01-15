@@ -86,24 +86,25 @@ class SvgpLvm(nn.Module):
         -----
         ELBO of the model per batch is [ svgp_lik - svgp_kl - kl ]
         """
-        
+
         data = data if batch_idxs is None else data[:, batch_idxs, :]
         ts = ts if (ts is None or batch_idxs is None) else ts[batch_idxs]
 
         _, _, n_samples = data.shape  #n x mx x n_samples
         g, lq = self.lat_dist.sample(torch.Size([n_mc]), batch_idxs)
         # g is shape (n_mc, m, d)
-        
+
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
-        svgp_elbo = self.svgp.elbo(n_mc, data, g.permute(0, 2, 1)) #(n_mc x n x n_samples)
-        
+        svgp_elbo = self.svgp.elbo(n_mc, data,
+                                   g.permute(0, 2, 1))  #(n_mc x n x n_samples)
+
         # compute kl term for the latents (n_mc, )
         prior = self.lprior(g, ts)  #(n_mc, )
         kl = lq.sum(-1) - prior  #(n_mc, )
-        
+
         return svgp_elbo, kl
-        
+
     def forward(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
         """
         Parameters
@@ -126,13 +127,17 @@ class SvgpLvm(nn.Module):
         """
 
         #(n_mc, n, n_samples), (n_mc, n, n_samples), (n_mc)
-        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, batch_idxs = batch_idxs, ts = ts)
-        
+        svgp_elbo, kl = self.elbo(data,
+                                  n_mc,
+                                  kmax=kmax,
+                                  batch_idxs=batch_idxs,
+                                  ts=ts)
+
         #sum over neurons, mean over  MC samples
-        svgp_elbo = svgp_elbo.sum()/n_mc
-        kl = kl.sum()/n_mc
-        
-        return svgp_elbo, kl #mean across batches
+        svgp_elbo = svgp_elbo.sum() / n_mc
+        kl = kl.sum() / n_mc
+
+        return svgp_elbo, kl  #mean across batches
 
     def calc_LL(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
         """
@@ -154,15 +159,17 @@ class SvgpLvm(nn.Module):
         LL : Tensor
             E_mc[p(Y)] (burda et al.) (scalar)
         """
-        
+
         #(n_mc, n, n_samples), (n_mc, n, n_samples), (n_mc)
-        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, batch_idxs = batch_idxs, ts = ts)
-        
-        
-        svgp_elbo = svgp_elbo.sum(-1).sum(-1) #(n_mc)
+        svgp_elbo, kl = self.elbo(data,
+                                  n_mc,
+                                  kmax=kmax,
+                                  batch_idxs=batch_idxs,
+                                  ts=ts)
+
+        svgp_elbo = svgp_elbo.sum(-1).sum(-1)  #(n_mc)
         LLs = svgp_elbo - kl  # LL for each batch (n_mc, )
         LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)) / (self.n *
                                                          self.lat_dist.m)
-        
-        return LL.detach().cpu()
 
+        return LL.detach().cpu()
