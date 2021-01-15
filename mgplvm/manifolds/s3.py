@@ -11,7 +11,6 @@ from ..inducing_variables import InducingPoints
 
 
 class S3(Manifold):
-
     # log of the uniform prior (negative log volume)
     log_uniform = (special.loggamma(2) - np.log(2) - 2 * np.log(np.pi))
 
@@ -70,8 +69,7 @@ class S3(Manifold):
     def lprior(self, g):
         return self.lprior_const * torch.ones(g.shape[:2])
 
-    def transform(self,
-                  x: Tensor,
+    def transform(self, x: Tensor,
                   batch_idxs: Optional[List[int]] = None) -> Tensor:
         mu = self.prms
         if batch_idxs is not None:
