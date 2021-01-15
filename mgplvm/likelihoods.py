@@ -37,11 +37,11 @@ class Gaussian(Likelihood):
                  n: int,
                  variance: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs,
-                learn_sigma = True):
+                 learn_sigma=True):
         super().__init__(n, n_gh_locs)
         sigma = 1 * torch.ones(n, ) if variance is None else torch.sqrt(
             torch.tensor(variance, dtype=torch.get_default_dtype()))
-        
+
         if learn_sigma:
             self.sigma = nn.Parameter(data=sigma, requires_grad=True)
         else:
@@ -83,13 +83,14 @@ class Gaussian(Likelihood):
             SVGP likelihood term per MC, neuron, sample (n_mc x n x n_samples)
         """
         n_mc, m = fmu.shape[0], fmu.shape[2]
-        variance = self.prms #(n)
+        variance = self.prms  #(n)
         #print(variance.shape)
-        ve1 = -0.5 * log2pi * m #scalar
-        ve2 = -0.5 * torch.log(variance) * m #(n)
-        ve3 = -0.5 * torch.square(y - fmu) / variance[..., None, None] #(n_mc x n x m x n_samples)
-        ve4 = -0.5 * fvar / variance[..., None] #(n_mc x n x m)
-            
+        ve1 = -0.5 * log2pi * m  #scalar
+        ve2 = -0.5 * torch.log(variance) * m  #(n)
+        ve3 = -0.5 * torch.square(y - fmu) / variance[
+            ..., None, None]  #(n_mc x n x m x n_samples)
+        ve4 = -0.5 * fvar / variance[..., None]  #(n_mc x n x m)
+
         #print(ve1.shape, ve2.shape, ve3.shape, ve4.shape)
         exp = ve1 + ve2[None, ..., None] + ve3.sum(-2) + ve4.sum(-1)[..., None]
         #(n_mc x n x n_samples)
@@ -102,15 +103,16 @@ class Gaussian(Likelihood):
 
 
 class Poisson(Likelihood):
-    def __init__(self,
-                 n: int,
-                 inv_link='exp',#torch.exp,
-                 binsize=1,
-                 c: Optional[Tensor] = None,
-                 d: Optional[Tensor] = None,
-                 fixed_c=True,
-                 fixed_d=False,
-                 n_gh_locs: Optional[int] = n_gh_locs):
+    def __init__(
+            self,
+            n: int,
+            inv_link='exp',  #torch.exp,
+            binsize=1,
+            c: Optional[Tensor] = None,
+            d: Optional[Tensor] = None,
+            fixed_c=True,
+            fixed_d=False,
+            n_gh_locs: Optional[int] = n_gh_locs):
         super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize
@@ -124,7 +126,7 @@ class Poisson(Likelihood):
         return self.c, self.d
 
     def log_prob(self, lamb, y):
-        if False:#y.shape[-1] == 1:
+        if False:  #y.shape[-1] == 1:
             p = dists.Poisson(lamb)
             return p.log_prob(y)
         else:
@@ -135,16 +137,16 @@ class Poisson(Likelihood):
 
     def sample(self, f_samps):
         c, d = self.prms
-        
+
         #######
         if self.inv_link == 'exp':
             lambd = self.binsize * torch.exp(c[None, ..., None] * f_samps +
                                              d[None, ..., None])
-        else:    
+        else:
             lambd = self.binsize * self.inv_link(c[None, ..., None] * f_samps +
-                                             d[None, ..., None])
+                                                 d[None, ..., None])
         #######
-            
+
         #lambd = self.binsize * self.inv_link(c[None, ..., None] * f_samps +
         #                                     d[None, ..., None])
         #sample from p(y|f)
@@ -152,8 +154,13 @@ class Poisson(Likelihood):
         y_samps = dist.sample()
         return y_samps
 
-    def variational_expectation(self, n_samples, y, fmu, fvar, gh=False,
-                               by_sample = False):
+    def variational_expectation(self,
+                                n_samples,
+                                y,
+                                fmu,
+                                fvar,
+                                gh=False,
+                                by_sample=False):
         """
         Parameters
         ----------
@@ -190,12 +197,13 @@ class Poisson(Likelihood):
             locs, ws = np.polynomial.hermite.hermgauss(self.n_gh_locs)
             ws = torch.Tensor(ws).to(fmu.device)
             locs = torch.Tensor(locs).to(fvar.device)
-            fvar = fvar[..., None, None] #add n_samples, n_gh
-            fmu = fmu[..., None] #add n_gh
-            locs = self.inv_link(torch.sqrt(2. * fvar) * locs +
-                                 fmu) * self.binsize #(n_mc, n, m, n_samples, n_gh)
+            fvar = fvar[..., None, None]  #add n_samples, n_gh
+            fmu = fmu[..., None]  #add n_gh
+            locs = self.inv_link(
+                torch.sqrt(2. * fvar) * locs +
+                fmu) * self.binsize  #(n_mc, n, m, n_samples, n_gh)
             lp = self.log_prob(locs, y)
-            return 1/np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-2)
+            return 1 / np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-2)
             #return torch.sum(1 / np.sqrt(np.pi) * lp * ws)
 
 
@@ -243,7 +251,7 @@ class NegativeBinomial(Likelihood):
         return y_samps
 
     def log_prob(self, total_count, rate, y):
-        if False:#y.shape[-1] == 1:
+        if False:  #y.shape[-1] == 1:
             p = dists.NegativeBinomial(total_count[..., None, None],
                                        logits=rate)
             return p.log_prob(y)
@@ -251,11 +259,12 @@ class NegativeBinomial(Likelihood):
             #total count: (n) -> (n_mc, n, m, n_samples, n_gh)
             #rate: (n_mc, n, m, n_samples, n_gh)
             #y: (n, m, n_samples)
-            p = dists.NegativeBinomial(total_count[None, ..., None, None, None],
-                                       logits=rate)
+            p = dists.NegativeBinomial(
+                total_count[None, ..., None, None, None], logits=rate)
             return p.log_prob(y[None, ..., None])
 
-    def variational_expectation(self, n_samples, y, fmu, fvar, by_sample = False):
+    def variational_expectation(self, n_samples, y, fmu, fvar,
+                                by_sample=False):
         """
         Parameters
         ----------
@@ -282,19 +291,20 @@ class NegativeBinomial(Likelihood):
             self.n_gh_locs)  #sample points and weights for quadrature
         ws = torch.Tensor(ws).to(fmu.device)
         locs = torch.Tensor(locs).to(fvar.device)
-        fvar = fvar[..., None, None] #add n_samples and locs
-        fmu = fmu[..., None] #add locs
+        fvar = fvar[..., None, None]  #add n_samples and locs
+        fmu = fmu[..., None]  #add locs
         #print(locs.shape)
         locs = self.inv_link(torch.sqrt(2. * fvar) * locs +
                              fmu) * self.binsize  #coordinate transform
         #print(total_count.shape, locs.shape)
-        lp = self.log_prob(total_count, locs, y) #(n_mc x n x m x n_samples, n_gh)
+        lp = self.log_prob(total_count, locs,
+                           y)  #(n_mc x n x m x n_samples, n_gh)
 
         #print(lp.shape, ws.shape, (lp * ws).shape)
-        return 1/np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-2)
-        
+        return 1 / np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-2)
+
         #else:
-        #    return torch.sum(1 / np.sqrt(np.pi) * lp * ws)        
+        #    return torch.sum(1 / np.sqrt(np.pi) * lp * ws)
 
 
 # class CMPoisson(Likelihood):

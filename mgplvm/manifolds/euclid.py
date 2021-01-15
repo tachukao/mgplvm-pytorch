@@ -56,8 +56,7 @@ class Euclid(Manifold):
     def prms(self) -> Tensor:
         return self.mu
 
-    def transform(self,
-                  x: Tensor,
+    def transform(self, x: Tensor,
                   batch_idxs: Optional[List[int]] = None) -> Tensor:
         mu = self.prms
         if batch_idxs is not None:

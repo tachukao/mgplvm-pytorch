@@ -41,7 +41,7 @@ class GP(LpriorEuclid):
         #separate inducing points for each latent dimension
         z = InducingPoints(d, 1, n_z, z=zinit.repeat(d, 1, 1))
         lik = Gaussian(
-            d, variance=np.square(0.2), learn_sigma = False
+            d, variance=np.square(0.2), learn_sigma=False
         )  #.to(kernel.alpha.device) #consider fixing this to a small value as in GPFA
         self.svgp = Svgp(kernel, d, z, lik, whiten=True)  #construct svgp
 
@@ -68,7 +68,7 @@ class GP(LpriorEuclid):
         #LLs = torch.stack([LL[0] - LL[1] for LL in LLs], dim = 0)
 
         svgp_elbo = self.svgp.elbo(x.shape[0], x.permute(2, 1, 0),
-                                 ts.reshape(1, 1, -1))
+                                   ts.reshape(1, 1, -1))
 
         #shape: (1 x d x n_mc)
         #print(svgp_elbo.shape, svgp_elbo.device)

@@ -101,10 +101,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self,
-             n_mc: int,
-             y: Tensor,
-             x: Tensor) -> Tuple[Tensor, Tensor]:
+    def elbo(self, n_mc: int, y: Tensor, x: Tensor) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -132,9 +129,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         f_mean, f_var = self.predict(x, full_cov=False)
 
         #(n_mc, n, n_samples)
-        lik = self.likelihood.variational_expectation(n_samples,
-                                                      y,
-                                                      f_mean,
+        lik = self.likelihood.variational_expectation(n_samples, y, f_mean,
                                                       f_var)
         #print(prior_kl.shape)
         #prior_kl = prior_kl()
@@ -200,7 +195,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         kzx = kernel(z, x)  # dims: (1 x n x n_inducing x m)
         e = torch.eye(self.n_inducing,
                       dtype=torch.get_default_dtype()).to(kzz.device)
-        
+
         # [ l ] has dims: (1 x n x n_inducing x n_inducing)
         l = torch.cholesky(kzz + (jitter * e), upper=False)
         # [ alpha ] has dims: (n_b x n x n_inducing x m)

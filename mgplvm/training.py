@@ -117,7 +117,7 @@ def sort_params(model, hook, trainGP, svgp=False):
 
     # parameters to be optimized
 
-    params: List[List[Tensor]] = [[], [], []] if svgp else [[], []] 
+    params: List[List[Tensor]] = [[], [], []] if svgp else [[], []]
 
     for param in model.parameters():
         if (param.shape == model.lat_dist.gamma.shape) and torch.all(
@@ -254,7 +254,12 @@ def svgp(Y,
             batch_idxs = batch_pool
             m = len(batch_idxs)
         else:
+<<<<<<< HEAD
             batch_idxs = generate_batch_idxs(batch_pool = batch_pool)
+=======
+            batch_idxs = generate_batch_idxs()
+            svgp_elbo, kl = model(data, n_mc, batch_idxs=batch_idxs, ts=ts)
+>>>>>>> 57180a9d39c74b2d41c5a6bb3177aa926a12cd9b
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo, kl = model(data,
@@ -277,13 +282,12 @@ def svgp(Y,
                     np.diag(sig)
                     for sig in model.lat_dist.prms.data.cpu().numpy()
                 ]))
-            msg = (
-                '\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} '
-                + '| |mu| {:.3f} | sig {:.3f} |').format(
-                    i,
-                    svgp_elbo.item() / (n * m),
-                    kl.item() / (n * m),
-                    loss.item() / (n * m), mu_mag, sig)
+            msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
+                   '| |mu| {:.3f} | sig {:.3f} |').format(
+                       i,
+                       svgp_elbo.item() / (n * m),
+                       kl.item() / (n * m),
+                       loss.item() / (n * m), mu_mag, sig)
             print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
         if callback is not None:

@@ -83,17 +83,19 @@ class Product(Combination):
 
 
 class QuadExpBase(Kernel):
-    def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True, Y = None):
+    def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True, Y=None):
         super().__init__()
 
         if alpha is not None:
-            alpha = inv_softplus(torch.tensor(alpha, dtype=torch.get_default_dtype()))
+            alpha = inv_softplus(
+                torch.tensor(alpha, dtype=torch.get_default_dtype()))
         elif Y is not None:
-            alpha = inv_softplus(torch.tensor(np.mean(Y[:, :, 0]**2, axis = 1)).sqrt())
+            alpha = inv_softplus(
+                torch.tensor(np.mean(Y[:, :, 0]**2, axis=1)).sqrt())
         else:
-            alpha = inv_softplus(torch.ones(n, ))            
+            alpha = inv_softplus(torch.ones(n, ))
 
-        self.alpha = nn.Parameter(data=alpha, requires_grad = learn_alpha)
+        self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
 
         ell = inv_softplus(torch.ones(n, )) if ell is None else inv_softplus(
             torch.tensor(ell, dtype=torch.get_default_dtype()))
@@ -163,8 +165,8 @@ class QuadExp(QuadExpBase):
                  ell=None,
                  alpha=None,
                  learn_alpha=True,
-                Y : np.ndarray = None):
-        super().__init__(n, ell, alpha, learn_alpha, Y = Y)
+                 Y: np.ndarray = None):
+        super().__init__(n, ell, alpha, learn_alpha, Y=Y)
         self.distance = distance
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -211,8 +213,8 @@ class Exp(QuadExpBase):
                  ell=None,
                  alpha=None,
                  learn_alpha=True,
-                Y : np.ndarray = None):
-        super().__init__(n, ell, alpha, learn_alpha, Y = Y)
+                 Y: np.ndarray = None):
+        super().__init__(n, ell, alpha, learn_alpha, Y=Y)
         self.distance = distance
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -234,9 +236,10 @@ class Exp(QuadExpBase):
         distance = self.distance(x, y)  # dims (... n x mx x my)
         sqr_alpha = torch.square(alpha)[:, None, None]
         expand_ell = ell[:, None, None]
-        
+
         # NOTE: distance means squared distance ||x-y||^2 ?
-        stable_distance = torch.sqrt(distance+1e-12) # numerically stabilized
+        stable_distance = torch.sqrt(distance +
+                                     1e-12)  # numerically stabilized
         kxy = sqr_alpha * torch.exp(-stable_distance / expand_ell)
         return kxy
 
