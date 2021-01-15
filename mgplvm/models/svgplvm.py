@@ -13,6 +13,7 @@ from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
 from ..lpriors.common import Lprior
+from ..rdist import Rdist
 
 
 class SvgpLvm(nn.Module):
@@ -23,7 +24,7 @@ class SvgpLvm(nn.Module):
                  z: InducingPoints,
                  kernel: Kernel,
                  likelihood: Likelihood,
-                 lat_dist,
+                 lat_dist: Rdist,
                  lprior=Lprior,
                  whiten: bool = True):
         """

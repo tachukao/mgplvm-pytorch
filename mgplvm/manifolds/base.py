@@ -34,6 +34,11 @@ class Manifold(Module, metaclass=abc.ABCMeta):
 
     @staticmethod
     @abc.abstractmethod
+    def parameterise(x: Tensor) -> Tensor:
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
     def expmap(x: Tensor) -> Tensor:
         pass
 

@@ -72,6 +72,10 @@ class Torus(Manifold):
         return 'Torus(' + str(self.d) + ')'
 
     @staticmethod
+    def parameterise(x) -> Tensor:
+        return x
+
+    @staticmethod
     def expmap(x: Tensor) -> Tensor:
         '''move to [-pi, pi]'''
         return (x + np.pi) % (2 * np.pi) - np.pi

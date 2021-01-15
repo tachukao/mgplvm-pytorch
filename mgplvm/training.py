@@ -263,7 +263,7 @@ def svgp(Y,
             sig = np.median(
                 np.concatenate([
                     np.diag(sig)
-                    for sig in model.lat_dist.prms.data.cpu().numpy()
+                    for sig in model.lat_dist.prms[1].data.cpu().numpy()
                 ]))
             msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
                    '| |mu| {:.3f} | sig {:.3f} |').format(

@@ -56,6 +56,7 @@ class Euclid(Manifold):
     def prms(self) -> Tensor:
         return self.mu
 
+
     def transform(self, x: Tensor,
                   batch_idxs: Optional[List[int]] = None) -> Tensor:
         mu = self.prms
@@ -63,10 +64,16 @@ class Euclid(Manifold):
             mu = mu[batch_idxs]
         return self.gmul(mu, x)
 
+
     def lprior(self, g):
         '''need empirical data here. g is (n_b x m x d)'''
         ps = -0.5 * torch.square(g) - 0.5 * np.log(2 * np.pi)
         return ps.sum(2)  # sum over d
+
+
+    @staticmethod
+    def parameterise(x) -> Tensor:
+        return x
 
     @staticmethod
     def log_q(log_base_prob, x, d=None, kmax=None):

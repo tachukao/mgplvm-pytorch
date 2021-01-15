@@ -61,7 +61,8 @@ class ReLie(ReLieBase):
                  gammas: Optional[Tensor] = None,
                  Tinds=None,
                  fixed_gamma=False,
-                 diagonal=False):
+                 diagonal=False,
+                 initialization: Optional[str] = 'random'):
         '''
         Notes
         -----
@@ -74,6 +75,9 @@ class ReLie(ReLieBase):
         '''
         super(ReLie, self).__init__(manif, m, kmax)
         self.diagonal = diagonal
+
+        gmudata = self.manif.initialize(initialization, self.m, self.d, None)
+        self.gmu = nn.Parameter(data=gmudata, requires_grad=True)
 
         gamma = torch.ones(m, self.d) * sigma
         gamma = inv_softplus(gamma) if diagonal else torch.diag_embed(gamma)
@@ -91,17 +95,17 @@ class ReLie(ReLieBase):
 
     @property
     def prms(self):
+        gmu = self.manif.parameterise(self.gmu)
         if self.diagonal:
             gamma = torch.diag_embed(softplus(self.gamma))
         else:
             gamma = torch.distributions.transform_to(
                 MultivariateNormal.arg_constraints['scale_tril'])(self.gamma)
-        return gamma
+        return gmu, gamma
 
-    def mvn(self, batch_idxs=None):
-        gamma = self.prms
+    def mvn(self, gamma=None, batch_idxs=None):
+        gamma = self.prms[1] if gamma is None else gamma
         mu = torch.zeros(self.m, self.d).to(gamma.device)
-
         if batch_idxs is not None:
             mu = mu[batch_idxs]
             gamma = gamma[batch_idxs]
@@ -111,7 +115,8 @@ class ReLie(ReLieBase):
         """
         generate samples and computes its log entropy
         """
-        q = self.mvn(batch_idxs)
+        gmu, gamma = self.prms
+        q = self.mvn(gamma, batch_idxs)
         # sample a batch with dims: (n_mc x batch_size x d)
         x = q.rsample(size)
 
@@ -134,5 +139,5 @@ class ReLie(ReLieBase):
         gtilde = self.manif.expmap(x)
 
         # apply g_mu with dims: (n_mc x m x d)
-        g = self.manif.transform(gtilde, batch_idxs=batch_idxs)
+        g = self.manif.gmul(gmu, gtilde)
         return g, lq
