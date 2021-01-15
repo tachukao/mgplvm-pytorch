@@ -136,9 +136,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         lik = self.likelihood.variational_expectation(n_samples,
                                                       y,
                                                       f_mean,
-                                                      f_var,
-                                                      by_batch=by_batch,
-                                                     by_sample = by_sample)
+                                                      f_var)#,
+                                                      #by_batch=by_batch,
+                                                     #by_sample = by_sample)
         if by_batch:
             #print('svgp:', lik.shape, prior_kl.shape, f_mean.shape, f_var.shape)
             return lik, torch.ones(n_b).to(lik.device) * prior_kl.sum()

@@ -88,7 +88,7 @@ class SvgpLvm(nn.Module):
         ----
         ELBO of the model per batch is [ svgp_elbo - kl ]
         """
-
+        
         data = data if batch_idxs is None else data[:, batch_idxs, :]
         ts = ts if None in [ts, batch_idxs] else ts[batch_idxs]
 
@@ -105,7 +105,7 @@ class SvgpLvm(nn.Module):
 
     def calc_LL(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
         '''importance weighted log likelihood'''
-
+        
         data = data if batch_idxs is None else data[:, batch_idxs, :]
         ts = ts if None in [ts, batch_idxs] else ts[batch_idxs]
         _, _, n_samples = data.shape
