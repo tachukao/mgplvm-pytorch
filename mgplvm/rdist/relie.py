@@ -139,5 +139,8 @@ class ReLie(ReLieBase):
         gtilde = self.manif.expmap(x)
 
         # apply g_mu with dims: (n_mc x m x d)
-        g = self.manif.gmul(gmu, gtilde)
+        if batch_idxs is not None:
+            g = self.manif.gmul(gmu[batch_idxs], gtilde)
+        else:
+            g = self.manif.gmul(gmu, gtilde)
         return g, lq
