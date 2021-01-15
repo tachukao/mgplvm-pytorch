@@ -254,12 +254,7 @@ def svgp(Y,
             batch_idxs = batch_pool
             m = len(batch_idxs)
         else:
-<<<<<<< HEAD
             batch_idxs = generate_batch_idxs(batch_pool = batch_pool)
-=======
-            batch_idxs = generate_batch_idxs()
-            svgp_elbo, kl = model(data, n_mc, batch_idxs=batch_idxs, ts=ts)
->>>>>>> 57180a9d39c74b2d41c5a6bb3177aa926a12cd9b
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo, kl = model(data,
