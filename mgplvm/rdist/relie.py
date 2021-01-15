@@ -11,11 +11,11 @@ from typing import Optional
 from ..base import Module
 
 
-class ReLieAmortized(Rdist):
-    name = "ReLieAmortized"
+class ReLieBase(Rdist):
+    name = "ReLieBase"
 
     def __init__(self, manif: Manifold, f, kmax: int = 5):
-        super(ReLieAmortized, self).__init__(manif, kmax)
+        super(ReLieBase, self).__init__(manif, kmax)
         self.f = f
 
     def lat_prms(self, Y=None, batch_idxs=None):
@@ -112,7 +112,7 @@ class _F(Module):
         return gmu, gamma
 
 
-class ReLie(ReLieAmortized):
+class ReLie(ReLieBase):
     name = "ReLie"
 
     def __init__(self,
