@@ -124,8 +124,8 @@ def sort_params(model, hook, trainGP, svgp=False):
                 param == model.lat_dist.gamma):
             param.register_hook(hook)  # option to mask gradients
             params[1].append(param)
-        elif (param.shape == model.lat_dist.manif.mu.shape) and torch.all(
-                param == model.lat_dist.manif.mu):
+        elif (param.shape == model.lat_dist.prms[0].shape) and torch.all(
+                param == model.lat_dist.prms[0]):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
         elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(
@@ -258,7 +258,7 @@ def svgp(Y,
         if i % print_every == 0:
             mu_mag = np.mean(
                 np.sqrt(
-                    np.sum(model.lat_dist.manif.prms.data.cpu().numpy()[:]**2,
+                    np.sum(model.lat_dist.prms[0].data.cpu().numpy()[:]**2,
                            axis=1)))
             sig = np.median(
                 np.concatenate([

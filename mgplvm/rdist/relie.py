@@ -62,7 +62,8 @@ class ReLie(ReLieBase):
                  Tinds=None,
                  fixed_gamma=False,
                  diagonal=False,
-                 initialization: Optional[str] = 'random'):
+                 initialization: Optional[str] = 'random',
+                 Y=None):
         '''
         Notes
         -----
@@ -76,7 +77,7 @@ class ReLie(ReLieBase):
         super(ReLie, self).__init__(manif, m, kmax)
         self.diagonal = diagonal
 
-        gmudata = self.manif.initialize(initialization, self.m, self.d, None)
+        gmudata = self.manif.initialize(initialization, self.m, self.d, Y)
         self.gmu = nn.Parameter(data=gmudata, requires_grad=True)
 
         gamma = torch.ones(m, self.d) * sigma

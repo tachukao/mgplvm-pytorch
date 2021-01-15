@@ -10,7 +10,7 @@ from sklearn import decomposition
 
 class Euclid(Manifold):
     def __init__(self, m: int, d: int):
-        super().__init__(d, initialization=initialization)
+        super().__init__(d)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
 
