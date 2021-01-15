@@ -121,8 +121,8 @@ class ReLie(Rdist):
 class ReLieAmortized(RdistAmortized):
     name = "ReLieAmortized"
 
-    def __init__(self, manif: Manifold, f, m: int, kmax: int = 5):
-        super(ReLieAmortized, self).__init__(manif, m, kmax)
+    def __init__(self, manif: Manifold, f, kmax: int = 5):
+        super(ReLieAmortized, self).__init__(manif, kmax)
         self.f = f
 
     def lat_prms(self, Y):
@@ -139,30 +139,28 @@ class ReLieAmortized(RdistAmortized):
     def prms(self):
         self.f.prms
 
-    def mvn(self, gamma, batch_idxs=None):
-        mu = torch.zeros(self.m, self.d).to(gamma.device)
-
-        if batch_idxs is not None:
-            mu = mu[batch_idxs]
-            gamma = gamma[batch_idxs]
+    def mvn(self, m, gamma):
+        mu = torch.zeros(m, self.d).to(gamma.device)
         return MultivariateNormal(mu, scale_tril=gamma)
 
     def sample(self, Y, size, kmax=5):
         """
         generate samples and computes its log entropy
         """
+        m = Y.shape[1]
         gmu, gamma = self.lat_prms(Y)
-        q = self.mvn(gamma, batch_idxs)
+        q = self.mvn(m, gamma)
         # sample a batch with dims: (n_mc x batch_size x d)
         x = q.rsample(size)
-        mu = torch.zeros(self.m).to(gamma.device)[..., None]
+        mu = torch.zeros(m).to(gamma.device)[..., None]
         lq = torch.stack([
             self.manif.log_q(
                 Normal(mu, gamma[..., j, j][..., None]).log_prob,
                 x[..., j, None], 1, self.kmax).sum(dim=-1)
             for j in range(self.d)
         ]).sum(dim=0)
+        gtilde = self.manif.expmap(x)
 
         # apply g_mu with dims: (n_mc x m x d)
-        g = self.manif.gmul(gmu[batch_idxs], gtilde)
+        g = self.manif.gmul(gmu, gtilde)
         return g, lq

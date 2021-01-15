@@ -10,7 +10,7 @@ class Rdist(Module, metaclass=abc.ABCMeta):
         super(Rdist, self).__init__()
         self.manif = manif
         self.d = manif.d
-        self.m = manif.m
+        self.m = m
         self.kmax = kmax
 
     @abc.abstractmethod
@@ -27,11 +27,10 @@ class Rdist(Module, metaclass=abc.ABCMeta):
 
 
 class RdistAmortized(Module, metaclass=abc.ABCMeta):
-    def __init__(self, manif: Manifold, m: int, kmax: int):
-        super(Rdist, self).__init__()
+    def __init__(self, manif: Manifold, kmax: int):
+        super(RdistAmortized, self).__init__()
         self.manif = manif
         self.d = manif.d
-        self.m = manif.m
         self.kmax = kmax
 
     @abc.abstractmethod
