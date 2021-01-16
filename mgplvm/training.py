@@ -188,10 +188,21 @@ def svgp(Y,
          ts=None,
         batch_pool = None,
         hook = None,
-        neuron_idxs = None):
+        neuron_idxs = None,
+        loss_margin=0.,
+        stop_iters=10):
     '''
+    max_steps [optional]: int, default=1000
+        maximum number of training iterations
+    
     batch_pool [optional] : None or int list
         pool of indices from which to batch (used to train a partial model)
+        
+    loss_margin [optional] : float, default=0
+        loss margin tolerated for training progress
+        
+    stop_iters [optional]: int, default=10
+        maximum number of training iterations above loss margin tolerated before stopping
     '''
     
     
@@ -244,7 +255,10 @@ def svgp(Y,
     LRfuncs = [lambda x: 1, fburn, lambda x: 1]
     scheduler = LambdaLR(opt, lr_lambda=LRfuncs)
 
-    for i in range(max_steps):  # come up with a different stopping condition
+    lowest_loss = np.inf
+    stop_ = 0
+    for i in range(max_steps):
+        
         opt.zero_grad()
         ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
 
@@ -267,7 +281,17 @@ def svgp(Y,
         loss.backward()
         opt.step()
         scheduler.step()
-        if i % print_every == 0:
+        
+        loss_val = loss.item()
+        if loss_val < lowest_loss:
+            lowest_loss = loss_val
+        
+        if loss_val <= lowest_loss + loss_margin:
+            stop_ = 0
+        else:
+            stop_ += 1
+            
+        if i % print_every == 0 or stop_ > stop_iters:
             mu_mag = np.mean(
                 np.sqrt(
                     np.sum(model.lat_dist.manif.prms.data.cpu().numpy()[:]**2,
@@ -282,10 +306,15 @@ def svgp(Y,
                        i,
                        svgp_elbo.item() / (n * m),
                        kl.item() / (n * m),
-                       loss.item() / (n * m), mu_mag, sig)
+                       loss_val / (n * m), mu_mag, sig)
             print(msg + model.kernel.msg + model.lprior.msg, end="\r")
+            
+            if stop_ > stop_iters:
+                break
 
         if callback is not None:
             callback(model, i)
+            
+        
 
     return model
