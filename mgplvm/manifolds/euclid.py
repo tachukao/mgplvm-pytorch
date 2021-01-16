@@ -13,30 +13,34 @@ class Euclid(Manifold):
                  m: int,
                  d: int,
                  mu: Optional[np.ndarray] = None,
-                 Tinds: Optional[np.ndarray] = None,
                  initialization: Optional[str] = 'random',
                  Y: Optional[np.ndarray] = None):
-        '''
-        initialization: 'pca' or 'random' (default)
-        mu: optional initialization of the mean
-        Tinds: only set mean for these time points
-        '''
+        """
+        Parameters
+        ----------
+        m : int
+            number of conditions/timepoints
+        d : int
+            latent dimensionality
+        mu [optional] : np.ndarray
+            optional initialization of variational means (m x d)
+        intialization [optional] : str
+            string to specify type of initialization ('random'/'PCA')
+        Y [optional] : np.ndarray
+            data used to initialize latents (n x m)
+        """
         super().__init__(d, initialization=initialization)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
 
-        mudata = self.initialize(initialization, m, d, Y)
-        if mu is not None:
-            mudata[Tinds, ...] = torch.tensor(mu,
-                                              dtype=torch.get_default_dtype())
-
-        self.mu = nn.Parameter(data=mudata, requires_grad=True)
+        mu = self.initialize(initialization, m, d, Y) if mu is None else torch.tensor(mu)
+        self.mu = nn.Parameter(data=mu, requires_grad=True)
 
     @staticmethod
     def initialize(initialization, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
         if initialization == 'pca':
-            #Y is N x m; reduce to d x m
+            #Y is N x m; reduce to m x d
             if Y is None:
                 print('user must provide data for PCA initialization')
             else:

@@ -19,20 +19,29 @@ class So3(Manifold):
                  m: int,
                  d: Optional[int] = None,
                  mu: Optional[np.ndarray] = None,
-                 Tinds: Optional[np.ndarray] = None,
                  initialization: Optional[str] = 'identity',
                  Y: Optional[np.ndarray] = None):
+        """
+        Parameters
+        ----------
+        m : int
+            number of conditions/timepoints
+        d : int
+            latent dimensionality
+        mu [optional] : np.ndarray
+            optional initialization of variational means (m x 4)
+        intialization [optional] : str
+            string to specify type of initialization ('identity')
+        Y [optional] : np.ndarray
+            data used to initialize latents (n x m)
+        """
         super().__init__(d=3)
 
         self.m = m
         self.d2 = 4  # dimensionality of the group parameterization
 
-        mudata = self.initialize(initialization, m, d, Y)
-        if mu is not None:
-            mudata[Tinds, ...] = torch.tensor(mu,
-                                              dtype=torch.get_default_dtype())
-
-        self.mu = nn.Parameter(data=mudata, requires_grad=True)
+        mu = self.initialize(initialization, m, d, Y) if mu is None else torch.tensor(mu)
+        self.mu = nn.Parameter(data=mu, requires_grad=True)
 
         # per condition
         self.lprior_const = torch.tensor(

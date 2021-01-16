@@ -19,7 +19,7 @@ def training_params(**kwargs):
         'lrate': 5E-2,
         'batch_pool': None,
         'neuron_idxs': None,
-        'hook': None,
+        'mask_Ts': None,
         'n_mc': 32
     }
     
@@ -44,6 +44,6 @@ def train_model(mod, Y, device, params):
                             ts = params['ts'],
                             batch_pool = params['batch_pool'],
                             neuron_idxs = params['neuron_idxs'],
-                            hook = params['hook'])
+                            mask_Ts = params['mask_Ts'])
     
     return trained_mod

@@ -20,6 +20,7 @@ def model_params(n, m, d, n_z, **kwargs):
         'diagonal': True,
         'learn_linear_weights': False,
         'learn_linear_alpha': True,
+        'linear_alpha': None,
         'RBF_alpha': None,
         'RBF_ell': None,
         'arp_p': 1,
@@ -54,7 +55,7 @@ def load_model(params):
     #### specify kernel ####
     if params['kernel'] == 'linear':
         kernel = kernels.Linear(n, manif.linear_distance, d, learn_weights = params['learn_linear_weights'],
-                                learn_alpha = params['learn_linear_alpha'], Y = params['Y'])
+                                learn_alpha = params['learn_linear_alpha'], Y = params['Y'], alpha = params['linear_alpha'])
     elif params['kernel'] == 'RBF':
         ell = None if params['RBF_ell'] is None else np.ones(n)*params['RBF_ell']
         kernel = kernels.QuadExp(n, manif.distance, Y = params['Y'],

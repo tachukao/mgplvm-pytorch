@@ -13,19 +13,28 @@ class Torus(Manifold):
                  m: int,
                  d: int,
                  mu: Optional[np.ndarray] = None,
-                 Tinds: Optional[np.ndarray] = None,
                  initialization: Optional[str] = 'random',
                  Y: Optional[np.ndarray] = None):
+        """
+        Parameters
+        ----------
+        m : int
+            number of conditions/timepoints
+        d : int
+            latent dimensionality
+        mu [optional] : np.ndarray
+            optional initialization of variational means (m x d)
+        intialization [optional] : str
+            string to specify type of initialization ('random'/'PCA')
+        Y [optional] : np.ndarray
+            data used to initialize latents (n x m)
+        """
         super().__init__(d)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
 
-        mudata = self.initialize(initialization, m, d, Y)
-        if mu is not None:
-            mudata[Tinds, ...] = torch.tensor(mu,
-                                              dtype=torch.get_default_dtype())
-
-        self.mu = nn.Parameter(data=mudata, requires_grad=True)
+        mu = self.initialize(initialization, m, d, Y) if mu is None else torch.tensor(mu)
+        self.mu = nn.Parameter(data=mu, requires_grad=True)
 
         # per condition
         self.lprior_const = torch.tensor(-self.d * np.log(2 * np.pi))
