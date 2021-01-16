@@ -9,23 +9,10 @@ from sklearn import decomposition
 
 
 class Torus(Manifold):
-    def __init__(self,
-                 m: int,
-                 d: int,
-                 mu: Optional[np.ndarray] = None,
-                 Tinds: Optional[np.ndarray] = None,
-                 initialization: Optional[str] = 'random',
-                 Y: Optional[np.ndarray] = None):
+    def __init__(self, m: int, d: int):
         super().__init__(d)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
-
-        mudata = self.initialize(initialization, m, d, Y)
-        if mu is not None:
-            mudata[Tinds, ...] = torch.tensor(mu,
-                                              dtype=torch.get_default_dtype())
-
-        self.mu = nn.Parameter(data=mudata, requires_grad=True)
 
         # per condition
         self.lprior_const = torch.tensor(-self.d * np.log(2 * np.pi))
@@ -49,18 +36,8 @@ class Torus(Manifold):
         z = torch.rand(n, self.d, n_z) * 2 * np.pi if z is None else z
         return InducingPoints(n, self.d, n_z, z=z)
 
-    @property
-    def prms(self) -> Tensor:
-        return self.mu
-
     def lprior(self, g: Tensor) -> Tensor:
         return self.lprior_const * torch.ones(g.shape[:2])
-
-    def transform(self, x, mu=None, batch_idxs=None):
-        mu = self.prms
-        if batch_idxs is not None:
-            mu = mu[batch_idxs]
-        return self.gmul(mu, x)
 
     # log of the uniform prior (negative log volume) for T^d
     @property
@@ -70,6 +47,10 @@ class Torus(Manifold):
     @property
     def name(self):
         return 'Torus(' + str(self.d) + ')'
+
+    @staticmethod
+    def parameterise(x) -> Tensor:
+        return x
 
     @staticmethod
     def expmap(x: Tensor) -> Tensor:
