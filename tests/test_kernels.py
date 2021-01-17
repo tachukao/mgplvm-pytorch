@@ -93,14 +93,12 @@ def test_kernels_run():
                                     mod,
                                     device,
                                     optimizer=optim.Adam,
-                                    outdir='none',
                                     max_steps=5,
                                     burnin=100,
                                     n_mc=64,
                                     lrate=10E-2,
                                     print_every=50,
-                                    n_svgp=0,
-                                    callback=None)
+                                    n_svgp=0)
 
     return
 
