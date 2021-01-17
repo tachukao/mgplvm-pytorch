@@ -22,5 +22,5 @@ if __name__ == '__main__':
     test_euclid_dimensions()
     test_torus_dimensions()
     test_so3_dimensions()
-    print('done')
+    print('Tested manifolds')
     

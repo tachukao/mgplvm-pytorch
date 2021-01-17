@@ -135,4 +135,4 @@ if __name__ == "__main__":
     test_torus()
     test_so3()
     test_s3()
-    print('done')
+    print('Tested entropies')
