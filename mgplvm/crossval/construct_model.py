@@ -45,12 +45,13 @@ def load_model(params):
     
     #### specify manifold ####
     if params['manifold'] == 'euclid':
-        manif = Euclid(m, d, initialization = params['initialization'], Y = params['Y'][:, :, 0])
+        manif = Euclid(m, d)
     elif params['manifold'] == 'torus':
-        manif = Torus(m, d, initialization = params['initialization'], Y = params['Y'][:, :, 0])
+        manif = Torus(m, d)
         
     #### specify latent distribution ####
-    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=params['latent_sigma'], diagonal = params['diagonal'])
+    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=params['latent_sigma'], diagonal = params['diagonal'],
+                                 initialization = params['initialization'], Y = params['Y'])
     
     #### specify kernel ####
     if params['kernel'] == 'linear':

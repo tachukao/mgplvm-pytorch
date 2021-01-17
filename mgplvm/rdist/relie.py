@@ -85,7 +85,7 @@ class _F(Module):
         if diagonal:
             gamma = inv_softplus(gamma)
         else:
-            torch.diag_embed(gamma)
+            gamma = torch.diag_embed(gamma)
             gamma = transform_to(constraints.lower_cholesky).inv(gamma)
             
         self.gamma = nn.Parameter(data=gamma, requires_grad= (not fixed_gamma))
@@ -134,7 +134,7 @@ class ReLie(ReLieBase):
             string to specify type of initialization
             ('random'/'PCA'/'identity' depending on manifold)
         Y [optional] : np.ndarray
-            data used to initialize latents (n x m)
+            data used to initialize latents (n x m x n_samples)
             
         Notes
         -----

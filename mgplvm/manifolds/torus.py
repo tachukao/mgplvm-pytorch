@@ -34,7 +34,7 @@ class Torus(Manifold):
                 print('user must provide data for PCA initialization')
             else:
                 pca = decomposition.PCA(n_components=d)
-                mudata = pca.fit_transform(Y.T)  #m x d
+                mudata = pca.fit_transform(Y[:, :, 0].T)  #m x d
                 mudata *= 2 * np.pi / (np.amax(mudata) - np.amin(mudata))
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         mudata = torch.randn(m, d) * 0.1
