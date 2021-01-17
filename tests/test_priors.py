@@ -28,10 +28,14 @@ def test_GP_prior():
     Y = gen.gen_data(ell=25, sig=1)
 
     # specify manifold, kernel and rdist
-    manif = Euclid(m, d, initialization='random', Y=Y[:, :, 0])
+    manif = Euclid(m, d)
 
     #lat_dist = mgplvm.rdist.MVN(m, d, sigma=sig0)
-    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=sig0)
+    lat_dist = mgplvm.rdist.ReLie(manif,
+                                  m,
+                                  sigma=sig0,
+                                  initialization='random',
+                                  Y=Y[:, :, 0])
     alpha = np.mean(np.std(Y, axis=1), axis=1)
     kernel = kernels.QuadExp(n, manif.distance, alpha=alpha)
 
@@ -67,7 +71,7 @@ def test_GP_prior():
     data = torch.tensor(Y).to(device)
     ts = torch.arange(m).to(device)
     _, _, n_samples = data.shape  #n x mx x n_samples
-    g, lq = mod.lat_dist.sample(torch.Size([n_mc]), None)
+    g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
 
     x = g  #input to prior
 

@@ -11,16 +11,9 @@ from ..inducing_variables import InducingPoints
 
 
 class So3(Manifold):
-
     # log of the uniform prior (negative log volume)
     log_uniform = (special.loggamma(2) - np.log(1) - 2 * np.log(np.pi))
-
-    def __init__(self,
-                 m: int,
-                 d: Optional[int] = None,
-                 mu: Optional[np.ndarray] = None,
-                 initialization: Optional[str] = 'identity',
-                 Y: Optional[np.ndarray] = None):
+    def __init__(self, m: int, d: Optional[int] = None):
         """
         Parameters
         ----------
@@ -28,20 +21,11 @@ class So3(Manifold):
             number of conditions/timepoints
         d : int
             latent dimensionality
-        mu [optional] : np.ndarray
-            optional initialization of variational means (m x 4)
-        intialization [optional] : str
-            string to specify type of initialization ('identity')
-        Y [optional] : np.ndarray
-            data used to initialize latents (n x m)
         """
         super().__init__(d=3)
 
         self.m = m
         self.d2 = 4  # dimensionality of the group parameterization
-
-        mu = self.initialize(initialization, m, d, Y) if mu is None else torch.tensor(mu)
-        self.mu = nn.Parameter(data=mu, requires_grad=True)
 
         # per condition
         self.lprior_const = torch.tensor(
@@ -66,24 +50,16 @@ class So3(Manifold):
                               parameterise=lambda x: self.expmap2(x, dim=-2))
 
     @property
-    def prms(self) -> Tensor:
-        mu = self.mu
-        norms = torch.norm(mu, dim=1, keepdim=True)
-        return mu / norms
-
-    @property
     def name(self):
         return 'So3(' + str(self.d) + ')'
 
     def lprior(self, g):
         return self.lprior_const * torch.ones(g.shape[:2])
 
-    def transform(self, x: Tensor,
-                  batch_idxs: Optional[List[int]] = None) -> Tensor:
-        mu = self.prms
-        if batch_idxs is not None:
-            mu = mu[batch_idxs]
-        return self.gmul(mu, x)  # group multiplication
+    @staticmethod
+    def parameterise(x) -> Tensor:
+        norms = torch.norm(x, dim=1, keepdim=True)
+        return x / norms
 
     @staticmethod
     def expmap(x: Tensor, dim: int = -1, jitter=1e-8) -> Tensor:

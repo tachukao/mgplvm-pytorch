@@ -118,14 +118,13 @@ def sort_params(model, hook, trainGP, svgp=False):
     # parameters to be optimized
 
     params: List[List[Tensor]] = [[], [], []] if svgp else [[], []]
-
     for param in model.parameters():
-        if (param.shape == model.lat_dist.gamma.shape) and torch.all(
-                param == model.lat_dist.gamma):
+        if (param.shape == model.lat_dist.prms[1].shape) and torch.all(
+                param == model.lat_dist.prms[1]):
             param.register_hook(hook)  # option to mask gradients
             params[1].append(param)
-        elif (param.shape == model.lat_dist.manif.mu.shape) and torch.all(
-                param == model.lat_dist.manif.mu):
+        elif (param.shape == model.lat_dist.prms[0].shape) and torch.all(
+                param == model.lat_dist.prms[0]):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
         elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(
@@ -271,12 +270,12 @@ def svgp(Y,
         if i % print_every == 0:
             mu_mag = np.mean(
                 np.sqrt(
-                    np.sum(model.lat_dist.manif.prms.data.cpu().numpy()[:]**2,
+                    np.sum(model.lat_dist.prms[0].data.cpu().numpy()[:]**2,
                            axis=1)))
             sig = np.median(
                 np.concatenate([
                     np.diag(sig)
-                    for sig in model.lat_dist.prms.data.cpu().numpy()
+                    for sig in model.lat_dist.prms[1].data.cpu().numpy()
                 ]))
             msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
                    '| |mu| {:.3f} | sig {:.3f} |').format(
