@@ -79,17 +79,23 @@ def train_cv(mod,
         return grad
     train_ps2 = update_params(train_ps, neuron_idxs = N1, mask_Ts = mask_Ts)
     
-    #### no gradients for the remaining parameters ####
+    
+    for p in mod.parameters(): #no gradients for the remaining parameters
+        p.requires_grad = False
+    for p in mod.lat_dist.parameters(): #only gradients for the latent distribution
+        p.requires_grad = True
+    '''
+    lat_params = list(mod.lat_dist.parameters())
     for p in mod.parameters():
-        if not (((p.shape == mod.lat_dist.gamma.shape) and torch.all(p == mod.lat_dist.gamma))
-                or
-                ((p.shape == mod.lat_dist.manif.mu.shape) and torch.all(p == mod.lat_dist.manif.mu))):
+        matches = [(p.shape == lat_p.shape and torch.all(p == lat_p)) for lat_p in lat_params]
+        if not any(matches):
             p.requires_grad = False
-
+    '''
+    
     mod = train_model(mod, Y, device, train_ps2)
     
     if test:
-        _ = test_cv(mod, split, device, n_mc = train_ps['n_mc'])
+        _ = test_cv(mod, split, device, n_mc = train_ps['n_mc'], Print = True)
         
     return mod, split
         
@@ -103,7 +109,7 @@ def test_cv(mod, split, device, n_mc = 32, Print = False):
 
     #generate prediction for held out data#
     Ytest = Y[N2, :, :][:, T2]
-    latents = mod.lat_dist.manif.prms.detach()[T2, ...]
+    latents = mod.lat_dist.prms[0].detach()[T2, ...] #latent means
     Ypred, var = mod.svgp.predict(latents.T[None, ...], False)
     Ypred = Ypred.detach().cpu().numpy()[0, N2, :, :]
     MSE = np.mean((Ypred - Ytest)**2)

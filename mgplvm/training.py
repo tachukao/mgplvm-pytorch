@@ -117,14 +117,15 @@ def sort_params(model, hook, trainGP, svgp=False):
 
     # parameters to be optimized
 
+    lat_params = list(model.lat_dist.parameters())
     params: List[List[Tensor]] = [[], [], []] if svgp else [[], []]
     for param in model.parameters():
-        if (param.shape == model.lat_dist.prms[1].shape) and torch.all(
-                param == model.lat_dist.prms[1]):
+        if (param.shape == lat_params[1].shape) and torch.all(
+                param == lat_params[1]):
             param.register_hook(hook)  # option to mask gradients
             params[1].append(param)
-        elif (param.shape == model.lat_dist.prms[0].shape) and torch.all(
-                param == model.lat_dist.prms[0]):
+        elif (param.shape == lat_params[0].shape) and torch.all(
+                param == lat_params[0]):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
         elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(
