@@ -67,8 +67,7 @@ class _F(Module):
                  m: int,
                  kmax: int = 5,
                  sigma: float = 1.5,
-                 gammas: Optional[Tensor] = None,
-                 Tinds=None,
+                 gamma: Optional[Tensor] = None,
                  fixed_gamma=False,
                  diagonal=False,
                  initialization: Optional[str] = 'random',
@@ -80,19 +79,16 @@ class _F(Module):
         self.gmu = nn.Parameter(data=gmudata, requires_grad=True)
         self.diagonal = diagonal
 
-        gamma = torch.ones(m, manif.d) * sigma
-        gamma = inv_softplus(gamma) if diagonal else torch.diag_embed(gamma)
-        if gammas is not None:
-            gamma[Tinds, ...] = torch.tensor(gammas,
-                                             dtype=torch.get_default_dtype())
+        if gamma is None:
+            gamma = torch.ones(m, manif.d) * sigma
 
-        if not diagonal:
-            gamma = transform_to(constraints.lower_cholesky).inv(gamma)
-
-        if fixed_gamma:  #don't update the covariance matrix
-            self.gamma = nn.Parameter(data=gamma, requires_grad=False)
+        if diagonal:
+            gamma = inv_softplus(gamma)
         else:
-            self.gamma = nn.Parameter(data=gamma, requires_grad=True)
+            torch.diag_embed(gamma)
+            gamma = transform_to(constraints.lower_cholesky).inv(gamma)
+            
+        self.gamma = nn.Parameter(data=gamma, requires_grad= (not fixed_gamma))
 
     def forward(self, Y=None, batch_idxs=None):
         gmu, gamma = self.prms
@@ -120,8 +116,7 @@ class ReLie(ReLieBase):
                  m: int,
                  kmax: int = 5,
                  sigma: float = 1.5,
-                 gammas: Optional[Tensor] = None,
-                 Tinds=None,
+                 gamma: Optional[Tensor] = None,
                  fixed_gamma=False,
                  diagonal=False,
                  initialization: Optional[str] = 'random',
@@ -151,7 +146,7 @@ class ReLie(ReLieBase):
         The diagonal approximation only works for T^n and R^n
         """
 
-        f = _F(manif, m, kmax, sigma, gammas, Tinds, fixed_gamma, diagonal,
+        f = _F(manif, m, kmax, sigma, gamma, fixed_gamma, diagonal,
                initialization, Y)
         super(ReLie, self).__init__(manif, f, kmax)
 
