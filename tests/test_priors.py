@@ -3,9 +3,6 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, rdist, models, optimisers, syndata
-from mgplvm.manifolds import Torus, Euclid
-from mgplvm import lpriors
 torch.set_default_dtype(torch.float64)
 
 
@@ -17,18 +14,18 @@ def test_GP_prior():
     n_z = 15  # number of inducing points
     n_samples = 1  # number of samples
     l = float(0.55 * np.sqrt(d))
-    gen = syndata.Gen(syndata.Euclid(d),
-                      n,
-                      m,
-                      variability=0.15,
-                      l=l,
-                      sigma=0.8,
-                      beta=0.1)
+    gen = mgplvm.syndata.Gen(mgplvm.syndata.Euclid(d),
+                             n,
+                             m,
+                             variability=0.15,
+                             l=l,
+                             sigma=0.8,
+                             beta=0.1)
     sig0 = 1.5
     Y = gen.gen_data(ell=25, sig=1)
 
     # specify manifold, kernel and rdist
-    manif = Euclid(m, d)
+    manif = mgplvm.manifolds.Euclid(m, d)
 
     #lat_dist = mgplvm.rdist.MVN(m, d, sigma=sig0)
     lat_dist = mgplvm.rdist.ReLie(manif,
@@ -37,32 +34,35 @@ def test_GP_prior():
                                   initialization='random',
                                   Y=Y[:, :, 0])
     alpha = np.mean(np.std(Y, axis=1), axis=1)
-    kernel = kernels.QuadExp(n, manif.distance, alpha=alpha)
+    kernel = mgplvm.kernels.QuadExp(n, manif.distance, alpha=alpha)
 
     ###construct prior
-    lprior_kernel = kernels.QuadExp(d, manif.distance, learn_alpha=False)
-    lprior = lpriors.GP(manif, lprior_kernel, n_z=20, tmax=m)
+    lprior_kernel = mgplvm.kernels.QuadExp(d,
+                                           manif.distance,
+                                           learn_alpha=False)
+    lprior = mgplvm.lpriors.GP(manif, lprior_kernel, n_z=20, tmax=m)
     #lprior = lpriors.Gaussian(manif)
 
     # generate model
     sigma = np.mean(np.std(Y, axis=1), axis=1)  # initialize noise
     likelihood = mgplvm.likelihoods.Gaussian(n, variance=np.square(sigma))
     z = manif.inducing_points(n, n_z)
-    mod = models.SvgpLvm(n, z, kernel, likelihood, lat_dist, lprior).to(device)
+    mod = mgplvm.models.SvgpLvm(n, z, kernel, likelihood, lat_dist,
+                                lprior).to(device)
 
     ### test that training runs ###
     ts = torch.arange(m).to(device)
     n_mc = 64
-    trained_mod = optimisers.svgp.fit(Y,
-                                      mod,
-                                      device,
-                                      optimizer=optim.Adam,
-                                      max_steps=5,
-                                      burnin=100,
-                                      n_mc=n_mc,
-                                      lrate=10E-2,
-                                      print_every=50,
-                                      ts=ts)
+    trained_mod = mgplvm.optimisers.svgp.fit(Y,
+                                             mod,
+                                             device,
+                                             optimizer=optim.Adam,
+                                             max_steps=5,
+                                             burnin=100,
+                                             n_mc=n_mc,
+                                             lrate=10E-2,
+                                             print_every=50,
+                                             ts=ts)
 
     ### test that two ways of computing the prior agree ###
     data = torch.tensor(Y).to(device)
