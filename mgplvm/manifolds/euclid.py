@@ -34,6 +34,7 @@ class Euclid(Manifold):
                 mudata = pca.fit_transform(Y[:, :, 0].T)  #m x d
                 mudata = mudata / np.std(mudata, axis=0, keepdims=True)
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
+        # default initialization
         mudata = torch.randn(m, d) * 0.1
         return mudata
 

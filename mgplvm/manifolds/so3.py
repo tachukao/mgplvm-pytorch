@@ -64,7 +64,7 @@ class So3(Manifold):
     @staticmethod
     def expmap(x: Tensor, dim: int = -1, jitter=1e-8) -> Tensor:
         '''
-        x \in R^3 -> q \in R^4 s.t. ||q|| = 1
+        x \\in R^3 -> q \\in R^4 s.t. ||q|| = 1
         '''
         x = x + (jitter * torch.randn(x.shape)).to(x.device)  #avoid nans
         theta = torch.norm(x, dim=dim, keepdim=True)
@@ -79,7 +79,7 @@ class So3(Manifold):
     @staticmethod
     def logmap(q: Tensor, dim: int = -1) -> Tensor:
         '''
-        q \in R^4 s.t. ||q|| = 1 -> x \in R^3
+        q \\in R^4 s.t. ||q|| = 1 -> x \\in R^3
         '''
         #make first index positive as convention -- this gives theta \in [0, pi] and u on the hemisphere
         q = torch.sign(q[..., :1]) * q

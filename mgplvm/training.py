@@ -1,4 +1,5 @@
 from __future__ import print_function
+import abc
 import numpy as np
 import mgplvm
 from mgplvm.utils import softplus
@@ -8,18 +9,43 @@ from torch import optim, Tensor
 from torch.optim.lr_scheduler import LambdaLR
 from typing import List
 
+# Custom Stopping Criterions
+
+
+class LossMarginStop():
+    def __init__(self, loss_margin=0, stop_after=10):
+        '''
+        loss_margin [optional] : float, default=0
+            loss margin tolerated for training progress
+
+        stop_iters [optional]: int, default=10
+            maximum number of training iterations above loss margin tolerated before stopping
+        '''
+        self.lowest_loss = np.inf
+        self.stop_ = 0
+        self.loss_margin = loss_margin
+        self.stop_after = stop_after
+
+    def __call__(self, model, i, loss_val):
+        if loss_val < self.lowest_loss:
+            self.lowest_loss = loss_val
+        if loss_val <= self.lowest_loss + self.loss_margin:
+            self.stop_ = 0
+        else:
+            self.stop_ += 1
+        return (self.stop_ > self.stop_after)
+
 
 def sgp(Y,
         model,
         device,
         optimizer=optim.Adam,
-        outdir="results/vanilla",
-        max_steps=1000,
         n_b=128,
         burnin='default',
         lrate=1e-3,
         print_every=10,
-        callback=None,
+        max_steps=1000,
+        stop=None,
         trainGP=True,
         nbatch=1,
         Tfix=slice(0),
@@ -50,27 +76,24 @@ def sgp(Y,
 
     if nbatch > 1:
         n_b = int(round(n_b / nbatch))
-    i_step = -1
-    Ls = np.zeros(10)
-    while (i_step < max_steps) and (np.std(Ls) > sigma_thresh or i_step <
-                                    (2.5 * burnin)):
-        i_step += 1
+
+    for i_step in range(max_steps):
         optimizer.zero_grad()
         ramp = 1 - np.exp(-i_step / burnin)  # ramp the entropy
 
+        loss_val = 0
         for _ in range(nbatch):
             sgp_elbo, kl = model(data, n_b)  # log p(Y|G), KL(Q(G), p(G))
             loss = (-sgp_elbo + (ramp * kl))  # -LL
             loss.backward()
+            loss_val = loss.item() + loss_val
 
+        if stop is not None:
+            if stop(model, i_step, loss_val): break
         optimizer.step()
         scheduler.step()
         if i_step % print_every == 0:
             print_sgp_progress(model, i_step, n, m, sgp_elbo, kl, loss)
-        if callback is not None:
-            callback(model, i_step)
-
-        Ls[i_step % 10] = loss.item() / (n * m)
 
     return model
 
@@ -176,32 +199,33 @@ def svgp(Y,
          model,
          device,
          optimizer=optim.Adam,
-         outdir="results/vanilla",
-         max_steps=1000,
          n_mc=128,
          burnin=100,
          lrate=1E-3,
-         callback=None,
+         max_steps=1000,
+         stop=None,
          print_every=50,
          batch_size=None,
          n_svgp=0,
          ts=None,
-        batch_pool = None,
-        mask_Ts = None,
-        neuron_idxs = None):
+         batch_pool=None,
+         mask_Ts=None,
+         neuron_idxs=None):
     '''
+    max_steps [optional]: int, default=1000
+        maximum number of training iterations
+    
     batch_pool [optional] : None or int list
         pool of indices from which to batch (used to train a partial model)
     '''
-    
-    
+
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
     ts = ts if ts is None else ts.to(device)
     data_size = m  #total conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
 
-    def generate_batch_idxs(batch_pool = None):
+    def generate_batch_idxs(batch_pool=None):
         if batch_pool is None:
             idxs = np.arange(data_size)
         else:
@@ -230,6 +254,7 @@ def svgp(Y,
 
     #optionally mask some time points
     if mask_Ts is None:
+
         def mask_Ts(grad):
             return grad
 
@@ -245,7 +270,7 @@ def svgp(Y,
     LRfuncs = [lambda x: 1, fburn, lambda x: 1]
     scheduler = LambdaLR(opt, lr_lambda=LRfuncs)
 
-    for i in range(max_steps):  # come up with a different stopping condition
+    for i in range(max_steps):
         opt.zero_grad()
         ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
 
@@ -255,19 +280,24 @@ def svgp(Y,
             batch_idxs = batch_pool
             m = len(batch_idxs)
         else:
-            batch_idxs = generate_batch_idxs(batch_pool = batch_pool)
+            batch_idxs = generate_batch_idxs(batch_pool=batch_pool)
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo, kl = model(data,
-                            n_mc,
-                            batch_idxs=batch_idxs,
-                            ts=ts,
-                             neuron_idxs = neuron_idxs)
-            
+                              n_mc,
+                              batch_idxs=batch_idxs,
+                              ts=ts,
+                              neuron_idxs=neuron_idxs)
+
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
+        loss_val = loss.item()
+        # terminate if stop is True
+        if stop is not None:
+            if stop(model, i, loss_val): break
         loss.backward()
         opt.step()
         scheduler.step()
+
         if i % print_every == 0:
             mu_mag = np.mean(
                 np.sqrt(
@@ -282,11 +312,7 @@ def svgp(Y,
                    '| |mu| {:.3f} | sig {:.3f} |').format(
                        i,
                        svgp_elbo.item() / (n * m),
-                       kl.item() / (n * m),
-                       loss.item() / (n * m), mu_mag, sig)
+                       kl.item() / (n * m), loss_val / (n * m), mu_mag, sig)
             print(msg + model.kernel.msg + model.lprior.msg, end="\r")
-
-        if callback is not None:
-            callback(model, i)
 
     return model
