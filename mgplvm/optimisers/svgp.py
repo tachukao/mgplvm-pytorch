@@ -103,10 +103,8 @@ def generate_batch_idxs(model, data_size, batch_pool=None):
         idxs = np.arange(data_size)
     else:
         idxs = copy.copy(batch_pool)
-        data_size = len(idxs)
     if model.lprior.name == "Brownian":
         # if prior is Brownian, then batches have to be contiguous
-
         i0 = np.random.randint(1, data_size - 1)
         if i0 < batch_size / 2:
             batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
@@ -156,9 +154,8 @@ def optimise(Y,
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
     ts = ts if ts is None else ts.to(device)
-    data_size = m  #total conditions
+    data_size = m if batch_pool is None else len(batch_pool)  #total conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
-
     #optionally mask some time points
     mask_Ts = mask_Ts if mask_Ts is not None else lambda x: x
 
