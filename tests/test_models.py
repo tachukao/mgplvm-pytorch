@@ -42,15 +42,15 @@ def test_svgp_runs():
                          whiten=True).to(device)
 
     # train model
-    trained_model = optimisers.svgp.optimise(Y,
-                                             mod,
-                                             device,
-                                             optimizer=optim.Adam,
-                                             max_steps=5,
-                                             burnin=5 / 2E-2,
-                                             n_mc=64,
-                                             lrate=2E-2,
-                                             print_every=1000)
+    trained_model = optimisers.svgp.fit(Y,
+                                        mod,
+                                        device,
+                                        optimizer=optim.Adam,
+                                        max_steps=5,
+                                        burnin=5 / 2E-2,
+                                        n_mc=64,
+                                        lrate=2E-2,
+                                        print_every=1000)
 
 
 if __name__ == '__main__':

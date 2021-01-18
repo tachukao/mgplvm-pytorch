@@ -53,16 +53,16 @@ def test_GP_prior():
     ### test that training runs ###
     ts = torch.arange(m).to(device)
     n_mc = 64
-    trained_mod = optimisers.svgp.optimise(Y,
-                                           mod,
-                                           device,
-                                           optimizer=optim.Adam,
-                                           max_steps=5,
-                                           burnin=100,
-                                           n_mc=n_mc,
-                                           lrate=10E-2,
-                                           print_every=50,
-                                           ts=ts)
+    trained_mod = optimisers.svgp.fit(Y,
+                                      mod,
+                                      device,
+                                      optimizer=optim.Adam,
+                                      max_steps=5,
+                                      burnin=100,
+                                      n_mc=n_mc,
+                                      lrate=10E-2,
+                                      print_every=50,
+                                      ts=ts)
 
     ### test that two ways of computing the prior agree ###
     data = torch.tensor(Y).to(device)

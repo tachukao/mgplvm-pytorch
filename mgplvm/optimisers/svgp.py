@@ -15,7 +15,6 @@ def sort_params(model, hook):
     allow for masking of certain conditions for use in crossvalidation'''
 
     # parameters to be optimized
-
     lat_params = list(model.lat_dist.parameters())
     params: List[List[Tensor]] = [[], []]
     for param in model.parameters():
@@ -37,7 +36,6 @@ def sort_params(model, hook):
                 params[0].append(param)
 
     return params
-
 
 
 def print_progress(model,
@@ -95,21 +93,21 @@ def generate_batch_idxs(model, data_size, batch_pool=None):
         return idxs[0:batch_size]
 
 
-def optimise(Y,
-             model,
-             device,
-             optimizer=optim.Adam,
-             n_mc=128,
-             burnin=100,
-             lrate=1E-3,
-             max_steps=1000,
-             stop=None,
-             print_every=50,
-             batch_size=None,
-             ts=None,
-             batch_pool=None,
-             mask_Ts=None,
-             neuron_idxs=None):
+def fit(Y,
+        model,
+        device,
+        optimizer=optim.Adam,
+        n_mc=128,
+        burnin=100,
+        lrate=1E-3,
+        max_steps=1000,
+        stop=None,
+        print_every=50,
+        batch_size=None,
+        ts=None,
+        batch_pool=None,
+        mask_Ts=None,
+        neuron_idxs=None):
     '''
     max_steps : Optional[int], default=1000
         maximum number of training iterations

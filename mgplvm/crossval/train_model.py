@@ -31,21 +31,21 @@ def training_params(**kwargs):
 
 def train_model(mod, Y, device, params):
 
-    trained_mod = optimisers.svgp.optimise(Y,
-                                           mod,
-                                           device,
-                                           optimizer=params['optimizer'],
-                                           max_steps=int(
-                                               round(params['max_steps'])),
-                                           burnin=params['burnin'],
-                                           n_mc=params['n_mc'],
-                                           lrate=params['lrate'],
-                                           print_every=params['print_every'],
-                                           batch_size=params['batch_size'],
-                                           stop=params['callback'],
-                                           ts=params['ts'],
-                                           batch_pool=params['batch_pool'],
-                                           neuron_idxs=params['neuron_idxs'],
-                                           mask_Ts=params['mask_Ts']),
+    trained_mod = optimisers.svgp.fit(Y,
+                                      mod,
+                                      device,
+                                      optimizer=params['optimizer'],
+                                      max_steps=int(round(
+                                          params['max_steps'])),
+                                      burnin=params['burnin'],
+                                      n_mc=params['n_mc'],
+                                      lrate=params['lrate'],
+                                      print_every=params['print_every'],
+                                      batch_size=params['batch_size'],
+                                      stop=params['callback'],
+                                      ts=params['ts'],
+                                      batch_pool=params['batch_pool'],
+                                      neuron_idxs=params['neuron_idxs'],
+                                      mask_Ts=params['mask_Ts']),
 
     return trained_mod

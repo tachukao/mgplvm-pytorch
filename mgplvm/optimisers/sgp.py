@@ -67,7 +67,7 @@ def print_progress(model, i, n, m, sgp_elbo, kl, loss):
     print(msg + " | " + model.lprior.msg, "\r")
 
 
-def sgp(Y,
+def fit(Y,
         model,
         device,
         optimizer=optim.Adam,

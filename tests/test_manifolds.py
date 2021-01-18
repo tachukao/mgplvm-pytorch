@@ -50,13 +50,13 @@ def test_manifs_runs():
                                     whiten=True).to(device)
 
         # train model
-        trained_model = optimisers.svgp.optimise(Y,
-                                                 mod,
-                                                 device,
-                                                 max_steps=5,
-                                                 n_mc=64,
-                                                 optimizer=optim.Adam,
-                                                 print_every=1000)
+        trained_model = optimisers.svgp.fit(Y,
+                                            mod,
+                                            device,
+                                            max_steps=5,
+                                            n_mc=64,
+                                            optimizer=optim.Adam,
+                                            print_every=1000)
 
 
 if __name__ == '__main__':

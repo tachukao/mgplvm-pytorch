@@ -89,15 +89,15 @@ def test_kernels_run():
                              whiten=True).to(device)
 
         ### test that training runs ###
-        trained_mod = optimisers.svgp.optimise(Y,
-                                               mod,
-                                               device,
-                                               optimizer=optim.Adam,
-                                               max_steps=5,
-                                               burnin=100,
-                                               n_mc=64,
-                                               lrate=10E-2,
-                                               print_every=50)
+        trained_mod = optimisers.svgp.fit(Y,
+                                          mod,
+                                          device,
+                                          optimizer=optim.Adam,
+                                          max_steps=5,
+                                          burnin=100,
+                                          n_mc=64,
+                                          lrate=10E-2,
+                                          print_every=50)
 
     return
 
