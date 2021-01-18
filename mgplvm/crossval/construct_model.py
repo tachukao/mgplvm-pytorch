@@ -17,6 +17,7 @@ def model_params(n, m, d, n_z, **kwargs):
         'initialization': 'pca',
         'Y': None,
         'latent_sigma': 1,
+        'latent_mu': None,
         'diagonal': True,
         'learn_linear_weights': False,
         'learn_linear_alpha': True,
@@ -51,7 +52,8 @@ def load_model(params):
         
     #### specify latent distribution ####
     lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=params['latent_sigma'], diagonal = params['diagonal'],
-                                 initialization = params['initialization'], Y = params['Y'])
+                                 initialization = params['initialization'], Y = params['Y'],
+                                 mu = params['latent_mu'])
     
     #### specify kernel ####
     if params['kernel'] == 'linear':

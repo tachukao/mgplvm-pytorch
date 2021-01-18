@@ -14,9 +14,10 @@ from ..base import Module
 class ReLieBase(Rdist):
     name = "ReLieBase"
 
-    def __init__(self, manif: Manifold, f, kmax: int = 5):
+    def __init__(self, manif: Manifold, f, kmax: int = 5, diagonal: bool = False):
         super(ReLieBase, self).__init__(manif, kmax)
         self.f = f
+        self.diagonal = diagonal
 
     def lat_prms(self, Y=None, batch_idxs=None):
         gmu, gamma = self.f(Y, batch_idxs)
@@ -48,14 +49,17 @@ class ReLieBase(Rdist):
         x = q.rsample(size)
         m = x.shape[1]
         mu = torch.zeros(m).to(gamma.device)[..., None]
-        lq = torch.stack([
-            self.manif.log_q(
-                Normal(mu, gamma[..., j, j][..., None]).log_prob,
-                x[..., j, None], 1, self.kmax).sum(dim=-1)
-            for j in range(self.d)
-        ]).sum(dim=0)
+        if self.diagonal: #compute diagonal covariance
+            lq = torch.stack([
+                self.manif.log_q(
+                    Normal(mu, gamma[..., j, j][..., None]).log_prob,
+                    x[..., j, None], 1, self.kmax).sum(dim=-1)
+                for j in range(self.d)
+            ]).sum(dim=0)
+        else: #compute entropy with full covariance matrix
+            lq = self.manif.log_q(q.log_prob, x, self.manif.d, self.kmax)
+        
         gtilde = self.manif.expmap(x)
-
         # apply g_mu with dims: (n_mc x m x d)
         g = self.manif.gmul(gmu, gtilde)
         return g, lq
@@ -70,14 +74,19 @@ class _F(Module):
                  gamma: Optional[Tensor] = None,
                  fixed_gamma=False,
                  diagonal=False,
+                 mu = None,
                  initialization: Optional[str] = 'random',
                  Y=None):
 
         super(_F, self).__init__()
         self.manif = manif
-        gmudata = self.manif.initialize(initialization, m, manif.d, Y)
-        self.gmu = nn.Parameter(data=gmudata, requires_grad=True)
         self.diagonal = diagonal
+        
+        if mu is None:
+            gmu = self.manif.initialize(initialization, m, manif.d, Y)
+        else:
+            gmu = torch.tensor(mu)
+        self.gmu = nn.Parameter(data=gmu, requires_grad=True)
 
         if gamma is None:
             gamma = torch.ones(m, manif.d) * sigma
@@ -119,6 +128,7 @@ class ReLie(ReLieBase):
                  gamma: Optional[Tensor] = None,
                  fixed_gamma=False,
                  diagonal=False,
+                 mu = None,
                  initialization: Optional[str] = 'random',
                  Y=None):
         """
@@ -126,14 +136,16 @@ class ReLie(ReLieBase):
         ----------
         m : int
             number of conditions/timepoints
-        kmax [optional] : int
+        kmax : Optional[int]
             number of terms used in the ReLie approximation is (2kmax+1)
-        sigma [optional] : float
+        sigma : Optional[float]
             initial diagonal std of the variational distribution
-        intialization [optional] : str
+        intialization : Optional[str]
             string to specify type of initialization
             ('random'/'PCA'/'identity' depending on manifold)
-        Y [optional] : np.ndarray
+        mu : Optional[np.ndarray]
+            initialization of the vartiational means (m x d2)
+        Y : Optional[np.ndarray]
             data used to initialize latents (n x m x n_samples)
             
         Notes
@@ -146,9 +158,9 @@ class ReLie(ReLieBase):
         The diagonal approximation only works for T^n and R^n
         """
 
-        f = _F(manif, m, kmax, sigma, gamma, fixed_gamma, diagonal,
+        f = _F(manif, m, kmax, sigma, gamma, fixed_gamma, diagonal, mu,
                initialization, Y)
-        super(ReLie, self).__init__(manif, f, kmax)
+        super(ReLie, self).__init__(manif, f, kmax, diagonal)
 
     @property
     def prms(self):
