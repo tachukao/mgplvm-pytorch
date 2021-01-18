@@ -46,7 +46,6 @@ def test_svgp_runs():
                                   mod,
                                   device,
                                   optimizer=optim.Adam,
-                                  outdir='none',
                                   max_steps=5,
                                   burnin=5 / 2E-2,
                                   n_mc=64,
