@@ -140,14 +140,15 @@ def sort_params(model, hook, trainGP, svgp=False):
 
     # parameters to be optimized
 
+    lat_params = list(model.lat_dist.parameters())
     params: List[List[Tensor]] = [[], [], []] if svgp else [[], []]
     for param in model.parameters():
-        if (param.shape == model.lat_dist.prms[1].shape) and torch.all(
-                param == model.lat_dist.prms[1]):
+        if (param.shape == lat_params[1].shape) and torch.all(
+                param == lat_params[1]):
             param.register_hook(hook)  # option to mask gradients
             params[1].append(param)
-        elif (param.shape == model.lat_dist.prms[0].shape) and torch.all(
-                param == model.lat_dist.prms[0]):
+        elif (param.shape == lat_params[0].shape) and torch.all(
+                param == lat_params[0]):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
         elif svgp and (param.shape == model.svgp.q_mu.shape) and torch.all(
@@ -208,7 +209,7 @@ def svgp(Y,
          n_svgp=0,
          ts=None,
          batch_pool=None,
-         hook=None,
+         mask_Ts=None,
          neuron_idxs=None):
     '''
     max_steps [optional]: int, default=1000
@@ -222,6 +223,7 @@ def svgp(Y,
     data = torch.from_numpy(Y).float().to(device)
     ts = ts if ts is None else ts.to(device)
     data_size = m  #total conditions
+    n = n if neuron_idxs is None else len(neuron_idxs)
 
     def generate_batch_idxs(batch_pool=None):
         if batch_pool is None:
@@ -251,12 +253,12 @@ def svgp(Y,
             return idxs[0:batch_size]
 
     #optionally mask some time points
-    if hook is None:
+    if mask_Ts is None:
 
-        def hook(grad):
+        def mask_Ts(grad):
             return grad
 
-    params = sort_params(model, hook, True, svgp=True)
+    params = sort_params(model, mask_Ts, True, svgp=True)
     opt = optimizer(params[0], lr=lrate)  # instantiate optimizer
     opt.add_param_group({'params': params[1]})
     opt.add_param_group({'params': params[2]})

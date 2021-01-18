@@ -15,6 +15,14 @@ class S3(Manifold):
     log_uniform = (special.loggamma(2) - np.log(2) - 2 * np.log(np.pi))
 
     def __init__(self, m: int, d: Optional[int] = None):
+        """
+        Parameters
+        ----------
+        m : int
+            number of conditions/timepoints
+        d : int
+            latent dimensionality
+        """
         super().__init__(d=3)
 
         self.m = m

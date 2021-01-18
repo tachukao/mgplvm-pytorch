@@ -20,6 +20,7 @@ def model_params(n, m, d, n_z, **kwargs):
         'diagonal': True,
         'learn_linear_weights': False,
         'learn_linear_alpha': True,
+        'linear_alpha': None,
         'RBF_alpha': None,
         'RBF_ell': None,
         'arp_p': 1,
@@ -44,17 +45,18 @@ def load_model(params):
     
     #### specify manifold ####
     if params['manifold'] == 'euclid':
-        manif = Euclid(m, d, initialization = params['initialization'], Y = params['Y'][:, :, 0])
+        manif = Euclid(m, d)
     elif params['manifold'] == 'torus':
-        manif = Torus(m, d, initialization = params['initialization'], Y = params['Y'][:, :, 0])
+        manif = Torus(m, d)
         
     #### specify latent distribution ####
-    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=params['latent_sigma'], diagonal = params['diagonal'])
+    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=params['latent_sigma'], diagonal = params['diagonal'],
+                                 initialization = params['initialization'], Y = params['Y'])
     
     #### specify kernel ####
     if params['kernel'] == 'linear':
         kernel = kernels.Linear(n, manif.linear_distance, d, learn_weights = params['learn_linear_weights'],
-                                learn_alpha = params['learn_linear_alpha'], Y = params['Y'])
+                                learn_alpha = params['learn_linear_alpha'], Y = params['Y'], alpha = params['linear_alpha'])
     elif params['kernel'] == 'RBF':
         ell = None if params['RBF_ell'] is None else np.ones(n)*params['RBF_ell']
         kernel = kernels.QuadExp(n, manif.distance, Y = params['Y'],

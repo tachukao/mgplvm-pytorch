@@ -10,20 +10,28 @@ from sklearn import decomposition
 
 class Euclid(Manifold):
     def __init__(self, m: int, d: int):
+        """
+        Parameters
+        ----------
+        m : int
+            number of conditions/timepoints
+        d : int
+            latent dimensionality
+        """
         super().__init__(d)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
-
+        
     @staticmethod
     def initialize(initialization, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
         if initialization == 'pca':
-            #Y is N x m; reduce to d x m
+            #Y is N x m; reduce to m x d
             if Y is None:
                 print('user must provide data for PCA initialization')
             else:
                 pca = decomposition.PCA(n_components=d)
-                mudata = pca.fit_transform(Y.T)  #m x d
+                mudata = pca.fit_transform(Y[:, :, 0].T)  #m x d
                 mudata = mudata / np.std(mudata, axis=0, keepdims=True)
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         # default initialization

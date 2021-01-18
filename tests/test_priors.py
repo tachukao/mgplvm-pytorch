@@ -96,4 +96,4 @@ def test_GP_prior():
 
 if __name__ == '__main__':
     test_GP_prior()
-    print('done')
+    print('Tested priors')

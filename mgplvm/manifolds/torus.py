@@ -10,6 +10,14 @@ from sklearn import decomposition
 
 class Torus(Manifold):
     def __init__(self, m: int, d: int):
+        """
+        Parameters
+        ----------
+        m : int
+            number of conditions/timepoints
+        d : int
+            latent dimensionality
+        """
         super().__init__(d)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
@@ -26,7 +34,7 @@ class Torus(Manifold):
                 print('user must provide data for PCA initialization')
             else:
                 pca = decomposition.PCA(n_components=d)
-                mudata = pca.fit_transform(Y.T)  #m x d
+                mudata = pca.fit_transform(Y[:, :, 0].T)  #m x d
                 mudata *= 2 * np.pi / (np.amax(mudata) - np.amin(mudata))
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         mudata = torch.randn(m, d) * 0.1

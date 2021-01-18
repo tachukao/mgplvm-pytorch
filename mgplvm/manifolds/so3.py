@@ -13,8 +13,15 @@ from ..inducing_variables import InducingPoints
 class So3(Manifold):
     # log of the uniform prior (negative log volume)
     log_uniform = (special.loggamma(2) - np.log(1) - 2 * np.log(np.pi))
-
     def __init__(self, m: int, d: Optional[int] = None):
+        """
+        Parameters
+        ----------
+        m : int
+            number of conditions/timepoints
+        d : int
+            latent dimensionality
+        """
         super().__init__(d=3)
 
         self.m = m
