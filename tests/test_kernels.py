@@ -97,8 +97,7 @@ def test_kernels_run():
                                                burnin=100,
                                                n_mc=64,
                                                lrate=10E-2,
-                                               print_every=50,
-                                               n_svgp=0)
+                                               print_every=50)
 
     return
 

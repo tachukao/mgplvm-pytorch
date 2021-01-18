@@ -10,7 +10,7 @@ from torch.optim.lr_scheduler import LambdaLR
 from typing import List
 
 
-def sort_params(model, hook, trainGP):
+def sort_params(model, hook):
     '''apply burnin period to Sigma_Q and alpha^2
     allow for masking of certain conditions for use in crossvalidation'''
 
@@ -27,7 +27,7 @@ def sort_params(model, hook, trainGP):
                 param == lat_params[0]):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
-        elif trainGP:  # only update GP parameters if trainGP
+        else:
             # add ell to group 2
             if (('QuadExp' in model.kernel.name)
                     and (param.shape == model.kernel.ell.shape)
@@ -51,14 +51,6 @@ def print_progress(model, i, n, m, sgp_elbo, kl, loss):
         mu_mag = np.mean(
             np.sqrt(np.sum(model.manif.prms.data.cpu().numpy()**2, axis=1)))
 
-    #if type(model) == mgplvm.models.SgpComb:
-    #    sigs = [r.prms.data.cpu().numpy() for r in model.rdist]
-    #    sigs = [np.concatenate([np.diag(s) for s in sig]) for sig in sigs]
-    #    sig = np.median(np.concatenate(sigs))
-    #    alpha_mag = torch.stack([p[0] for p in model.kernel.prms
-    #                             ]).mean().data.cpu().numpy()
-    #    ell_mag = torch.stack([p[1] for p in model.kernel.prms
-    #                           ]).mean().data.cpu().numpy()
     sig = np.median(
         np.concatenate(
             [np.diag(sig) for sig in model.rdist.prms.data.cpu().numpy()]))
@@ -85,7 +77,6 @@ def sgp(Y,
         print_every=10,
         max_steps=1000,
         stop=None,
-        trainGP=True,
         nbatch=1,
         Tfix=slice(0),
         sigma_thresh=0.0001):
@@ -102,7 +93,7 @@ def sgp(Y,
     # parameters to be optimized
     #if type(model) == mgplvm.models.SgpComb:
     #    params = sort_params_prod(model, _Tlearn_hook, trainGP)
-    params = sort_params(model, _Tlearn_hook, trainGP)
+    params = sort_params(model, _Tlearn_hook)
     optimizer = optimizer(params[0], lr=lrate)  # instantiate optimizer
     optimizer.add_param_group({'params': params[1]})
 
