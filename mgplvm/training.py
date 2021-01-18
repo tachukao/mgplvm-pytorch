@@ -222,7 +222,7 @@ def svgp(Y,
     n, m, _ = Y.shape  # neurons, conditions, samples
     data = torch.from_numpy(Y).float().to(device)
     ts = ts if ts is None else ts.to(device)
-    data_size = m  #total conditions
+    data_size = m if batch_pool is None else len(batch_pool) #total conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
 
     def generate_batch_idxs(batch_pool=None):
@@ -230,7 +230,6 @@ def svgp(Y,
             idxs = np.arange(data_size)
         else:
             idxs = copy.copy(batch_pool)
-            data_size = len(idxs)
         if model.lprior.name == "Brownian":
             # if prior is Brownian, then batches have to be contiguous
 
