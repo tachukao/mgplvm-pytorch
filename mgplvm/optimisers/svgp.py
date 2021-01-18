@@ -78,16 +78,19 @@ def print_progress(model,
                    loss_val,
                    kl_val,
                    svgp_elbo_val,
-                   print_every=50):
+                   print_every=50,
+                   Y=None,
+                   batch_idxs=None):
     if i % print_every == 0:
         mu_mag = np.mean(
             np.sqrt(
-                np.sum(model.lat_dist.prms[0].data.cpu().numpy()[:]**2,
+                np.sum(model.lat_dist.lat_gmu(
+                    Y, batch_idxs).data.cpu().numpy()[:]**2,
                        axis=1)))
         sig = np.median(
             np.concatenate([
-                np.diag(sig)
-                for sig in model.lat_dist.prms[1].data.cpu().numpy()
+                np.diag(sig) for sig in model.lat_dist.lat_gamma(
+                    Y, batch_idxs).data.cpu().numpy()
             ]))
         msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
                '| |mu| {:.3f} | sig {:.3f} |').format(i,
@@ -152,7 +155,7 @@ def optimise(Y,
         return 1 - np.exp(-x / (3 * burnin))
 
     n, m, _ = Y.shape  # neurons, conditions, samples
-    data = torch.from_numpy(Y).float().to(device)
+    data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
     ts = ts if ts is None else ts.to(device)
     data_size = m if batch_pool is None else len(batch_pool)  #total conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
@@ -199,6 +202,6 @@ def optimise(Y,
         opt.step()
         scheduler.step()
         print_progress(model, n, m, i, loss_val, kl_val, svgp_elbo_val,
-                       print_every)
+                       print_every, data, batch_idxs)
 
     return model
