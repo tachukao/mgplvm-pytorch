@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, rdist, models, training, syndata
+from mgplvm import kernels, rdist, models, optimisers, syndata
 from mgplvm.manifolds import Torus, Euclid
 from mgplvm import lpriors
 torch.set_default_dtype(torch.float64)
@@ -53,17 +53,16 @@ def test_GP_prior():
     ### test that training runs ###
     ts = torch.arange(m).to(device)
     n_mc = 64
-    trained_mod = training.svgp(Y,
-                                mod,
-                                device,
-                                optimizer=optim.Adam,
-                                max_steps=5,
-                                burnin=100,
-                                n_mc=n_mc,
-                                lrate=10E-2,
-                                print_every=50,
-                                n_svgp=0,
-                                ts=ts)
+    trained_mod = optimisers.svgp.fit(Y,
+                                      mod,
+                                      device,
+                                      optimizer=optim.Adam,
+                                      max_steps=5,
+                                      burnin=100,
+                                      n_mc=n_mc,
+                                      lrate=10E-2,
+                                      print_every=50,
+                                      ts=ts)
 
     ### test that two ways of computing the prior agree ###
     data = torch.tensor(Y).to(device)

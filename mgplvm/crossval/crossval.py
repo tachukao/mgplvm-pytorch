@@ -3,7 +3,7 @@ import numpy as np
 import copy
 import mgplvm
 import torch
-from mgplvm import kernels, rdist, models, training
+from mgplvm import kernels, rdist, models 
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 import pickle

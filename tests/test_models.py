@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, rdist, models, training, syndata, likelihoods
+from mgplvm import kernels, rdist, models, optimisers, syndata, likelihoods
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 torch.set_default_dtype(torch.float64)
@@ -29,7 +29,7 @@ def test_svgp_runs():
     Y = Y + np.random.normal(size=Y.shape) * np.mean(Y) / 3
     # specify manifold, kernel and rdist
     manif = Euclid(m, d)
-    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=sig0, diagonal = False)
+    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=sig0, diagonal=False)
     # initialize signal variance
     alpha = np.mean(np.std(Y, axis=1), axis=1)
     kernel = kernels.QuadExp(n, manif.distance, alpha=alpha)
@@ -42,15 +42,15 @@ def test_svgp_runs():
                          whiten=True).to(device)
 
     # train model
-    trained_model = training.svgp(Y,
-                                  mod,
-                                  device,
-                                  optimizer=optim.Adam,
-                                  max_steps=5,
-                                  burnin=5 / 2E-2,
-                                  n_mc=64,
-                                  lrate=2E-2,
-                                  print_every=1000)
+    trained_model = optimisers.svgp.fit(Y,
+                                        mod,
+                                        device,
+                                        optimizer=optim.Adam,
+                                        max_steps=5,
+                                        burnin=5 / 2E-2,
+                                        n_mc=64,
+                                        lrate=2E-2,
+                                        print_every=1000)
 
 
 if __name__ == '__main__':
