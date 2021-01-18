@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.likelihoods &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -48,7 +51,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -131,6 +134,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -193,11 +198,16 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">variance</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">n_gh_locs</span><span class="o">=</span><span class="n">n_gh_locs</span><span class="p">):</span>
+                 <span class="n">n_gh_locs</span><span class="o">=</span><span class="n">n_gh_locs</span><span class="p">,</span>
+                 <span class="n">learn_sigma</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_gh_locs</span><span class="p">)</span>
         <span class="n">sigma</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">)</span> <span class="k">if</span> <span class="n">variance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">variance</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">get_default_dtype</span><span class="p">()))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">learn_sigma</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -216,32 +226,55 @@
         <span class="n">y_samps</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">y_samps</span></div>
 
-<div class="viewcode-block" id="Gaussian.variational_expectation"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.Gaussian.variational_expectation">[docs]</a>    <span class="k">def</span> <span class="nf">variational_expectation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fmu</span><span class="p">,</span> <span class="n">fvar</span><span class="p">,</span> <span class="n">by_batch</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">n_b</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">fmu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">fmu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">variance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
-        <span class="n">ve1</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log2pi</span> <span class="o">*</span> <span class="n">m</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">*</span> <span class="n">n_samples</span> <span class="o">*</span> <span class="n">n_b</span>
-        <span class="n">ve2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">variance</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">n_samples</span> <span class="o">*</span> <span class="n">n_b</span> <span class="o">*</span> <span class="n">m</span>
-        <span class="n">ve3</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">fmu</span><span class="p">)</span> <span class="o">/</span> <span class="n">variance</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-        <span class="n">ve4</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">fvar</span> <span class="o">/</span> <span class="n">variance</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_samples</span>
-        <span class="k">if</span> <span class="n">by_batch</span><span class="p">:</span>
-            <span class="n">exp</span> <span class="o">=</span> <span class="n">ve1</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">n_b</span> <span class="o">+</span> <span class="n">ve2</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">n_b</span> <span class="o">+</span> <span class="n">ve3</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-                <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">ve4</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="c1">#print(exp.shape)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">exp</span> <span class="o">=</span> <span class="n">ve1</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">ve2</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">ve3</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">ve4</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<div class="viewcode-block" id="Gaussian.variational_expectation"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.Gaussian.variational_expectation">[docs]</a>    <span class="k">def</span> <span class="nf">variational_expectation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fmu</span><span class="p">,</span> <span class="n">fvar</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int</span>
+<span class="sd">            number of samples</span>
+<span class="sd">        y : Tensor</span>
+<span class="sd">            number of MC samples (n x m x n_samples)</span>
+<span class="sd">        f_mu : Tensor</span>
+<span class="sd">            GP mean (n_mc x n x m x n_samples)</span>
+<span class="sd">        f_var : Tensor</span>
+<span class="sd">            GP diagonal variance (n_mc x n x m)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Log likelihood : Tensor</span>
+<span class="sd">            SVGP likelihood term per MC, neuron, sample (n_mc x n x n_samples)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_mc</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">fmu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">fmu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">variance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>  <span class="c1">#(n)</span>
+        <span class="c1">#print(variance.shape)</span>
+        <span class="n">ve1</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log2pi</span> <span class="o">*</span> <span class="n">m</span>  <span class="c1">#scalar</span>
+        <span class="n">ve2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">variance</span><span class="p">)</span> <span class="o">*</span> <span class="n">m</span>  <span class="c1">#(n)</span>
+        <span class="n">ve3</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">fmu</span><span class="p">)</span> <span class="o">/</span> <span class="n">variance</span><span class="p">[</span>
+            <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1">#(n_mc x n x m x n_samples)</span>
+        <span class="n">ve4</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">fvar</span> <span class="o">/</span> <span class="n">variance</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1">#(n_mc x n x m)</span>
+
+        <span class="c1">#print(ve1.shape, ve2.shape, ve3.shape, ve4.shape)</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">ve1</span> <span class="o">+</span> <span class="n">ve2</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">ve3</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">ve4</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="c1">#(n_mc x n x n_samples)</span>
+        <span class="c1">#print(exp.shape)</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        else:</span>
+<span class="sd">            exp = ve1.sum() + ve2.sum() + ve3.sum() + ve4.sum()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">exp</span></div></div>
 
 
 <div class="viewcode-block" id="Poisson"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.Poisson">[docs]</a><span class="k">class</span> <span class="nc">Poisson</span><span class="p">(</span><span class="n">Likelihood</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">inv_link</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span>
-                 <span class="n">binsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">c</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">d</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">fixed_c</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                 <span class="n">fixed_d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">n_gh_locs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_gh_locs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">inv_link</span><span class="o">=</span><span class="s1">&#39;exp&#39;</span><span class="p">,</span>  <span class="c1">#torch.exp,</span>
+            <span class="n">binsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">c</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">d</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">fixed_c</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">fixed_d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">n_gh_locs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_gh_locs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_gh_locs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">=</span> <span class="n">inv_link</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span> <span class="o">=</span> <span class="n">binsize</span>
@@ -255,42 +288,85 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span>
 
 <div class="viewcode-block" id="Poisson.log_prob"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.Poisson.log_prob">[docs]</a>    <span class="k">def</span> <span class="nf">log_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lamb</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="kc">False</span><span class="p">:</span>  <span class="c1">#y.shape[-1] == 1:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Poisson</span><span class="p">(</span><span class="n">lamb</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Poisson</span><span class="p">(</span><span class="n">lamb</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
-            <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span></div>
+            <span class="c1">#lambd: (n_mc, n, m, n_samples, n_gh)</span>
+            <span class="c1">#y: (n, m, n_samples)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Poisson</span><span class="p">(</span><span class="n">lamb</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="Poisson.sample"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.Poisson.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f_samps</span><span class="p">):</span>
         <span class="n">c</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
-        <span class="n">lambd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">f_samps</span> <span class="o">+</span>
+
+        <span class="c1">#######</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">==</span> <span class="s1">&#39;exp&#39;</span><span class="p">:</span>
+            <span class="n">lambd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">f_samps</span> <span class="o">+</span>
                                              <span class="n">d</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lambd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">f_samps</span> <span class="o">+</span>
+                                                 <span class="n">d</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="c1">#######</span>
+
+        <span class="c1">#lambd = self.binsize * self.inv_link(c[None, ..., None] * f_samps +</span>
+        <span class="c1">#                                     d[None, ..., None])</span>
         <span class="c1">#sample from p(y|f)</span>
         <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Poisson</span><span class="p">(</span><span class="n">lambd</span><span class="p">)</span>
         <span class="n">y_samps</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">y_samps</span></div>
 
-<div class="viewcode-block" id="Poisson.variational_expectation"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.Poisson.variational_expectation">[docs]</a>    <span class="k">def</span> <span class="nf">variational_expectation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fmu</span><span class="p">,</span> <span class="n">fvar</span><span class="p">,</span> <span class="n">gh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Poisson.variational_expectation"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.Poisson.variational_expectation">[docs]</a>    <span class="k">def</span> <span class="nf">variational_expectation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">n_samples</span><span class="p">,</span>
+                                <span class="n">y</span><span class="p">,</span>
+                                <span class="n">fmu</span><span class="p">,</span>
+                                <span class="n">fvar</span><span class="p">,</span>
+                                <span class="n">gh</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                <span class="n">by_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int</span>
+<span class="sd">            number of samples</span>
+<span class="sd">        y : Tensor</span>
+<span class="sd">            number of MC samples (n x m x n_samples)</span>
+<span class="sd">        f_mu : Tensor</span>
+<span class="sd">            GP mean (n_mc x n x m x n_samples)</span>
+<span class="sd">        f_var : Tensor</span>
+<span class="sd">            GP diagonal variance (n_mc x n x m)</span>
+<span class="sd">        gh [optional] : int</span>
+<span class="sd">            number of points used for Gauss-Hermite quadrature</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Log likelihood : Tensor</span>
+<span class="sd">            SVGP likelihood term per MC, neuron, sample (n_mc x n x n_samples)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">c</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
         <span class="n">fmu</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">fmu</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
         <span class="n">fvar</span> <span class="o">=</span> <span class="n">fvar</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">gh</span><span class="p">):</span>
-            <span class="n">n_b</span> <span class="o">=</span> <span class="n">fmu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1">#if self.inv_link == torch.exp and (not gh):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">==</span> <span class="s1">&#39;exp&#39;</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">gh</span><span class="p">):</span>
+            <span class="n">n_mc</span> <span class="o">=</span> <span class="n">fmu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">v1</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">fmu</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binsize</span> <span class="o">*</span>
                               <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">fmu</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">fvar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]))</span>
-            <span class="n">v2</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binsize</span><span class="p">)</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">n_b</span>
-            <span class="k">return</span> <span class="n">v1</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">v2</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">v2</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binsize</span><span class="p">)</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="c1">#v1: (n_b x n x m x n_samples)  v2: (n x m x n_samples) (per mc sample)</span>
+            <span class="k">return</span> <span class="n">v1</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">v2</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># use Gauss-Hermite quadrature to approximate integral</span>
             <span class="n">locs</span><span class="p">,</span> <span class="n">ws</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">hermite</span><span class="o">.</span><span class="n">hermgauss</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_gh_locs</span><span class="p">)</span>
             <span class="n">ws</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">ws</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">fmu</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="n">locs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">locs</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">fvar</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="n">fvar</span> <span class="o">=</span> <span class="n">fvar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-            <span class="n">locs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">fvar</span><span class="p">)</span> <span class="o">*</span> <span class="n">locs</span> <span class="o">+</span>
-                                 <span class="n">fmu</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span>
+            <span class="n">fvar</span> <span class="o">=</span> <span class="n">fvar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1">#add n_samples, n_gh</span>
+            <span class="n">fmu</span> <span class="o">=</span> <span class="n">fmu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1">#add n_gh</span>
+            <span class="n">locs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">fvar</span><span class="p">)</span> <span class="o">*</span> <span class="n">locs</span> <span class="o">+</span>
+                <span class="n">fmu</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span>  <span class="c1">#(n_mc, n, m, n_samples, n_gh)</span>
             <span class="n">lp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">locs</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">lp</span> <span class="o">*</span> <span class="n">ws</span><span class="p">)</span></div></div>
+            <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">lp</span> <span class="o">*</span> <span class="n">ws</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span></div></div>
+            <span class="c1">#return torch.sum(1 / np.sqrt(np.pi) * lp * ws)</span>
 
 
 <div class="viewcode-block" id="NegativeBinomial"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.NegativeBinomial">[docs]</a><span class="k">class</span> <span class="nc">NegativeBinomial</span><span class="p">(</span><span class="n">Likelihood</span><span class="p">):</span>
@@ -308,7 +384,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_gh_locs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">=</span> <span class="n">inv_link</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span> <span class="o">=</span> <span class="n">binsize</span>
-        <span class="n">total_count</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span>
+        <span class="n">total_count</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span>
             <span class="n">n</span><span class="p">,</span> <span class="p">)</span> <span class="k">if</span> <span class="n">total_count</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">total_count</span>
         <span class="n">total_count</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span>
             <span class="n">dists</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">greater_than_eq</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">total_count</span><span class="p">)</span>
@@ -337,155 +413,183 @@
         <span class="k">return</span> <span class="n">y_samps</span></div>
 
 <div class="viewcode-block" id="NegativeBinomial.log_prob"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.NegativeBinomial.log_prob">[docs]</a>    <span class="k">def</span> <span class="nf">log_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_count</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="kc">False</span><span class="p">:</span>  <span class="c1">#y.shape[-1] == 1:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">NegativeBinomial</span><span class="p">(</span><span class="n">total_count</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
                                        <span class="n">logits</span><span class="o">=</span><span class="n">rate</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">NegativeBinomial</span><span class="p">(</span><span class="n">total_count</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-                                       <span class="n">logits</span><span class="o">=</span><span class="n">rate</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
-            <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span></div>
+            <span class="c1">#total count: (n) -&gt; (n_mc, n, m, n_samples, n_gh)</span>
+            <span class="c1">#rate: (n_mc, n, m, n_samples, n_gh)</span>
+            <span class="c1">#y: (n, m, n_samples)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">NegativeBinomial</span><span class="p">(</span>
+                <span class="n">total_count</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">logits</span><span class="o">=</span><span class="n">rate</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="NegativeBinomial.variational_expectation"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.NegativeBinomial.variational_expectation">[docs]</a>    <span class="k">def</span> <span class="nf">variational_expectation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fmu</span><span class="p">,</span> <span class="n">fvar</span><span class="p">):</span>
+<div class="viewcode-block" id="NegativeBinomial.variational_expectation"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.NegativeBinomial.variational_expectation">[docs]</a>    <span class="k">def</span> <span class="nf">variational_expectation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fmu</span><span class="p">,</span> <span class="n">fvar</span><span class="p">,</span>
+                                <span class="n">by_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples : int</span>
+<span class="sd">            number of samples</span>
+<span class="sd">        y : Tensor</span>
+<span class="sd">            number of MC samples (n x m x n_samples)</span>
+<span class="sd">        f_mu : Tensor</span>
+<span class="sd">            GP mean (n_mc x n x m x n_samples)</span>
+<span class="sd">        f_var : Tensor</span>
+<span class="sd">            GP diagonal variance (n_mc x n x m)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Log likelihood : Tensor</span>
+<span class="sd">            SVGP likelihood term per MC, neuron, sample (n_mc x n x n_samples)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">total_count</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
         <span class="n">fmu</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">fmu</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
         <span class="n">fvar</span> <span class="o">=</span> <span class="n">fvar</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="c1">#print(fmu.shape, fvar.shape)</span>
         <span class="c1"># use Gauss-Hermite quadrature to approximate integral</span>
         <span class="n">locs</span><span class="p">,</span> <span class="n">ws</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">hermite</span><span class="o">.</span><span class="n">hermgauss</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">n_gh_locs</span><span class="p">)</span>  <span class="c1">#sample points and weights for quadrature</span>
         <span class="n">ws</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">ws</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">fmu</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">locs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">locs</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">fvar</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">fvar</span> <span class="o">=</span> <span class="n">fvar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">fvar</span> <span class="o">=</span> <span class="n">fvar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1">#add n_samples and locs</span>
+        <span class="n">fmu</span> <span class="o">=</span> <span class="n">fmu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1">#add locs</span>
+        <span class="c1">#print(locs.shape)</span>
         <span class="n">locs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">fvar</span><span class="p">)</span> <span class="o">*</span> <span class="n">locs</span> <span class="o">+</span>
                              <span class="n">fmu</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span>  <span class="c1">#coordinate transform</span>
-        <span class="n">lp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">total_count</span><span class="p">,</span> <span class="n">locs</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">lp</span> <span class="o">*</span> <span class="n">ws</span><span class="p">)</span></div></div>
+        <span class="c1">#print(total_count.shape, locs.shape)</span>
+        <span class="n">lp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">total_count</span><span class="p">,</span> <span class="n">locs</span><span class="p">,</span>
+                           <span class="n">y</span><span class="p">)</span>  <span class="c1">#(n_mc x n x m x n_samples, n_gh)</span>
+
+        <span class="c1">#print(lp.shape, ws.shape, (lp * ws).shape)</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">lp</span> <span class="o">*</span> <span class="n">ws</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span></div></div>
+
+        <span class="c1">#else:</span>
+        <span class="c1">#    return torch.sum(1 / np.sqrt(np.pi) * lp * ws)</span>
 
 
-<div class="viewcode-block" id="CMPoisson"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.CMPoisson">[docs]</a><span class="k">class</span> <span class="nc">CMPoisson</span><span class="p">(</span><span class="n">Likelihood</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Conway-Maxwell-Poisson</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">inv_link</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">,</span>
-                 <span class="n">binsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">nu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">c</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">d</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">fixed_nu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">fixed_c</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">fixed_d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                 <span class="n">n_gh_locs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_gh_locs</span><span class="p">,</span>
-                 <span class="n">max_k</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_gh_locs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">=</span> <span class="n">inv_link</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span> <span class="o">=</span> <span class="n">binsize</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_k</span> <span class="o">=</span> <span class="n">max_k</span>
-        <span class="n">nu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">)</span> <span class="k">if</span> <span class="n">nu</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">nu</span>
-        <span class="n">nu</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span><span class="n">dists</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">greater_than_eq</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="n">nu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">c</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">)</span> <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">d</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">nu</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="ow">not</span> <span class="n">fixed_nu</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="ow">not</span> <span class="n">fixed_c</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="ow">not</span> <span class="n">fixed_d</span><span class="p">)</span>
+<span class="c1"># class CMPoisson(Likelihood):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Conway-Maxwell-Poisson</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     def __init__(self,</span>
+<span class="c1">#                  n: int,</span>
+<span class="c1">#                  inv_link=torch.exp,</span>
+<span class="c1">#                  binsize=1,</span>
+<span class="c1">#                  nu: Optional[Tensor] = None,</span>
+<span class="c1">#                  c: Optional[Tensor] = None,</span>
+<span class="c1">#                  d: Optional[Tensor] = None,</span>
+<span class="c1">#                  fixed_nu=False,</span>
+<span class="c1">#                  fixed_c=False,</span>
+<span class="c1">#                  fixed_d=False,</span>
+<span class="c1">#                  n_gh_locs: Optional[int] = n_gh_locs,</span>
+<span class="c1">#                  max_k=None):</span>
+<span class="c1">#         super().__init__(n, n_gh_locs)</span>
+<span class="c1">#         self.inv_link = inv_link</span>
+<span class="c1">#         self.binsize = binsize</span>
+<span class="c1">#         self.max_k = max_k</span>
+<span class="c1">#         nu = torch.ones(n, ) if nu is None else nu</span>
+<span class="c1">#         nu = dists.transform_to(dists.constraints.greater_than_eq(0)).inv(nu)</span>
+<span class="c1">#         assert (nu is not None)</span>
+<span class="c1">#         c = torch.ones(n, ) if c is None else c</span>
+<span class="c1">#         d = torch.zeros(n, ) if d is None else d</span>
+<span class="c1">#         self.nu = nn.Parameter(data=nu, requires_grad=not fixed_nu)</span>
+<span class="c1">#         self.c = nn.Parameter(data=c, requires_grad=not fixed_c)</span>
+<span class="c1">#         self.d = nn.Parameter(data=d, requires_grad=not fixed_d)</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">nu</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span><span class="n">dists</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">greater_than_eq</span><span class="p">(</span><span class="mi">0</span><span class="p">))(</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">nu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span>
+<span class="c1">#     @property</span>
+<span class="c1">#     def prms(self):</span>
+<span class="c1">#         nu = dists.transform_to(dists.constraints.greater_than_eq(0))(self.nu)</span>
+<span class="c1">#         return nu, self.c, self.d</span>
 
-<div class="viewcode-block" id="CMPoisson.sample"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.CMPoisson.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;CMP sampling not implemented!&quot;</span><span class="p">)</span></div>
+<span class="c1">#     def sample(self):</span>
+<span class="c1">#         raise Exception(&quot;CMP sampling not implemented!&quot;)</span>
 
-<div class="viewcode-block" id="CMPoisson.log_prob"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.CMPoisson.log_prob">[docs]</a>    <span class="k">def</span> <span class="nf">log_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="n">rate</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="c1"># we do not want to differentiate through this</span>
-        <span class="n">max_k</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-        <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">((</span><span class="mi">1000</span><span class="p">,</span> <span class="n">max_k</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
-        <span class="n">K</span> <span class="o">=</span> <span class="n">max_k</span>
-        <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">nu</span> <span class="o">=</span> <span class="n">nu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">nu</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-            <span class="n">ks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">K</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">nu</span> <span class="o">=</span> <span class="n">nu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-            <span class="n">rate</span> <span class="o">=</span> <span class="n">rate</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">nu</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="n">ks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">K</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-        <span class="c1"># normalizing constant</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">ks</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rate</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-</span>
-                            <span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">ks</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span>
-                            <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">lp</span> <span class="o">=</span> <span class="n">p</span> <span class="o">-</span> <span class="n">M</span>
-        <span class="k">return</span> <span class="n">lp</span></div>
+<span class="c1">#     def log_prob(self, nu, rate, y):</span>
+<span class="c1">#         # we do not want to differentiate through this</span>
+<span class="c1">#         max_k = torch.max(y).item()</span>
+<span class="c1">#         K = np.max((1000, max_k * 2))</span>
+<span class="c1">#         K = max_k</span>
+<span class="c1">#         if y.shape[-1] == 1:</span>
+<span class="c1">#             nu = nu[..., None, None]</span>
+<span class="c1">#             p = y * torch.log(rate) - (nu * torch.lgamma(y + 1))</span>
+<span class="c1">#             ks = torch.arange(0, K + 1)</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             nu = nu[..., None, None, None]</span>
+<span class="c1">#             y = y[..., None]</span>
+<span class="c1">#             rate = rate[..., None, :]</span>
+<span class="c1">#             p = y * torch.log(rate) - (nu * torch.lgamma(y + 1))</span>
+<span class="c1">#         ks = torch.arange(0, K + 1).to(y)</span>
+<span class="c1">#         # normalizing constant</span>
+<span class="c1">#         M = torch.logsumexp(ks * torch.log(rate[..., None]) -</span>
+<span class="c1">#                             (nu[..., None] * torch.lgamma(ks + 1)),</span>
+<span class="c1">#                             dim=-1)</span>
+<span class="c1">#         lp = p - M</span>
+<span class="c1">#         return lp</span>
 
-<div class="viewcode-block" id="CMPoisson.variational_expectation"><a class="viewcode-back" href="../../mgplvm/mgplvm.likelihoods.html#mgplvm.likelihoods.CMPoisson.variational_expectation">[docs]</a>    <span class="k">def</span> <span class="nf">variational_expectation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fmu</span><span class="p">,</span> <span class="n">fvar</span><span class="p">):</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="s2">&quot;CMP variational expectation not properly tested: use with caution&quot;</span>
-        <span class="p">)</span>
-        <span class="n">nu</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
-        <span class="n">fmu</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">fmu</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-        <span class="n">fvar</span> <span class="o">=</span> <span class="n">fvar</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
+<span class="c1">#     def variational_expectation(self, n_samples, y, fmu, fvar, by_batch=False, by_sample = False):</span>
+<span class="c1">#         warnings.warn(</span>
+<span class="c1">#             &quot;CMP variational expectation not properly tested: use with caution&quot;</span>
+<span class="c1">#         )</span>
+<span class="c1">#         nu, c, d = self.prms</span>
+<span class="c1">#         fmu = c[..., None, None] * fmu + d[..., None, None]</span>
+<span class="c1">#         fvar = fvar * torch.square(c[..., None])</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">:</span>
-            <span class="c1"># here we use a lower-bound to the variational expections</span>
-            <span class="c1"># this is much more memory-efficient than GH quadrature approximation</span>
-            <span class="n">n_b</span> <span class="o">=</span> <span class="n">fmu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1">#         if self.inv_link == torch.exp:</span>
+<span class="c1">#             # here we use a lower-bound to the variational expections</span>
+<span class="c1">#             # this is much more memory-efficient than GH quadrature approximation</span>
+<span class="c1">#             n_b = fmu.shape[0]</span>
 
-            <span class="n">K</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_k</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_k</span>
-            <span class="n">nu</span> <span class="o">=</span> <span class="n">nu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">fmu</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binsize</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="n">nu</span> <span class="o">*</span>
-                                                        <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-            <span class="n">ks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">K</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-            <span class="c1"># normalizing constant</span>
-            <span class="n">M</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">ks</span> <span class="o">*</span> <span class="n">fmu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="n">ks</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binsize</span><span class="p">))</span> <span class="o">-</span>
-                <span class="p">(</span><span class="n">nu</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">lgamma</span><span class="p">(</span><span class="n">ks</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span>
-                <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">fvar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">ks</span><span class="p">)),</span>
-                <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">lp</span> <span class="o">=</span> <span class="n">p</span> <span class="o">-</span> <span class="n">M</span>
-            <span class="k">return</span> <span class="n">lp</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># use Gauss-Hermite quadrature to approximate integral</span>
-            <span class="n">locs</span><span class="p">,</span> <span class="n">ws</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">hermite</span><span class="o">.</span><span class="n">hermgauss</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">n_gh_locs</span><span class="p">)</span>  <span class="c1">#sample points and weights for quadrature</span>
-            <span class="n">ws</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">ws</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">fmu</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="n">locs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">locs</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">fvar</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="n">fvar</span> <span class="o">=</span> <span class="n">fvar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
-            <span class="n">locs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">fvar</span><span class="p">)</span> <span class="o">*</span> <span class="n">locs</span> <span class="o">+</span>
-                                 <span class="n">fmu</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">binsize</span>  <span class="c1">#coordinate transform</span>
-            <span class="n">lp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">locs</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">lp</span> <span class="o">*</span> <span class="n">ws</span><span class="p">)</span></div></div>
+<span class="c1">#             K = torch.max(y).item() if self.max_k is None else self.max_k</span>
+<span class="c1">#             nu = nu[..., None, None]</span>
+<span class="c1">#             p = y * fmu + (y * np.log(self.binsize)) - (nu *</span>
+<span class="c1">#                                                         torch.lgamma(y + 1))</span>
+<span class="c1">#             ks = torch.arange(1, K + 1).to(y)</span>
+<span class="c1">#             # normalizing constant</span>
+<span class="c1">#             M = torch.logsumexp(</span>
+<span class="c1">#                 (ks * fmu[..., None]) + (ks * np.log(self.binsize)) -</span>
+<span class="c1">#                 (nu[..., None] * torch.lgamma(ks + 1)) +</span>
+<span class="c1">#                 (0.5 * fvar[..., None, None] * torch.square(ks)),</span>
+<span class="c1">#                 dim=-1)</span>
+<span class="c1">#             lp = p - M</span>
+<span class="c1">#             return lp</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             # use Gauss-Hermite quadrature to approximate integral</span>
+<span class="c1">#             locs, ws = np.polynomial.hermite.hermgauss(</span>
+<span class="c1">#                 self.n_gh_locs)  #sample points and weights for quadrature</span>
+<span class="c1">#             ws = torch.Tensor(ws).to(fmu.device)</span>
+<span class="c1">#             locs = torch.Tensor(locs).to(fvar.device)</span>
+<span class="c1">#             fvar = fvar[..., None]</span>
+<span class="c1">#             locs = self.inv_link(torch.sqrt(2. * fvar) * locs +</span>
+<span class="c1">#                                  fmu) * self.binsize  #coordinate transform</span>
+<span class="c1">#             lp = self.log_prob(nu, locs, y)</span>
+<span class="c1">#             return torch.sum(1 / np.sqrt(np.pi) * lp * ws)</span>
 </pre></div>
 
            </div>
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

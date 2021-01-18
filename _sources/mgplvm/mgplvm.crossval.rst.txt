@@ -1,5 +1,18 @@
-mgplvm.crossval module
-======================
+mgplvm.crossval package
+=======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.crossval.construct_model
+   mgplvm.crossval.crossval
+   mgplvm.crossval.train_model
+
+Module contents
+---------------
 
 .. automodule:: mgplvm.crossval
    :members:

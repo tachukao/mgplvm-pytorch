@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.training module &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -36,7 +39,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="mgplvm.utils module" href="mgplvm.utils.html" />
-    <link rel="prev" title="mgplvm.rdist module" href="mgplvm.rdist.html" /> 
+    <link rel="prev" title="mgplvm.likelihoods module" href="mgplvm.likelihoods.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -50,7 +53,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -92,11 +95,9 @@
 <li class="toctree-l2"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.base.html">mgplvm.base module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.inducing_variables.html">mgplvm.inducing_variables module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.kernels.html">mgplvm.kernels module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.likelihoods.html">mgplvm.likelihoods module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist module</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">mgplvm.training module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.utils.html">mgplvm.utils module</a></li>
 </ul>
@@ -148,6 +149,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -161,7 +164,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="../_sources/mgplvm/mgplvm.training.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -177,6 +180,12 @@
             
   <div class="section" id="module-mgplvm.training">
 <span id="mgplvm-training-module"></span><h1>mgplvm.training module<a class="headerlink" href="#module-mgplvm.training" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="mgplvm.training.LossMarginStop">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">LossMarginStop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">loss_margin</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">stop_after</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#LossMarginStop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.LossMarginStop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
 <dl class="py function">
 <dt id="mgplvm.training.print_sgp_progress">
 <code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">print_sgp_progress</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">sgp_elbo</span></em>, <em class="sig-param"><span class="n">kl</span></em>, <em class="sig-param"><span class="n">loss</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#print_sgp_progress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.print_sgp_progress" title="Permalink to this definition">¶</a></dt>
@@ -184,7 +193,7 @@
 
 <dl class="py function">
 <dt id="mgplvm.training.sgp">
-<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">sgp</code><span class="sig-paren">(</span><em class="sig-param">Y</em>, <em class="sig-param">model</em>, <em class="sig-param">device</em>, <em class="sig-param">optimizer=&lt;class 'torch.optim.adam.Adam'&gt;</em>, <em class="sig-param">outdir='results/vanilla'</em>, <em class="sig-param">max_steps=1000</em>, <em class="sig-param">n_b=128</em>, <em class="sig-param">burnin='default'</em>, <em class="sig-param">lrate=0.001</em>, <em class="sig-param">print_every=10</em>, <em class="sig-param">callback=None</em>, <em class="sig-param">trainGP=True</em>, <em class="sig-param">nbatch=1</em>, <em class="sig-param">Tfix=slice(None</em>, <em class="sig-param">0</em>, <em class="sig-param">None)</em>, <em class="sig-param">sigma_thresh=0.0001</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#sgp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.sgp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">sgp</code><span class="sig-paren">(</span><em class="sig-param">Y</em>, <em class="sig-param">model</em>, <em class="sig-param">device</em>, <em class="sig-param">optimizer=&lt;class 'torch.optim.adam.Adam'&gt;</em>, <em class="sig-param">n_b=128</em>, <em class="sig-param">burnin='default'</em>, <em class="sig-param">lrate=0.001</em>, <em class="sig-param">print_every=10</em>, <em class="sig-param">max_steps=1000</em>, <em class="sig-param">stop=None</em>, <em class="sig-param">trainGP=True</em>, <em class="sig-param">nbatch=1</em>, <em class="sig-param">Tfix=slice(None</em>, <em class="sig-param">0</em>, <em class="sig-param">None)</em>, <em class="sig-param">sigma_thresh=0.0001</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#sgp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.sgp" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -203,8 +212,14 @@ allow for masking of certain conditions for use in crossvalidation</p>
 
 <dl class="py function">
 <dt id="mgplvm.training.svgp">
-<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">svgp</code><span class="sig-paren">(</span><em class="sig-param">Y</em>, <em class="sig-param">model</em>, <em class="sig-param">device</em>, <em class="sig-param">optimizer=&lt;class 'torch.optim.adam.Adam'&gt;</em>, <em class="sig-param">outdir='results/vanilla'</em>, <em class="sig-param">max_steps=1000</em>, <em class="sig-param">n_mc=128</em>, <em class="sig-param">burnin=100</em>, <em class="sig-param">lrate=0.001</em>, <em class="sig-param">callback=None</em>, <em class="sig-param">print_every=50</em>, <em class="sig-param">batch_size=None</em>, <em class="sig-param">n_svgp=0</em>, <em class="sig-param">ts=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#svgp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.svgp" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-prename descclassname">mgplvm.training.</code><code class="sig-name descname">svgp</code><span class="sig-paren">(</span><em class="sig-param">Y</em>, <em class="sig-param">model</em>, <em class="sig-param">device</em>, <em class="sig-param">optimizer=&lt;class 'torch.optim.adam.Adam'&gt;</em>, <em class="sig-param">n_mc=128</em>, <em class="sig-param">burnin=100</em>, <em class="sig-param">lrate=0.001</em>, <em class="sig-param">max_steps=1000</em>, <em class="sig-param">stop=None</em>, <em class="sig-param">print_every=50</em>, <em class="sig-param">batch_size=None</em>, <em class="sig-param">n_svgp=0</em>, <em class="sig-param">ts=None</em>, <em class="sig-param">batch_pool=None</em>, <em class="sig-param">mask_Ts=None</em>, <em class="sig-param">neuron_idxs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/training.html#svgp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.training.svgp" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>max_steps<span class="classifier">Optional[int], default=1000</span></dt><dd><p>maximum number of training iterations</p>
+</dd>
+<dt>batch_pool<span class="classifier">Optional[int list]</span></dt><dd><p>pool of indices from which to batch (used to train a partial model)</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 
@@ -213,37 +228,29 @@ allow for masking of certain conditions for use in crossvalidation</p>
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="mgplvm.utils.html" class="btn btn-neutral float-right" title="mgplvm.utils module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="mgplvm.rdist.html" class="btn btn-neutral float-left" title="mgplvm.rdist module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="mgplvm.utils.html" class="btn btn-neutral float-right" title="mgplvm.utils module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mgplvm.likelihoods.html" class="btn btn-neutral float-left" title="mgplvm.likelihoods module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

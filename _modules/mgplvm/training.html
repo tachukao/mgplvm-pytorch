@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.training &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -48,7 +51,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -131,6 +134,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -156,6 +161,7 @@
             
   <h1>Source code for mgplvm.training</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">mgplvm</span>
 <span class="kn">from</span> <span class="nn">mgplvm.utils</span> <span class="kn">import</span> <span class="n">softplus</span>
@@ -165,18 +171,43 @@
 <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LambdaLR</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
+<span class="c1"># Custom Stopping Criterions</span>
+
+
+<div class="viewcode-block" id="LossMarginStop"><a class="viewcode-back" href="../../mgplvm/mgplvm.training.html#mgplvm.training.LossMarginStop">[docs]</a><span class="k">class</span> <span class="nc">LossMarginStop</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss_margin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop_after</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        loss_margin [optional] : float, default=0</span>
+<span class="sd">            loss margin tolerated for training progress</span>
+
+<span class="sd">        stop_iters [optional]: int, default=10</span>
+<span class="sd">            maximum number of training iterations above loss margin tolerated before stopping</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowest_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_margin</span> <span class="o">=</span> <span class="n">loss_margin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_after</span> <span class="o">=</span> <span class="n">stop_after</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">loss_val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">loss_val</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowest_loss</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowest_loss</span> <span class="o">=</span> <span class="n">loss_val</span>
+        <span class="k">if</span> <span class="n">loss_val</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowest_loss</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_margin</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_after</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="sgp"><a class="viewcode-back" href="../../mgplvm/mgplvm.training.html#mgplvm.training.sgp">[docs]</a><span class="k">def</span> <span class="nf">sgp</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span>
         <span class="n">model</span><span class="p">,</span>
         <span class="n">device</span><span class="p">,</span>
         <span class="n">optimizer</span><span class="o">=</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span>
-        <span class="n">outdir</span><span class="o">=</span><span class="s2">&quot;results/vanilla&quot;</span><span class="p">,</span>
-        <span class="n">max_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
         <span class="n">n_b</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
         <span class="n">burnin</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
         <span class="n">lrate</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
         <span class="n">print_every</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">trainGP</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">nbatch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">Tfix</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
@@ -207,27 +238,24 @@
 
     <span class="k">if</span> <span class="n">nbatch</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">n_b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">n_b</span> <span class="o">/</span> <span class="n">nbatch</span><span class="p">))</span>
-    <span class="n">i_step</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="n">Ls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-    <span class="k">while</span> <span class="p">(</span><span class="n">i_step</span> <span class="o">&lt;</span> <span class="n">max_steps</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">sigma_thresh</span> <span class="ow">or</span> <span class="n">i_step</span> <span class="o">&lt;</span>
-                                    <span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">burnin</span><span class="p">)):</span>
-        <span class="n">i_step</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">for</span> <span class="n">i_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_steps</span><span class="p">):</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
         <span class="n">ramp</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">i_step</span> <span class="o">/</span> <span class="n">burnin</span><span class="p">)</span>  <span class="c1"># ramp the entropy</span>
 
+        <span class="n">loss_val</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbatch</span><span class="p">):</span>
             <span class="n">sgp_elbo</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_b</span><span class="p">)</span>  <span class="c1"># log p(Y|G), KL(Q(G), p(G))</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">sgp_elbo</span> <span class="o">+</span> <span class="p">(</span><span class="n">ramp</span> <span class="o">*</span> <span class="n">kl</span><span class="p">))</span>  <span class="c1"># -LL</span>
             <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">+</span> <span class="n">loss_val</span>
 
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stop</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i_step</span><span class="p">,</span> <span class="n">loss_val</span><span class="p">):</span> <span class="k">break</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
         <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">i_step</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">print_sgp_progress</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i_step</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">sgp_elbo</span><span class="p">,</span> <span class="n">kl</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">callback</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i_step</span><span class="p">)</span>
-
-        <span class="n">Ls</span><span class="p">[</span><span class="n">i_step</span> <span class="o">%</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span></div>
 
@@ -274,15 +302,15 @@
 
     <span class="c1"># parameters to be optimized</span>
 
-    <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[]]</span> <span class="k">if</span> <span class="n">svgp</span> <span class="k">else</span> <span class="p">[[],</span> <span class="p">[]]</span> 
-
+    <span class="n">lat_params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[]]</span> <span class="k">if</span> <span class="n">svgp</span> <span class="k">else</span> <span class="p">[[],</span> <span class="p">[]]</span>
     <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
-                <span class="n">param</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">gamma</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">lat_params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                <span class="n">param</span> <span class="o">==</span> <span class="n">lat_params</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
             <span class="n">param</span><span class="o">.</span><span class="n">register_hook</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>  <span class="c1"># option to mask gradients</span>
             <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
-                <span class="n">param</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">mu</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">lat_params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                <span class="n">param</span> <span class="o">==</span> <span class="n">lat_params</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">param</span><span class="o">.</span><span class="n">register_hook</span><span class="p">(</span><span class="n">hook</span><span class="p">)</span>  <span class="c1"># option to mask gradients</span>
             <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">svgp</span> <span class="ow">and</span> <span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_mu</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
@@ -333,23 +361,38 @@
          <span class="n">model</span><span class="p">,</span>
          <span class="n">device</span><span class="p">,</span>
          <span class="n">optimizer</span><span class="o">=</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span>
-         <span class="n">outdir</span><span class="o">=</span><span class="s2">&quot;results/vanilla&quot;</span><span class="p">,</span>
-         <span class="n">max_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
          <span class="n">n_mc</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
          <span class="n">burnin</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
          <span class="n">lrate</span><span class="o">=</span><span class="mf">1E-3</span><span class="p">,</span>
-         <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">max_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+         <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
          <span class="n">print_every</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
          <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
          <span class="n">n_svgp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-         <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+         <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">batch_pool</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">mask_Ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">neuron_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    max_steps : Optional[int], default=1000</span>
+<span class="sd">        maximum number of training iterations</span>
+<span class="sd">    </span>
+<span class="sd">    batch_pool : Optional[int list]</span>
+<span class="sd">        pool of indices from which to batch (used to train a partial model)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
     <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># neurons, conditions, samples</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span> <span class="k">if</span> <span class="n">ts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ts</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">data_size</span> <span class="o">=</span> <span class="n">m</span>  <span class="c1">#total conditions</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="k">if</span> <span class="n">neuron_idxs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">neuron_idxs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">generate_batch_idxs</span><span class="p">():</span>
-        <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data_size</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">generate_batch_idxs</span><span class="p">(</span><span class="n">batch_pool</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">batch_pool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">data_size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">idxs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">batch_pool</span><span class="p">)</span>
+            <span class="n">data_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">lprior</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Brownian&quot;</span><span class="p">:</span>
             <span class="c1"># if prior is Brownian, then batches have to be contiguous</span>
 
@@ -371,73 +414,68 @@
             <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">idxs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">batch_size</span><span class="p">]</span>
 
-    <span class="c1">#opt = optimizer(model.parameters(), lr=lrate)</span>
+    <span class="c1">#optionally mask some time points</span>
+    <span class="k">if</span> <span class="n">mask_Ts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 
-    <span class="k">def</span> <span class="nf">_Tlearn_hook</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">grad</span>
+        <span class="k">def</span> <span class="nf">mask_Ts</span><span class="p">(</span><span class="n">grad</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">grad</span>
 
-    <span class="n">params</span> <span class="o">=</span> <span class="n">sort_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">_Tlearn_hook</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">svgp</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">sort_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">mask_Ts</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">svgp</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">opt</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="n">lrate</span><span class="p">)</span>  <span class="c1"># instantiate optimizer</span>
     <span class="n">opt</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">({</span><span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
     <span class="n">opt</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">({</span><span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]})</span>
 
     <span class="c1"># set learning rate schedule so sigma updates have a burn-in period</span>
     <span class="k">def</span> <span class="nf">fburn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">n_svgp</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">0</span>
-        <span class="c1">#only optimize</span>
-        <span class="n">x</span> <span class="o">-=</span> <span class="n">n_svgp</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">burnin</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">finit</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">n_svgp</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="mi">1</span>
-
-    <span class="n">LRfuncs</span> <span class="o">=</span> <span class="p">[</span><span class="n">finit</span><span class="p">,</span> <span class="n">fburn</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">LRfuncs</span> <span class="o">=</span> <span class="p">[</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fburn</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">scheduler</span> <span class="o">=</span> <span class="n">LambdaLR</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">lr_lambda</span><span class="o">=</span><span class="n">LRfuncs</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_steps</span><span class="p">):</span>  <span class="c1"># come up with a different stopping condition</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_steps</span><span class="p">):</span>
         <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
         <span class="n">ramp</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">i</span> <span class="o">/</span> <span class="n">burnin</span><span class="p">)</span>  <span class="c1"># ramp the entropy</span>
 
-        <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">svgp_lik</span><span class="p">,</span> <span class="n">svgp_kl</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">batch_pool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">batch_idxs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">batch_idxs</span> <span class="o">=</span> <span class="n">batch_pool</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_idxs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">batch_idxs</span> <span class="o">=</span> <span class="n">generate_batch_idxs</span><span class="p">()</span>
-            <span class="n">svgp_lik</span><span class="p">,</span> <span class="n">svgp_kl</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
-                                          <span class="n">n_mc</span><span class="p">,</span>
-                                          <span class="n">batch_idxs</span><span class="o">=</span><span class="n">batch_idxs</span><span class="p">,</span>
-                                          <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
+            <span class="n">batch_idxs</span> <span class="o">=</span> <span class="n">generate_batch_idxs</span><span class="p">(</span><span class="n">batch_pool</span><span class="o">=</span><span class="n">batch_pool</span><span class="p">)</span>
             <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_idxs</span><span class="p">)</span>  <span class="c1">#use for printing likelihoods etc.</span>
 
-        <span class="n">svgp_elbo</span> <span class="o">=</span> <span class="n">svgp_lik</span> <span class="o">-</span> <span class="n">svgp_kl</span>
+        <span class="n">svgp_elbo</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                              <span class="n">n_mc</span><span class="p">,</span>
+                              <span class="n">batch_idxs</span><span class="o">=</span><span class="n">batch_idxs</span><span class="p">,</span>
+                              <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">,</span>
+                              <span class="n">neuron_idxs</span><span class="o">=</span><span class="n">neuron_idxs</span><span class="p">)</span>
+
         <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">svgp_elbo</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">ramp</span> <span class="o">*</span> <span class="n">kl</span><span class="p">)</span>  <span class="c1"># -LL</span>
+        <span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="c1"># terminate if stop is True</span>
+        <span class="k">if</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stop</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">loss_val</span><span class="p">):</span> <span class="k">break</span>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
         <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
         <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
         <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">mu_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
                            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
                 <span class="p">]))</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">iter </span><span class="si">{:3d}</span><span class="s1"> | elbo </span><span class="si">{:.3f}</span><span class="s1"> | svgp_kl</span><span class="si">{:.3f}</span><span class="s1"> | kl </span><span class="si">{:.3f}</span><span class="s1"> | loss </span><span class="si">{:.3f}</span><span class="s1"> &#39;</span>
-                <span class="o">+</span> <span class="s1">&#39;| |mu| </span><span class="si">{:.3f}</span><span class="s1"> | sig </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">i</span><span class="p">,</span>
-                    <span class="n">svgp_elbo</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
-                    <span class="n">svgp_kl</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
-                    <span class="n">kl</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
-                    <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span> <span class="n">mu_mag</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">iter </span><span class="si">{:3d}</span><span class="s1"> | elbo </span><span class="si">{:.3f}</span><span class="s1"> | kl </span><span class="si">{:.3f}</span><span class="s1"> | loss </span><span class="si">{:.3f}</span><span class="s1"> &#39;</span> <span class="o">+</span>
+                   <span class="s1">&#39;| |mu| </span><span class="si">{:.3f}</span><span class="s1"> | sig </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                       <span class="n">i</span><span class="p">,</span>
+                       <span class="n">svgp_elbo</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span>
+                       <span class="n">kl</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span> <span class="n">loss_val</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span> <span class="n">mu_mag</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">msg</span> <span class="o">+</span> <span class="n">model</span><span class="o">.</span><span class="n">lprior</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">callback</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">model</span></div>
 </pre></div>
@@ -446,28 +484,25 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

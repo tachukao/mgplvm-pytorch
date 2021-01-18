@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.kernels module &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -50,7 +53,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -92,11 +95,9 @@
 <li class="toctree-l2"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.base.html">mgplvm.base module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.inducing_variables.html">mgplvm.inducing_variables module</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">mgplvm.kernels module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.likelihoods.html">mgplvm.likelihoods module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.training.html">mgplvm.training module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.utils.html">mgplvm.utils module</a></li>
 </ul>
@@ -148,6 +149,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -161,7 +164,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="../_sources/mgplvm/mgplvm.kernels.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -210,9 +213,65 @@ registered hooks while the latter silently ignores them.</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt id="mgplvm.kernels.Exp">
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">Exp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">distance</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">Y</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Exp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Exp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.QuadExpBase" title="mgplvm.kernels.QuadExpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.QuadExpBase</span></code></a></p>
+<dl class="py method">
+<dt id="mgplvm.kernels.Exp.K">
+<code class="sig-name descname">K</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Exp.K"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Exp.K" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x mx)</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>input tensor of dims (… n x d x my)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>kxy</strong><span class="classifier">Tensor</span></dt><dd><p>exponential kernel with dims (… n x mx x my)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Exp.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#Exp.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.Exp.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mgplvm.kernels.Exp.msg">
+<em class="property">property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.kernels.Exp.msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
-<dt id="mgplvm.kernels.Combination.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Combination.training" title="Permalink to this definition">¶</a></dt>
+<dt id="mgplvm.kernels.Exp.name">
+<code class="sig-name descname">name</code><em class="property"> = 'Exp'</em><a class="headerlink" href="#mgplvm.kernels.Exp.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -241,11 +300,6 @@ registered hooks while the latter silently ignores them.</p>
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py attribute">
-<dt id="mgplvm.kernels.Kernel.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Kernel.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -372,11 +426,6 @@ registered hooks while the latter silently ignores them.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.kernels.Linear.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Linear.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -453,11 +502,6 @@ registered hooks while the latter silently ignores them.</p>
 <code class="sig-name descname">name</code><em class="property"> = 'Matern'</em><a class="headerlink" href="#mgplvm.kernels.Matern.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.kernels.Matern.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Matern.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -474,16 +518,11 @@ registered hooks while the latter silently ignores them.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.kernels.Product.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Product.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
 <dt id="mgplvm.kernels.QuadExp">
-<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">QuadExp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">distance</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExp" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">QuadExp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">distance</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">Y</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.QuadExpBase" title="mgplvm.kernels.QuadExpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.QuadExpBase</span></code></a></p>
 <dl class="py method">
 <dt id="mgplvm.kernels.QuadExp.K">
@@ -538,11 +577,6 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py attribute">
 <dt id="mgplvm.kernels.QuadExp.name">
 <code class="sig-name descname">name</code><em class="property"> = 'QuadExp'</em><a class="headerlink" href="#mgplvm.kernels.QuadExp.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="mgplvm.kernels.QuadExp.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.QuadExp.training" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -606,16 +640,11 @@ registered hooks while the latter silently ignores them.</p>
 <code class="sig-name descname">name</code><em class="property"> = 'QuadExpARD'</em><a class="headerlink" href="#mgplvm.kernels.QuadExpARD.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.kernels.QuadExpARD.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.QuadExpARD.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
 <dt id="mgplvm.kernels.QuadExpBase">
-<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">QuadExpBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.kernels.</code><code class="sig-name descname">QuadExpBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ell</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">alpha</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_alpha</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">Y</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels.html#QuadExpBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.kernels.QuadExpBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mgplvm.kernels.Kernel" title="mgplvm.kernels.Kernel"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.kernels.Kernel</span></code></a></p>
 <dl class="py method">
 <dt id="mgplvm.kernels.QuadExpBase.K">
@@ -685,11 +714,6 @@ registered hooks while the latter silently ignores them.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.kernels.QuadExpBase.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.QuadExpBase.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -706,11 +730,6 @@ registered hooks while the latter silently ignores them.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.kernels.Sum.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.kernels.Sum.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </div>
@@ -720,37 +739,29 @@ registered hooks while the latter silently ignores them.</p>
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="mgplvm.likelihoods.html" class="btn btn-neutral float-right" title="mgplvm.likelihoods module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="mgplvm.inducing_variables.html" class="btn btn-neutral float-left" title="mgplvm.inducing_variables module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="mgplvm.likelihoods.html" class="btn btn-neutral float-right" title="mgplvm.likelihoods module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mgplvm.inducing_variables.html" class="btn btn-neutral float-left" title="mgplvm.inducing_variables module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

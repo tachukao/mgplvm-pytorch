@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.lpriors.common module &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -50,7 +53,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -90,6 +93,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval package</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="mgplvm.lpriors.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="mgplvm.lpriors.html#module-mgplvm.lpriors">Module contents</a></li>
@@ -97,6 +101,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
 </ul>
 </li>
@@ -148,6 +153,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -163,7 +170,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="../_sources/mgplvm/mgplvm.lpriors.common.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -212,16 +219,11 @@ registered hooks while the latter silently ignores them.</p>
 <em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.AR1.prms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.lpriors.common.AR1.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.AR1.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
 <dt id="mgplvm.lpriors.common.ARP">
-<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">ARP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">manif</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">ar_phi</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar_eta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar_c</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#ARP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.ARP" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.lpriors.common.</code><code class="sig-name descname">ARP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span></em>, <em class="sig-param"><span class="n">manif</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">ar_phi</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar_eta</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ar_c</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learn_phi</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">learn_eta</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">learn_c</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#ARP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.ARP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
 <dl class="py method">
 <dt id="mgplvm.lpriors.common.ARP.forward">
@@ -250,11 +252,6 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py method">
 <dt id="mgplvm.lpriors.common.ARP.prms">
 <em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.ARP.prms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="mgplvm.lpriors.common.ARP.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.ARP.training" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -292,11 +289,6 @@ g0 of dim p x d2</p>
 <em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G.prms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.lpriors.common.ARP_G.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.ARP_G.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -332,11 +324,6 @@ registered hooks while the latter silently ignores them.</p>
 <em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.Brownian.prms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.lpriors.common.Brownian.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Brownian.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -347,7 +334,7 @@ registered hooks while the latter silently ignores them.</p>
 <dt id="mgplvm.lpriors.common.Gaussian.forward">
 <code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">kmax</span><span class="o">=</span><span class="default_value">5</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Gaussian.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>g: (n_b x mx x d)
-output: (n_b x mx)</p>
+output: (n_b)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -365,11 +352,6 @@ output: (n_b x mx)</p>
 <em class="property">property </em><code class="sig-name descname">prms</code><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian.prms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.lpriors.common.Gaussian.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Gaussian.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -382,11 +364,6 @@ output: (n_b x mx)</p>
 <em class="property">abstract property </em><code class="sig-name descname">msg</code><a class="headerlink" href="#mgplvm.lpriors.common.Lprior.msg" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.lpriors.common.Lprior.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Lprior.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -397,7 +374,7 @@ output: (n_b x mx)</p>
 <dt id="mgplvm.lpriors.common.Null.forward">
 <code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">ts</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Null.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Null.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>g: (n_b x mx x d)
-output: (n_b x mx)</p>
+output: (n_b)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -413,11 +390,6 @@ output: (n_b x mx)</p>
 <dl class="py method">
 <dt id="mgplvm.lpriors.common.Null.prms">
 <code class="sig-name descname">prms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Null.prms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Null.prms" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="mgplvm.lpriors.common.Null.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Null.training" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -455,11 +427,6 @@ registered hooks while the latter silently ignores them.</p>
 <code class="sig-name descname">prms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/common.html#Uniform.prms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.lpriors.common.Uniform.prms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.lpriors.common.Uniform.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.lpriors.common.Uniform.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </div>
@@ -469,37 +436,29 @@ registered hooks while the latter silently ignores them.</p>
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="mgplvm.lpriors.euclidean.html" class="btn btn-neutral float-right" title="mgplvm.lpriors.euclidean module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="mgplvm.lpriors.html" class="btn btn-neutral float-left" title="mgplvm.lpriors package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="mgplvm.lpriors.euclidean.html" class="btn btn-neutral float-right" title="mgplvm.lpriors.euclidean module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mgplvm.lpriors.html" class="btn btn-neutral float-left" title="mgplvm.lpriors package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

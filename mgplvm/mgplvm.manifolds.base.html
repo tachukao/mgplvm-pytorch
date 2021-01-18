@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.manifolds.base module &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -50,7 +53,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -90,6 +93,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="mgplvm.manifolds.html#submodules">Submodules</a></li>
@@ -97,6 +101,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
 </ul>
 </li>
@@ -148,6 +153,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -163,7 +170,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="../_sources/mgplvm/mgplvm.manifolds.base.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -181,8 +188,8 @@
 <span id="mgplvm-manifolds-base-module"></span><h1>mgplvm.manifolds.base module<a class="headerlink" href="#module-mgplvm.manifolds.base" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="mgplvm.manifolds.base.Manifold">
-<em class="property">class </em><code class="sig-prename descclassname">mgplvm.manifolds.base.</code><code class="sig-name descname">Manifold</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="n">initialization</span><span class="o">=</span><span class="default_value">'random'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/manifolds/base.html#Manifold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.manifolds.base.Manifold" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="mgplvm.base.html#mgplvm.base.Module" title="mgplvm.base.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.base.Module</span></code></a></p>
+<em class="property">class </em><code class="sig-prename descclassname">mgplvm.manifolds.base.</code><code class="sig-name descname">Manifold</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/manifolds/base.html#Manifold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.manifolds.base.Manifold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt id="mgplvm.manifolds.base.Manifold.distance">
 <em class="property">abstract static </em><code class="sig-name descname">distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/manifolds/base.html#Manifold.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.manifolds.base.Manifold.distance" title="Permalink to this definition">¶</a></dt>
@@ -258,14 +265,9 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.manifolds.base.Manifold.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.manifolds.base.Manifold.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
-<dt id="mgplvm.manifolds.base.Manifold.transform">
-<em class="property">abstract </em><code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/manifolds/base.html#Manifold.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.manifolds.base.Manifold.transform" title="Permalink to this definition">¶</a></dt>
+<dt id="mgplvm.manifolds.base.Manifold.parameterise">
+<em class="property">abstract static </em><code class="sig-name descname">parameterise</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/manifolds/base.html#Manifold.parameterise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.manifolds.base.Manifold.parameterise" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -282,37 +284,29 @@
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="mgplvm.manifolds.euclid.html" class="btn btn-neutral float-right" title="mgplvm.manifolds.euclid module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="mgplvm.manifolds.html" class="btn btn-neutral float-left" title="mgplvm.manifolds package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="mgplvm.manifolds.euclid.html" class="btn btn-neutral float-right" title="mgplvm.manifolds.euclid module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mgplvm.manifolds.html" class="btn btn-neutral float-left" title="mgplvm.manifolds package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

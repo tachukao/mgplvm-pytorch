@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.models.svgp &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -48,7 +51,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../../../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -116,6 +119,8 @@
         <div class="rst-content">
         
           
+
+
 
 
 
@@ -258,24 +263,20 @@
 
         <span class="k">return</span> <span class="n">kl_divergence</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">prior</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SvgpBase.elbo"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.SvgpBase.elbo">[docs]</a>    <span class="k">def</span> <span class="nf">elbo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-             <span class="n">n_b</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-             <span class="n">y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-             <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-             <span class="n">by_batch</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+<div class="viewcode-block" id="SvgpBase.elbo"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.SvgpBase.elbo">[docs]</a>    <span class="k">def</span> <span class="nf">elbo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_mc</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        n_b : int</span>
-<span class="sd">            batch size</span>
+<span class="sd">        n_mc : int</span>
+<span class="sd">            number of monte carlo samples</span>
 <span class="sd">        y : Tensor</span>
 <span class="sd">            data tensor with dimensions (n x m x n_samples)</span>
 <span class="sd">        x : Tensor (single kernel) or Tensor list (product kernels)</span>
-<span class="sd">            input tensor(s) with dimensions (n_b x d x m)</span>
+<span class="sd">            input tensor(s) with dimensions (n_mc x d x m)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        evidence lower bount : torch.Tensor</span>
+<span class="sd">        evidence lower bound : torch.Tensor (n_mc x n x n_samples)</span>
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
@@ -285,21 +286,17 @@
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span>
         <span class="n">n_inducing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_inducing</span>  <span class="c1"># inducing points</span>
-        <span class="n">prior_kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_kl</span><span class="p">()</span>  <span class="c1"># prior KL(q(u) || p(u))</span>
+        <span class="n">prior_kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_kl</span><span class="p">()</span>  <span class="c1"># prior KL(q(u) || p(u)) (1 x n)</span>
         <span class="c1"># predictive mean and var at x</span>
         <span class="n">f_mean</span><span class="p">,</span> <span class="n">f_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">full_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="n">lik</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">variational_expectation</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span>
-                                                      <span class="n">y</span><span class="p">,</span>
-                                                      <span class="n">f_mean</span><span class="p">,</span>
-                                                      <span class="n">f_var</span><span class="p">,</span>
-                                                      <span class="n">by_batch</span><span class="o">=</span><span class="n">by_batch</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">by_batch</span><span class="p">:</span>
-            <span class="c1">#print(&#39;svgp:&#39;, lik.shape, prior_kl.shape, f_mean.shape, f_var.shape)</span>
-            <span class="k">return</span> <span class="n">lik</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_b</span><span class="p">)</span> <span class="o">*</span> <span class="n">prior_kl</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">lik</span> <span class="o">=</span> <span class="n">lik</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">lik</span><span class="p">,</span> <span class="n">prior_kl</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">n_b</span></div>
+        <span class="c1">#(n_mc, n, n_samples)</span>
+        <span class="n">lik</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">variational_expectation</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">f_mean</span><span class="p">,</span>
+                                                      <span class="n">f_var</span><span class="p">)</span>
+        <span class="c1">#print(prior_kl.shape)</span>
+        <span class="c1">#prior_kl = prior_kl()</span>
+        <span class="n">svgp_elbo</span> <span class="o">=</span> <span class="n">lik</span> <span class="o">-</span> <span class="n">prior_kl</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">svgp_elbo</span></div>
 
 <div class="viewcode-block" id="SvgpBase.tuning"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgp.html#mgplvm.models.svgp.SvgpBase.tuning">[docs]</a>    <span class="k">def</span> <span class="nf">tuning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">n_b</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">square</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
@@ -533,28 +530,25 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

@@ -1,0 +1,375 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>mgplvm.rdist.relie &mdash; mGPLVM 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> mGPLVM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">mGPLVM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>mgplvm.rdist.relie</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mgplvm.rdist.relie</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span><span class="p">,</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.multivariate_normal</span> <span class="kn">import</span> <span class="n">MultivariateNormal</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.normal</span> <span class="kn">import</span> <span class="n">Normal</span>
+<span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="kn">import</span> <span class="n">transform_to</span><span class="p">,</span> <span class="n">constraints</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">softplus</span><span class="p">,</span> <span class="n">inv_softplus</span>
+<span class="kn">from</span> <span class="nn">..manifolds.base</span> <span class="kn">import</span> <span class="n">Manifold</span>
+<span class="kn">from</span> <span class="nn">.common</span> <span class="kn">import</span> <span class="n">Rdist</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">..base</span> <span class="kn">import</span> <span class="n">Module</span>
+
+
+<div class="viewcode-block" id="ReLieBase"><a class="viewcode-back" href="../../../mgplvm/mgplvm.rdist.relie.html#mgplvm.rdist.relie.ReLieBase">[docs]</a><span class="k">class</span> <span class="nc">ReLieBase</span><span class="p">(</span><span class="n">Rdist</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ReLieBase&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">:</span> <span class="n">Manifold</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">kmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">diagonal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReLieBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">kmax</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diagonal</span> <span class="o">=</span> <span class="n">diagonal</span>
+
+<div class="viewcode-block" id="ReLieBase.lat_prms"><a class="viewcode-back" href="../../../mgplvm/mgplvm.rdist.relie.html#mgplvm.rdist.relie.ReLieBase.lat_prms">[docs]</a>    <span class="k">def</span> <span class="nf">lat_prms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">gmu</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gmu</span><span class="p">,</span> <span class="n">gamma</span></div>
+
+<div class="viewcode-block" id="ReLieBase.lat_gmu"><a class="viewcode-back" href="../../../mgplvm/mgplvm.rdist.relie.html#mgplvm.rdist.relie.ReLieBase.lat_gmu">[docs]</a>    <span class="k">def</span> <span class="nf">lat_gmu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_prms</span><span class="p">(</span><span class="n">Y</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ReLieBase.lat_gamma"><a class="viewcode-back" href="../../../mgplvm/mgplvm.rdist.relie.html#mgplvm.rdist.relie.ReLieBase.lat_gamma">[docs]</a>    <span class="k">def</span> <span class="nf">lat_gamma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_prms</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">prms</span>
+
+<div class="viewcode-block" id="ReLieBase.mvn"><a class="viewcode-back" href="../../../mgplvm/mgplvm.rdist.relie.html#mgplvm.rdist.relie.ReLieBase.mvn">[docs]</a>    <span class="k">def</span> <span class="nf">mvn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_gamma</span><span class="p">()</span> <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">gamma</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">gamma</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">gamma</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="n">gamma</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReLieBase.sample"><a class="viewcode-back" href="../../../mgplvm/mgplvm.rdist.relie.html#mgplvm.rdist.relie.ReLieBase.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        generate samples and computes its log entropy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gmu</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_prms</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mvn</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
+        <span class="c1"># sample a batch with dims: (n_mc x batch_size x d)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">rsample</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">gamma</span><span class="o">.</span><span class="n">device</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diagonal</span><span class="p">:</span> <span class="c1">#compute diagonal covariance</span>
+            <span class="n">lq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">log_q</span><span class="p">(</span>
+                    <span class="n">Normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">gamma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span>
+                    <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kmax</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span>
+            <span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#compute entropy with full covariance matrix</span>
+            <span class="n">lq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">log_q</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">log_prob</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kmax</span><span class="p">)</span>
+        
+        <span class="n">gtilde</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">expmap</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># apply g_mu with dims: (n_mc x m x d)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">gmu</span><span class="p">,</span> <span class="n">gtilde</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">g</span><span class="p">,</span> <span class="n">lq</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">_F</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">manif</span><span class="p">:</span> <span class="n">Manifold</span><span class="p">,</span>
+                 <span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">kmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                 <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span>
+                 <span class="n">gamma</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">fixed_gamma</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">diagonal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">mu</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">initialization</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;random&#39;</span><span class="p">,</span>
+                 <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">_F</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manif</span> <span class="o">=</span> <span class="n">manif</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diagonal</span> <span class="o">=</span> <span class="n">diagonal</span>
+        
+        <span class="k">if</span> <span class="n">mu</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gmu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">initialization</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gmu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gmu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">gmu</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">manif</span><span class="o">.</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma</span>
+
+        <span class="k">if</span> <span class="n">diagonal</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">inv_softplus</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">transform_to</span><span class="p">(</span><span class="n">constraints</span><span class="o">.</span><span class="n">lower_cholesky</span><span class="p">)</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">gamma</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">fixed_gamma</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">gmu</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="k">if</span> <span class="n">batch_idxs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">gmu</span><span class="p">,</span> <span class="n">gamma</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">gmu</span><span class="p">[</span><span class="n">batch_idxs</span><span class="p">],</span> <span class="n">gamma</span><span class="p">[</span><span class="n">batch_idxs</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">gmu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">parameterise</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gmu</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diagonal</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="n">softplus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span>
+                <span class="n">MultivariateNormal</span><span class="o">.</span><span class="n">arg_constraints</span><span class="p">[</span><span class="s1">&#39;scale_tril&#39;</span><span class="p">])(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gmu</span><span class="p">,</span> <span class="n">gamma</span>
+
+
+<div class="viewcode-block" id="ReLie"><a class="viewcode-back" href="../../../mgplvm/mgplvm.rdist.relie.html#mgplvm.rdist.relie.ReLie">[docs]</a><span class="k">class</span> <span class="nc">ReLie</span><span class="p">(</span><span class="n">ReLieBase</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ReLie&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">manif</span><span class="p">:</span> <span class="n">Manifold</span><span class="p">,</span>
+                 <span class="n">m</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">kmax</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                 <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span>
+                 <span class="n">gamma</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">fixed_gamma</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">diagonal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">mu</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">initialization</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;random&#39;</span><span class="p">,</span>
+                 <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        m : int</span>
+<span class="sd">            number of conditions/timepoints</span>
+<span class="sd">        kmax : Optional[int]</span>
+<span class="sd">            number of terms used in the ReLie approximation is (2kmax+1)</span>
+<span class="sd">        sigma : Optional[float]</span>
+<span class="sd">            initial diagonal std of the variational distribution</span>
+<span class="sd">        intialization : Optional[str]</span>
+<span class="sd">            string to specify type of initialization</span>
+<span class="sd">            (&#39;random&#39;/&#39;PCA&#39;/&#39;identity&#39; depending on manifold)</span>
+<span class="sd">        mu : Optional[np.ndarray]</span>
+<span class="sd">            initialization of the vartiational means (m x d2)</span>
+<span class="sd">        Y : Optional[np.ndarray]</span>
+<span class="sd">            data used to initialize latents (n x m x n_samples)</span>
+<span class="sd">            </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        gamma is the reference distribution which is inverse transformed before storing</span>
+<span class="sd">        since it&#39;s transformed by constraints.tril when used.</span>
+<span class="sd">        If no gammas is None, it is initialized as a diagonal matrix with value sigma</span>
+<span class="sd">        If diagonal, constrain the covariance to be diagonal.</span>
+<span class="sd">        The diagonal approximation is useful for T^n as it saves an exponentially growing ReLie complexity</span>
+<span class="sd">        The diagonal approximation only works for T^n and R^n</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">f</span> <span class="o">=</span> <span class="n">_F</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">kmax</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">fixed_gamma</span><span class="p">,</span> <span class="n">diagonal</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span>
+               <span class="n">initialization</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReLie</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">kmax</span><span class="p">,</span> <span class="n">diagonal</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">prms</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -5,23 +5,25 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
+   mgplvm.crossval
    mgplvm.lpriors
    mgplvm.manifolds
    mgplvm.models
+   mgplvm.rdist
    mgplvm.syndata
 
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    mgplvm.base
-   mgplvm.crossval
    mgplvm.inducing_variables
    mgplvm.kernels
    mgplvm.likelihoods
-   mgplvm.rdist
    mgplvm.training
    mgplvm.utils
 

@@ -1,5 +1,17 @@
-mgplvm.rdist module
-===================
+mgplvm.rdist package
+====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.rdist.common
+   mgplvm.rdist.relie
+
+Module contents
+---------------
 
 .. automodule:: mgplvm.rdist
    :members:

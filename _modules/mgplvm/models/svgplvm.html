@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.models.svgplvm &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -48,7 +51,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../../../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -131,6 +134,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -170,6 +175,7 @@
 <span class="kn">from</span> <span class="nn">..kernels</span> <span class="kn">import</span> <span class="n">Kernel</span>
 <span class="kn">from</span> <span class="nn">..likelihoods</span> <span class="kn">import</span> <span class="n">Likelihood</span>
 <span class="kn">from</span> <span class="nn">..lpriors.common</span> <span class="kn">import</span> <span class="n">Lprior</span>
+<span class="kn">from</span> <span class="nn">..rdist</span> <span class="kn">import</span> <span class="n">Rdist</span>
 
 
 <div class="viewcode-block" id="SvgpLvm"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgplvm.html#mgplvm.models.svgplvm.SvgpLvm">[docs]</a><span class="k">class</span> <span class="nc">SvgpLvm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -180,7 +186,7 @@
                  <span class="n">z</span><span class="p">:</span> <span class="n">InducingPoints</span><span class="p">,</span>
                  <span class="n">kernel</span><span class="p">:</span> <span class="n">Kernel</span><span class="p">,</span>
                  <span class="n">likelihood</span><span class="p">:</span> <span class="n">Likelihood</span><span class="p">,</span>
-                 <span class="n">lat_dist</span><span class="p">,</span>
+                 <span class="n">lat_dist</span><span class="p">:</span> <span class="n">Rdist</span><span class="p">,</span>
                  <span class="n">lprior</span><span class="o">=</span><span class="n">Lprior</span><span class="p">,</span>
                  <span class="n">whiten</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -217,7 +223,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lat_dist</span> <span class="o">=</span> <span class="n">lat_dist</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lprior</span> <span class="o">=</span> <span class="n">lprior</span>
 
-<div class="viewcode-block" id="SvgpLvm.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgplvm.html#mgplvm.models.svgplvm.SvgpLvm.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SvgpLvm.elbo"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgplvm.html#mgplvm.models.svgplvm.SvgpLvm.elbo">[docs]</a>    <span class="k">def</span> <span class="nf">elbo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">neuron_idxs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -235,85 +241,125 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        svgp_elbo : Tensor</span>
-<span class="sd">            evidence lower bound of sparse GP per batch</span>
+<span class="sd">            evidence lower bound of sparse GP per neuron, batch and sample (n_mc x n x n_samples)</span>
 <span class="sd">        kl : Tensor</span>
-<span class="sd">            estimated KL divergence per batch between variational distribution </span>
-<span class="sd">            and a manifold-specific prior (uniform for all manifolds except </span>
-<span class="sd">            Euclidean, for which we have a Gaussian N(0,I) prior)</span>
+<span class="sd">            estimated KL divergence per batch between variational distribution and prior (n_mc)</span>
 
 <span class="sd">        Notes</span>
-<span class="sd">        ----</span>
+<span class="sd">        -----</span>
 <span class="sd">        ELBO of the model per batch is [ svgp_elbo - kl ]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="k">if</span> <span class="n">batch_idxs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">batch_idxs</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span> <span class="k">if</span> <span class="kc">None</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ts</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="p">]</span> <span class="k">else</span> <span class="n">ts</span><span class="p">[</span><span class="n">batch_idxs</span><span class="p">]</span>
-
         <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>  <span class="c1">#n x mx x n_samples</span>
-        <span class="n">g</span><span class="p">,</span> <span class="n">lq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="n">n_mc</span><span class="p">]),</span> <span class="n">batch_idxs</span><span class="p">)</span>
-        <span class="c1"># d is shape (n_mc, m, d)</span>
-        <span class="c1"># sparse GP elbo summed over all batches</span>
+        <span class="n">g</span><span class="p">,</span> <span class="n">lq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="n">n_mc</span><span class="p">]),</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="p">)</span>
+        <span class="c1"># g is shape (n_mc, m, d)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="k">if</span> <span class="n">batch_idxs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">batch_idxs</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span> <span class="k">if</span> <span class="p">(</span><span class="n">ts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">batch_idxs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">ts</span><span class="p">[</span><span class="n">batch_idxs</span><span class="p">]</span>
+
         <span class="c1"># note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)</span>
         <span class="c1"># and so we need to permute [ g ] to have the right dimensions</span>
-        <span class="n">svgp_lik</span><span class="p">,</span> <span class="n">svgp_kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">elbo</span><span class="p">(</span><span class="n">n_mc</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="c1"># KL(Q(G) || p(G)) ~ logQ - logp(G)</span>
-        <span class="n">kl</span> <span class="o">=</span> <span class="n">lq</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lprior</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">svgp_lik</span> <span class="o">/</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">svgp_kl</span> <span class="o">/</span> <span class="n">n_mc</span><span class="p">,</span> <span class="p">(</span><span class="n">kl</span> <span class="o">/</span> <span class="n">n_mc</span><span class="p">)</span></div>
+
+        <span class="n">svgp_elbo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">elbo</span><span class="p">(</span><span class="n">n_mc</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="c1">#(n_mc x n x n_samples)</span>
+        <span class="k">if</span> <span class="n">neuron_idxs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">svgp_elbo</span> <span class="o">=</span> <span class="n">svgp_elbo</span><span class="p">[:,</span> <span class="n">neuron_idxs</span><span class="p">,</span> <span class="p">:]</span>
+        
+        <span class="c1"># compute kl term for the latents (n_mc, )</span>
+        <span class="n">prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lprior</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>  <span class="c1">#(n_mc, )</span>
+        <span class="n">kl</span> <span class="o">=</span> <span class="n">lq</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">prior</span>  <span class="c1">#(n_mc, )</span>
+
+        <span class="k">return</span> <span class="n">svgp_elbo</span><span class="p">,</span> <span class="n">kl</span></div>
+
+        
+<div class="viewcode-block" id="SvgpLvm.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgplvm.html#mgplvm.models.svgplvm.SvgpLvm.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">neuron_idxs</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : Tensor</span>
+<span class="sd">            data with dimensionality (n x m x n_samples)</span>
+<span class="sd">        n_mc : int</span>
+<span class="sd">            number of MC samples</span>
+<span class="sd">        kmax : int</span>
+<span class="sd">            parameter for estimating entropy for several manifolds</span>
+<span class="sd">            (not used for some manifolds)</span>
+<span class="sd">        batch_idxs: Optional int list</span>
+<span class="sd">            if None then use all data and (batch_size == m)</span>
+<span class="sd">            otherwise, (batch_size == len(batch_idxs))</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        elbo : Tensor</span>
+<span class="sd">            evidence lower bound of the GPLVM model averaged across MC samples (scalar)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1">#(n_mc, n, n_samples), (n_mc, n, n_samples), (n_mc)</span>
+
+        <span class="n">svgp_elbo</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elbo</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span> <span class="n">batch_idxs</span> <span class="o">=</span> <span class="n">batch_idxs</span><span class="p">,</span> <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span><span class="p">,</span> <span class="n">neuron_idxs</span> <span class="o">=</span> <span class="n">neuron_idxs</span><span class="p">)</span>
+        <span class="c1">#sum over neurons, mean over  MC samples</span>
+        <span class="n">svgp_elbo</span> <span class="o">=</span> <span class="n">svgp_elbo</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">n_mc</span>
+        <span class="n">kl</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">n_mc</span>
+
+        <span class="k">return</span> <span class="n">svgp_elbo</span><span class="p">,</span> <span class="n">kl</span>  <span class="c1">#mean across batches</span></div>
 
 <div class="viewcode-block" id="SvgpLvm.calc_LL"><a class="viewcode-back" href="../../../mgplvm/mgplvm.models.svgplvm.html#mgplvm.models.svgplvm.SvgpLvm.calc_LL">[docs]</a>    <span class="k">def</span> <span class="nf">calc_LL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;importance weighted log likelihood&#39;&#39;&#39;</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : Tensor</span>
+<span class="sd">            data with dimensionality (n x m x n_samples)</span>
+<span class="sd">        n_mc : int</span>
+<span class="sd">            number of MC samples</span>
+<span class="sd">        kmax : int</span>
+<span class="sd">            parameter for estimating entropy for several manifolds</span>
+<span class="sd">            (not used for some manifolds)</span>
+<span class="sd">        batch_idxs: Optional int list</span>
+<span class="sd">            if None then use all data and (batch_size == m)</span>
+<span class="sd">            otherwise, (batch_size == len(batch_idxs))</span>
 
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="k">if</span> <span class="n">batch_idxs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">[:,</span> <span class="n">batch_idxs</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span> <span class="k">if</span> <span class="kc">None</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ts</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="p">]</span> <span class="k">else</span> <span class="n">ts</span><span class="p">[</span><span class="n">batch_idxs</span><span class="p">]</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        LL : Tensor</span>
+<span class="sd">            E_mc[p(Y)] (burda et al.) (scalar)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1">#(n_b, m, d, ), (n_b, m, )</span>
-        <span class="n">g</span><span class="p">,</span> <span class="n">lq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="n">n_mc</span><span class="p">]),</span> <span class="n">batch_idxs</span><span class="p">)</span>
+        <span class="c1">#(n_mc, n, n_samples), (n_mc, n, n_samples), (n_mc)</span>
+        <span class="n">svgp_elbo</span><span class="p">,</span> <span class="n">kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elbo</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+                                  <span class="n">n_mc</span><span class="p">,</span>
+                                  <span class="n">kmax</span><span class="o">=</span><span class="n">kmax</span><span class="p">,</span>
+                                  <span class="n">batch_idxs</span><span class="o">=</span><span class="n">batch_idxs</span><span class="p">,</span>
+                                  <span class="n">ts</span><span class="o">=</span><span class="n">ts</span><span class="p">)</span>
 
-        <span class="c1">#(n_b, ), (n_b, )</span>
-        <span class="n">svgp_lik</span><span class="p">,</span> <span class="n">svgp_kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">elbo</span><span class="p">(</span><span class="n">n_mc</span><span class="p">,</span>
-                                           <span class="n">data</span><span class="p">,</span>
-                                           <span class="n">g</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-                                           <span class="n">by_batch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">svgp_elbo</span> <span class="o">=</span> <span class="n">svgp_lik</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-</span> <span class="n">svgp_kl</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>  <span class="c1">#(n_b, )</span>
-
-        <span class="n">prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lprior</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>  <span class="c1">#(n_b, m, )</span>
-        <span class="n">kl</span> <span class="o">=</span> <span class="n">lq</span> <span class="o">-</span> <span class="n">prior</span>  <span class="c1">#(n_b, m, )</span>
-
-        <span class="n">LLs</span> <span class="o">=</span> <span class="n">svgp_elbo</span> <span class="o">-</span> <span class="n">kl</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># LL for each batch (n_b, )</span>
+        <span class="n">svgp_elbo</span> <span class="o">=</span> <span class="n">svgp_elbo</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#(n_mc)</span>
+        <span class="n">LLs</span> <span class="o">=</span> <span class="n">svgp_elbo</span> <span class="o">-</span> <span class="n">kl</span>  <span class="c1"># LL for each batch (n_mc, )</span>
         <span class="n">LL</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">LLs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_mc</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">*</span>
                                                          <span class="bp">self</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">LL</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span></div></div>
+        <span class="k">return</span> <span class="n">LL</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span></div></div>
 </pre></div>
 
            </div>
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

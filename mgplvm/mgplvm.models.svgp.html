@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>mgplvm.models.svgp module &mdash; mGPLVM 0.0.1 documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -50,7 +53,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> mGPLVM
+            <a href="../index.html" class="icon icon-home"> mGPLVM
           
 
           
@@ -90,6 +93,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a><ul class="current">
@@ -97,6 +101,7 @@
 <li class="toctree-l4"><a class="reference internal" href="mgplvm.models.html#module-mgplvm.models">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
 </ul>
 </li>
@@ -148,6 +153,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -163,7 +170,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             <a href="../_sources/mgplvm/mgplvm.models.svgp.rst.txt" rel="nofollow"> View page source</a>
           
         
@@ -193,11 +200,6 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.models.svgp.Svgp.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.models.svgp.Svgp.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -206,21 +208,21 @@
 <dd><p>Bases: <a class="reference internal" href="mgplvm.base.html#mgplvm.base.Module" title="mgplvm.base.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.base.Module</span></code></a></p>
 <dl class="py method">
 <dt id="mgplvm.models.svgp.SvgpBase.elbo">
-<code class="sig-name descname">elbo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_b</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">by_batch</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase.elbo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.elbo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">elbo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_mc</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase.elbo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.elbo" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>n_b</strong><span class="classifier">int</span></dt><dd><p>batch size</p>
+<dt><strong>n_mc</strong><span class="classifier">int</span></dt><dd><p>number of monte carlo samples</p>
 </dd>
 <dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>data tensor with dimensions (n x m x n_samples)</p>
 </dd>
-<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>input tensor(s) with dimensions (n_b x d x m)</p>
+<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>input tensor(s) with dimensions (n_mc x d x m)</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>evidence lower bount</strong><span class="classifier">torch.Tensor</span></dt><dd></dd>
+<dt><strong>evidence lower bound</strong><span class="classifier">torch.Tensor (n_mc x n x n_samples)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -268,11 +270,6 @@ returns diagonal variance</p>
 <code class="sig-name descname">prior_kl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase.prior_kl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.prior_kl" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt id="mgplvm.models.svgp.SvgpBase.training">
-<code class="sig-name descname">training</code><em class="property">: bool</em><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt id="mgplvm.models.svgp.SvgpBase.tuning">
 <code class="sig-name descname">tuning</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query</span></em>, <em class="sig-param"><span class="n">n_b</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">square</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/svgp.html#SvgpBase.tuning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mgplvm.models.svgp.SvgpBase.tuning" title="Permalink to this definition">¶</a></dt>
@@ -290,37 +287,29 @@ if square, the outputs are squared (useful e.g. when fitting sqrt spike counts w
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="mgplvm.models.svgplvm.html" class="btn btn-neutral float-right" title="mgplvm.models.svgplvm module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="mgplvm.models.sgplvm.html" class="btn btn-neutral float-left" title="mgplvm.models.sgplvm module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="mgplvm.models.svgplvm.html" class="btn btn-neutral float-right" title="mgplvm.models.svgplvm module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mgplvm.models.sgplvm.html" class="btn btn-neutral float-left" title="mgplvm.models.sgplvm module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright 2021, Ta-Chu Kao and Kris Jensen
+        &#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
