@@ -21,15 +21,15 @@ def test_svgp_runs():
     m = 10  # number of conditions / time points
     n_z = 5  # number of inducing points
     n_samples = 1  # number of samples
-    gen = syndata.Gen(syndata.Torus(d), n, m, variability=0.25)
+    gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25)
     sig0 = 1.5
     l = 0.4
     gen.set_param('l', l)
     Y = gen.gen_data()
     Y = Y + np.random.normal(size=Y.shape) * np.mean(Y) / 3
     # specify manifold, kernel and rdist
-    manif = Torus(m, d)
-    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=sig0)
+    manif = Euclid(m, d)
+    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=sig0, diagonal = False)
     # initialize signal variance
     alpha = np.mean(np.std(Y, axis=1), axis=1)
     kernel = kernels.QuadExp(n, manif.distance, alpha=alpha)

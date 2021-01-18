@@ -14,9 +14,10 @@ from ..base import Module
 class ReLieBase(Rdist):
     name = "ReLieBase"
 
-    def __init__(self, manif: Manifold, f, kmax: int = 5):
+    def __init__(self, manif: Manifold, f, kmax: int = 5, diagonal: bool = False):
         super(ReLieBase, self).__init__(manif, kmax)
         self.f = f
+        self.diagonal = diagonal
 
     def lat_prms(self, Y=None, batch_idxs=None):
         gmu, gamma = self.f(Y, batch_idxs)
@@ -48,14 +49,15 @@ class ReLieBase(Rdist):
         x = q.rsample(size)
         m = x.shape[1]
         mu = torch.zeros(m).to(gamma.device)[..., None]
-        lq = torch.stack([
-            self.manif.log_q(
-                Normal(mu, gamma[..., j, j][..., None]).log_prob,
-                x[..., j, None], 1, self.kmax).sum(dim=-1)
-            for j in range(self.d)
-        ]).sum(dim=0)
-        
-        #lq = self.manif.log_q(q.log_prob, x, self.manif.d, self.kmax)
+        if self.diagonal: #compute diagonal covariance
+            lq = torch.stack([
+                self.manif.log_q(
+                    Normal(mu, gamma[..., j, j][..., None]).log_prob,
+                    x[..., j, None], 1, self.kmax).sum(dim=-1)
+                for j in range(self.d)
+            ]).sum(dim=0)
+        else: #compute entropy with full covariance matrix
+            lq = self.manif.log_q(q.log_prob, x, self.manif.d, self.kmax)
         
         gtilde = self.manif.expmap(x)
         # apply g_mu with dims: (n_mc x m x d)
@@ -158,7 +160,7 @@ class ReLie(ReLieBase):
 
         f = _F(manif, m, kmax, sigma, gamma, fixed_gamma, diagonal, mu,
                initialization, Y)
-        super(ReLie, self).__init__(manif, f, kmax)
+        super(ReLie, self).__init__(manif, f, kmax, diagonal)
 
     @property
     def prms(self):
