@@ -84,13 +84,6 @@ def train_cv(mod,
         p.requires_grad = False
     for p in mod.lat_dist.parameters(): #only gradients for the latent distribution
         p.requires_grad = True
-    '''
-    lat_params = list(mod.lat_dist.parameters())
-    for p in mod.parameters():
-        matches = [(p.shape == lat_p.shape and torch.all(p == lat_p)) for lat_p in lat_params]
-        if not any(matches):
-            p.requires_grad = False
-    '''
     
     mod = train_model(mod, Y, device, train_ps2)
     
@@ -108,7 +101,7 @@ def test_cv(mod, split, device, n_mc = 32, Print = False):
     T2, N2 = not_in(np.arange(m), T1), not_in(np.arange(n), N1)
 
     #generate prediction for held out data#
-    Ytest = Y[N2, :, :][:, T2]
+    Ytest = Y[N2, ...][:, T2, :]
     latents = mod.lat_dist.prms[0].detach()[T2, ...] #latent means
     Ypred, var = mod.svgp.predict(latents.T[None, ...], False)
     Ypred = Ypred.detach().cpu().numpy()[0, N2, :, :]
