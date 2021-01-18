@@ -62,7 +62,6 @@ def test_GP_prior():
                                            n_mc=n_mc,
                                            lrate=10E-2,
                                            print_every=50,
-                                           n_svgp=0,
                                            ts=ts)
 
     ### test that two ways of computing the prior agree ###
