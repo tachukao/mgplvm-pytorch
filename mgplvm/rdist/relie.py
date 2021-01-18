@@ -136,16 +136,16 @@ class ReLie(ReLieBase):
         ----------
         m : int
             number of conditions/timepoints
-        kmax [optional] : int
+        kmax : Optional[int]
             number of terms used in the ReLie approximation is (2kmax+1)
-        sigma [optional] : float
+        sigma : Optional[float]
             initial diagonal std of the variational distribution
-        intialization [optional] : str
+        intialization : Optional[str]
             string to specify type of initialization
             ('random'/'PCA'/'identity' depending on manifold)
-        mu [optional] : np.ndarray
+        mu : Optional[np.ndarray]
             initialization of the vartiational means (m x d2)
-        Y [optional] : np.ndarray
+        Y : Optional[np.ndarray]
             data used to initialize latents (n x m x n_samples)
             
         Notes

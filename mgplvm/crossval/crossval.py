@@ -42,13 +42,13 @@ def train_cv(mod,
         GPU/CPU device on which to run the calculations
     train_ps : dict
         dictionary of training parameters. Constructed by crossval.training_params()
-    T1 [optional] : int list
+    T1 : Optional[int list]
         indices of the conditions to use for training
-    N1 [optional] : int list
+    N1 : Optional[int list]
         indices of the neurons to use for training
-    nt_train [optional] : int
+    nt_train : Optional[int]
         number of randomly selected conditions to use for training
-    nn_train [optional] : int
+    nn_train : Optional[int]
         number of randomly selected neurons to use for training
 
     Returns
@@ -70,7 +70,7 @@ def train_cv(mod,
     split = {'Y': Y, 'N1': N1, 'T1': T1}
     
     train_ps1 = update_params(train_ps, batch_pool = T1)
-    mod = train_model(mod, Y, device, train_ps1)
+    _ = train_model(mod, Y, device, train_ps1)
     
     ### construct a mask for some of the time points ####
     def mask_Ts(grad):
@@ -85,7 +85,7 @@ def train_cv(mod,
     for p in mod.lat_dist.parameters(): #only gradients for the latent distribution
         p.requires_grad = True
     
-    mod = train_model(mod, Y, device, train_ps2)
+    _ = train_model(mod, Y, device, train_ps2)
     
     if test:
         _ = test_cv(mod, split, device, n_mc = train_ps['n_mc'], Print = True)

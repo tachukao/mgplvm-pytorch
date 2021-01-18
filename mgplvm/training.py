@@ -212,10 +212,10 @@ def svgp(Y,
          mask_Ts=None,
          neuron_idxs=None):
     '''
-    max_steps [optional]: int, default=1000
+    max_steps : Optional[int], default=1000
         maximum number of training iterations
     
-    batch_pool [optional] : None or int list
+    batch_pool : Optional[int list]
         pool of indices from which to batch (used to train a partial model)
     '''
 
