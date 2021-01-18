@@ -14,6 +14,13 @@ from typing import List
 
 class LossMarginStop():
     def __init__(self, loss_margin=0, stop_after=10):
+        '''
+        loss_margin [optional] : float, default=0
+            loss margin tolerated for training progress
+
+        stop_iters [optional]: int, default=10
+            maximum number of training iterations above loss margin tolerated before stopping
+        '''
         self.lowest_loss = np.inf
         self.stop_ = 0
         self.loss_margin = loss_margin
@@ -203,21 +210,13 @@ def svgp(Y,
          ts=None,
          batch_pool=None,
          hook=None,
-         neuron_idxs=None,
-         loss_margin=0.,
-         stop_iters=10):
+         neuron_idxs=None):
     '''
     max_steps [optional]: int, default=1000
         maximum number of training iterations
     
     batch_pool [optional] : None or int list
         pool of indices from which to batch (used to train a partial model)
-        
-    loss_margin [optional] : float, default=0
-        loss margin tolerated for training progress
-        
-    stop_iters [optional]: int, default=10
-        maximum number of training iterations above loss margin tolerated before stopping
     '''
 
     n, m, _ = Y.shape  # neurons, conditions, samples
@@ -270,9 +269,6 @@ def svgp(Y,
     LRfuncs = [lambda x: 1, fburn, lambda x: 1]
     scheduler = LambdaLR(opt, lr_lambda=LRfuncs)
 
-    lowest_loss = np.inf
-    stop_ = 0
-
     for i in range(max_steps):
         opt.zero_grad()
         ramp = 1 - np.exp(-i / burnin)  # ramp the entropy
@@ -301,15 +297,7 @@ def svgp(Y,
         opt.step()
         scheduler.step()
 
-        if loss_val < lowest_loss:
-            lowest_loss = loss_val
-
-        if loss_val <= lowest_loss + loss_margin:
-            stop_ = 0
-        else:
-            stop_ += 1
-
-        if i % print_every == 0 or stop_ > stop_iters:
+        if i % print_every == 0:
             mu_mag = np.mean(
                 np.sqrt(
                     np.sum(model.lat_dist.manif.prms.data.cpu().numpy()[:]**2,
