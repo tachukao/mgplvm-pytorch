@@ -14,7 +14,11 @@ from ..base import Module
 class ReLieBase(Rdist):
     name = "ReLieBase"
 
-    def __init__(self, manif: Manifold, f, kmax: int = 5, diagonal: bool = False):
+    def __init__(self,
+                 manif: Manifold,
+                 f,
+                 kmax: int = 5,
+                 diagonal: bool = False):
         super(ReLieBase, self).__init__(manif, kmax)
         self.f = f
         self.diagonal = diagonal
@@ -24,7 +28,7 @@ class ReLieBase(Rdist):
         return gmu, gamma
 
     def lat_gmu(self, Y=None, batch_idxs=None):
-        return self.lat_prms(Y)[0]
+        return self.lat_prms(Y, batch_idxs)[0]
 
     def lat_gamma(self, Y=None, batch_idxs=None):
         return self.lat_prms(Y, batch_idxs)[1]
@@ -49,16 +53,16 @@ class ReLieBase(Rdist):
         x = q.rsample(size)
         m = x.shape[1]
         mu = torch.zeros(m).to(gamma.device)[..., None]
-        if self.diagonal: #compute diagonal covariance
+        if self.diagonal:  #compute diagonal covariance
             lq = torch.stack([
                 self.manif.log_q(
                     Normal(mu, gamma[..., j, j][..., None]).log_prob,
                     x[..., j, None], 1, self.kmax).sum(dim=-1)
                 for j in range(self.d)
             ]).sum(dim=0)
-        else: #compute entropy with full covariance matrix
+        else:  #compute entropy with full covariance matrix
             lq = self.manif.log_q(q.log_prob, x, self.manif.d, self.kmax)
-        
+
         gtilde = self.manif.expmap(x)
         # apply g_mu with dims: (n_mc x m x d)
         g = self.manif.gmul(gmu, gtilde)
@@ -74,14 +78,14 @@ class _F(Module):
                  gamma: Optional[Tensor] = None,
                  fixed_gamma=False,
                  diagonal=False,
-                 mu = None,
+                 mu=None,
                  initialization: Optional[str] = 'random',
                  Y=None):
 
         super(_F, self).__init__()
         self.manif = manif
         self.diagonal = diagonal
-        
+
         if mu is None:
             gmu = self.manif.initialize(initialization, m, manif.d, Y)
         else:
@@ -96,8 +100,8 @@ class _F(Module):
         else:
             gamma = torch.diag_embed(gamma)
             gamma = transform_to(constraints.lower_cholesky).inv(gamma)
-            
-        self.gamma = nn.Parameter(data=gamma, requires_grad= (not fixed_gamma))
+
+        self.gamma = nn.Parameter(data=gamma, requires_grad=(not fixed_gamma))
 
     def forward(self, Y=None, batch_idxs=None):
         gmu, gamma = self.prms
@@ -116,6 +120,12 @@ class _F(Module):
                 MultivariateNormal.arg_constraints['scale_tril'])(self.gamma)
         return gmu, gamma
 
+    def gmu_parameters(self):
+        return [self.gmu]
+
+    def gamma_parameters(self):
+        return [self.gamma]
+
 
 class ReLie(ReLieBase):
     name = "ReLie"
@@ -128,7 +138,7 @@ class ReLie(ReLieBase):
                  gamma: Optional[Tensor] = None,
                  fixed_gamma=False,
                  diagonal=False,
-                 mu = None,
+                 mu=None,
                  initialization: Optional[str] = 'random',
                  Y=None):
         """

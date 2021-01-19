@@ -14,28 +14,49 @@ def sort_params(model, hook):
     '''apply burnin period to Sigma_Q and alpha^2
     allow for masking of certain conditions for use in crossvalidation'''
 
-    # parameters to be optimized
-    lat_params = list(model.lat_dist.parameters())
-    params: List[List[Tensor]] = [[], []]
-    for param in model.parameters():
-        if (param.shape == lat_params[1].shape) and torch.all(
-                param == lat_params[1]):
-            param.register_hook(hook)  # option to mask gradients
-            params[1].append(param)
-        elif (param.shape == lat_params[0].shape) and torch.all(
-                param == lat_params[0]):
-            param.register_hook(hook)  # option to mask gradients
-            params[0].append(param)
-        else:
-            # add ell to group 2
-            if (('QuadExp' in model.kernel.name)
-                    and (param.shape == model.kernel.ell.shape)
-                    and torch.all(param == model.kernel.ell)):
-                params[1].append(param)
-            else:
-                params[0].append(param)
+    # SVGP Parameters
+    # - lat_dist
+    # - lprior
+    # - svgp parameters (includes z, likelihood, kernel)
+    # - z parameters
+    # - likelihood parameters
+    # - kernel parameters
+    gmu_parameters = model.lat_dist.f.gmu_parameters()
+    gamma_parameters = model.lat_dist.f.gamma_parameters()
+    assert (gmu_parameters is not None)
+    assert (gamma_parameters is not None)
+    params = [[model.svgp.q_mu, model.svgp.q_sqrt] +
+              list(model.lprior.parameters()) + list(model.z.parameters()) +
+              list(model.likelihood.parameters()) + gmu_parameters,
+              gamma_parameters + list(model.kernel.parameters())]
+
 
     return params
+    #print(dict(model.named_parameters()).keys())
+
+    #lat_params = list(model.lat_dist.parameters())
+    #params: List[List[Tensor]] = [[], []]
+    #for name, param in model.named_parameters():
+    #    if (param.shape == lat_params[1].shape) and torch.all(
+    #            param == lat_params[1]):
+    #        param.register_hook(hook)  # option to mask gradients
+    #        params[1].append(param)
+    #    elif (param.shape == lat_params[0].shape) and torch.all(
+    #            param == lat_params[0]):
+    #        param.register_hook(hook)  # option to mask gradients
+    #        params[0].append(param)
+    #    else:
+    #        # add ell to group 2
+    #        if (('QuadExp' in model.kernel.name)
+    #                and (param.shape == model.kernel.ell.shape)
+    #                and torch.all(param == model.kernel.ell)):
+    #            params[1].append(param)
+    #            print(name)
+    #            print(torch.mean(param))
+    #        else:
+    #            params[0].append(param)
+
+    #return params
 
 
 def print_progress(model,
@@ -68,7 +89,7 @@ def print_progress(model,
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
 
-def generate_batch_idxs(model, data_size, batch_pool=None):
+def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
     if batch_pool is None:
         idxs = np.arange(data_size)
     else:
@@ -129,11 +150,18 @@ def fit(Y,
     mask_Ts = mask_Ts if mask_Ts is not None else lambda x: x
 
     params = sort_params(model, mask_Ts)
-    opt = optimizer(params[0], lr=lrate)  # instantiate optimizer
-    opt.add_param_group({'params': params[1]})
 
-    LRfuncs = [lambda x: 1, fburn]
-    scheduler = LambdaLR(opt, lr_lambda=LRfuncs)
+    # instantiate optimizer
+    opt = optimizer([
+        {
+            'params': params[0]
+        },
+        {
+            'params': params[1]
+        },
+    ], lr=lrate)
+
+    scheduler = LambdaLR(opt, lr_lambda=[lambda x: 1, fburn])
 
     for i in range(max_steps):
         opt.zero_grad()
@@ -147,7 +175,8 @@ def fit(Y,
         else:
             batch_idxs = generate_batch_idxs(model,
                                              data_size,
-                                             batch_pool=batch_pool)
+                                             batch_pool=batch_pool,
+                                             batch_size=batch_size)
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo, kl = model(data,

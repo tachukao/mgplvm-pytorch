@@ -1,6 +1,6 @@
 from __future__ import print_function
 import numpy as np
-from mgplvm.utils import softplus
+from ..utils import softplus
 from . import sgp, svgp
 from .. import rdist, kernels, utils
 import torch
@@ -10,7 +10,7 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
-import mgplvm.lpriors as lpriors
+from .. import lpriors
 from typing import Optional, Tuple
 
 jitter = utils.default_jitter
