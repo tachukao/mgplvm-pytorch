@@ -49,6 +49,9 @@ class So3(Manifold):
         #mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]), dtype=torch.get_default_dtype())
         return mudata
 
+    def parameterise_inducing(self, x):
+        return self.expmap2(x, dim = -2)
+    
     def inducing_points(self, n, n_z, z=None):
         if z is None:
             z = torch.randn(n, self.d2, n_z)
@@ -58,7 +61,8 @@ class So3(Manifold):
                               self.d2,
                               n_z,
                               z=z,
-                              parameterise=lambda x: self.expmap2(x, dim=-2))
+                              parameterise = self.parameterise_inducing)
+                              #parameterise=lambda x: self.expmap2(x, dim=-2))
 
     @property
     def name(self):
