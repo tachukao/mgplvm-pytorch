@@ -8,11 +8,33 @@ import torch
 from torch import optim, Tensor
 from torch.optim.lr_scheduler import LambdaLR
 from typing import List
+import itertools
 
 
 def sort_params(model, hook):
     '''apply burnin period to Sigma_Q and alpha^2
     allow for masking of certain conditions for use in crossvalidation'''
+
+    for prm in model.lat_dist.parameters():
+        prm.register_hook(hook)
+
+    params0 = list(
+        itertools.chain.from_iterable([
+            model.z.parameters(),
+            model.likelihood.parameters(),
+            model.lprior.parameters(),
+            model.lat_dist.gmu_parameters(),
+            [model.svgp.q_mu, model.svgp.q_sqrt],
+        ]))
+
+    params1 = list(
+        itertools.chain.from_iterable([
+            model.kernel.parameters(),
+            #model.lat_dist.concentration_parameters()
+        ]))
+
+    params = [params0, params1]
+    return params
 
     # parameters to be optimized
     lat_params = list(model.lat_dist.parameters())
