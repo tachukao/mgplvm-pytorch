@@ -24,39 +24,15 @@ def sort_params(model, hook):
             model.likelihood.parameters(),
             model.lprior.parameters(),
             model.lat_dist.gmu_parameters(),
+            model.kernel.parameters(),
             [model.svgp.q_mu, model.svgp.q_sqrt],
         ]))
 
     params1 = list(
-        itertools.chain.from_iterable([
-            model.kernel.parameters(),
-            #model.lat_dist.concentration_parameters()
-        ]))
+        itertools.chain.from_iterable(
+            [model.lat_dist.concentration_parameters()]))
 
     params = [params0, params1]
-    return params
-
-    # parameters to be optimized
-    lat_params = list(model.lat_dist.parameters())
-    params: List[List[Tensor]] = [[], []]
-    for param in model.parameters():
-        if (param.shape == lat_params[1].shape) and torch.all(
-                param == lat_params[1]):
-            param.register_hook(hook)  # option to mask gradients
-            params[1].append(param)
-        elif (param.shape == lat_params[0].shape) and torch.all(
-                param == lat_params[0]):
-            param.register_hook(hook)  # option to mask gradients
-            params[0].append(param)
-        else:
-            # add ell to group 2
-            if (('QuadExp' in model.kernel.name)
-                    and (param.shape == model.kernel.ell.shape)
-                    and torch.all(param == model.kernel.ell)):
-                params[1].append(param)
-            else:
-                params[0].append(param)
-
     return params
 
 
@@ -90,7 +66,7 @@ def print_progress(model,
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
 
-def generate_batch_idxs(model, data_size, batch_pool=None):
+def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
     if batch_pool is None:
         idxs = np.arange(data_size)
     else:
@@ -111,8 +87,11 @@ def generate_batch_idxs(model, data_size, batch_pool=None):
         #start = np.random.randint(data_size - batch_size)
         #return idxs[start:start + batch_size]
     else:
-        np.random.shuffle(idxs)
-        return idxs[0:batch_size]
+        if batch_size is None:
+            return idxs
+        else:
+            np.random.shuffle(idxs)
+            return idxs[0:batch_size]
 
 
 def fit(Y,
@@ -169,7 +148,8 @@ def fit(Y,
         else:
             batch_idxs = generate_batch_idxs(model,
                                              data_size,
-                                             batch_pool=batch_pool)
+                                             batch_pool=batch_pool,
+                                             batch_size=batch_size)
             m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo, kl = model(data,

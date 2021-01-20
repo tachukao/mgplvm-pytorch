@@ -28,7 +28,7 @@ class ReLieBase(Rdist):
         return gmu, gamma
 
     def lat_gmu(self, Y=None, batch_idxs=None):
-        return self.lat_prms(Y)[0]
+        return self.lat_prms(Y, batch_idxs)[0]
 
     def lat_gamma(self, Y=None, batch_idxs=None):
         return self.lat_prms(Y, batch_idxs)[1]
