@@ -130,11 +130,18 @@ def fit(Y,
     mask_Ts = mask_Ts if mask_Ts is not None else lambda x: x
 
     params = sort_params(model, mask_Ts)
-    opt = optimizer(params[0], lr=lrate)  # instantiate optimizer
-    opt.add_param_group({'params': params[1]})
 
-    LRfuncs = [lambda x: 1, fburn]
-    scheduler = LambdaLR(opt, lr_lambda=LRfuncs)
+    # instantiate optimizer
+    opt = optimizer([
+        {
+            'params': params[0]
+        },
+        {
+            'params': params[1]
+        },
+    ], lr=lrate)
+
+    scheduler = LambdaLR(opt, lr_lambda=[lambda x: 1, fburn])
 
     for i in range(max_steps):
         opt.zero_grad()

@@ -1,6 +1,6 @@
 from __future__ import print_function
 import numpy as np
-from mgplvm.utils import softplus
+from ..utils import softplus
 from . import sgp, svgp
 from .. import rdist, kernels, utils
 import torch
@@ -8,7 +8,7 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
-import mgplvm.lpriors as lpriors
+from .. import lpriors
 from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
@@ -61,7 +61,13 @@ class SvgpLvm(nn.Module):
         self.lat_dist = lat_dist
         self.lprior = lprior
 
-    def elbo(self, data, n_mc, kmax=5, batch_idxs=None, ts=None, neuron_idxs = None):
+    def elbo(self,
+             data,
+             n_mc,
+             kmax=5,
+             batch_idxs=None,
+             ts=None,
+             neuron_idxs=None):
         """
         Parameters
         ----------
@@ -98,18 +104,24 @@ class SvgpLvm(nn.Module):
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
 
-        svgp_elbo = self.svgp.elbo(n_mc, data, g.permute(0, 2, 1)) #(n_mc x n x n_samples)
+        svgp_elbo = self.svgp.elbo(n_mc, data,
+                                   g.permute(0, 2, 1))  #(n_mc x n x n_samples)
         if neuron_idxs is not None:
             svgp_elbo = svgp_elbo[:, neuron_idxs, :]
-        
+
         # compute kl term for the latents (n_mc, )
         prior = self.lprior(g, ts)  #(n_mc, )
         kl = lq.sum(-1) - prior  #(n_mc, )
 
         return svgp_elbo, kl
 
-        
-    def forward(self, data, n_mc, kmax=5, batch_idxs=None, ts=None, neuron_idxs = None):
+    def forward(self,
+                data,
+                n_mc,
+                kmax=5,
+                batch_idxs=None,
+                ts=None,
+                neuron_idxs=None):
         """
         Parameters
         ----------
@@ -132,7 +144,12 @@ class SvgpLvm(nn.Module):
 
         #(n_mc, n, n_samples), (n_mc, n, n_samples), (n_mc)
 
-        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, batch_idxs = batch_idxs, ts = ts, neuron_idxs = neuron_idxs)
+        svgp_elbo, kl = self.elbo(data,
+                                  n_mc,
+                                  kmax=kmax,
+                                  batch_idxs=batch_idxs,
+                                  ts=ts,
+                                  neuron_idxs=neuron_idxs)
         #sum over neurons, mean over  MC samples
         svgp_elbo = svgp_elbo.sum() / n_mc
         kl = kl.sum() / n_mc
