@@ -1,3 +1,3 @@
-from .common import Uniform, Brownian, AR1, ARP, Null, Gaussian, ARP_G
+from .common import Uniform, Brownian, ARP, Null, Gaussian
 from . import torus
 from .euclidean import GP

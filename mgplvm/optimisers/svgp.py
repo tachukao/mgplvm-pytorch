@@ -94,7 +94,7 @@ def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
         idxs = np.arange(data_size)
     else:
         idxs = copy.copy(batch_pool)
-    if model.lprior.name == "Brownian":
+    if model.lprior.name in ["Brownian", "ARP"]:
         # if prior is Brownian, then batches have to be contiguous
         i0 = np.random.randint(1, data_size - 1)
         if i0 < batch_size / 2:
