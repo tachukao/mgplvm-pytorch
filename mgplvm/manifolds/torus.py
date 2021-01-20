@@ -35,6 +35,7 @@ class Torus(Manifold):
             else:
                 pca = decomposition.PCA(n_components=d)
                 mudata = pca.fit_transform(Y[:, :, 0].T)  #m x d
+                #constrain to injectivity radius
                 mudata *= 2 * np.pi / (np.amax(mudata) - np.amin(mudata))
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         mudata = torch.randn(m, d) * 0.1

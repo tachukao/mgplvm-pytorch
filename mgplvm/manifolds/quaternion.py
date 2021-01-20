@@ -2,7 +2,7 @@ import torch
 
 
 def conj(x):
-    a = torch.tensor([1, -1, -1, -1])
+    a = torch.tensor([1, -1, -1, -1]).to(x.device)
     return a * x
 
 
