@@ -90,8 +90,7 @@ class QuadExpBase(Kernel):
             alpha = inv_softplus(
                 torch.tensor(alpha, dtype=torch.get_default_dtype()))
         elif Y is not None:
-            alpha = inv_softplus(
-                torch.tensor(np.mean(Y[:, :, 0]**2, axis=1)).sqrt())
+            alpha = inv_softplus(torch.tensor(np.mean(Y**2, axis=-1)).sqrt())
         else:
             alpha = inv_softplus(torch.ones(n, ))
 

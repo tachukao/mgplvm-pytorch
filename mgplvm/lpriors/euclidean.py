@@ -71,7 +71,6 @@ class GP(LpriorEuclid):
                                    ts.reshape(1, 1, -1))
 
         #shape: (1 x d x n_mc)
-        #print(svgp_elbo.shape, svgp_elbo.device)
 
         return svgp_elbo.sum(0).sum(0)
 
