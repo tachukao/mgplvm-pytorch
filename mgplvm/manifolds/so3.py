@@ -73,7 +73,7 @@ class So3(Manifold):
         return 'So3(' + str(self.d) + ')'
 
     def lprior(self, g):
-        return self.lprior_const * torch.ones(g.shape[:2])
+        return self.lprior_const * torch.ones(g.shape[:-1])
 
     @staticmethod
     def parameterise(x) -> Tensor:

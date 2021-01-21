@@ -26,14 +26,15 @@ def test_so3_dimensions():
 
 
 def test_manifs_runs():
-    m, d, n, n_z = 10, 3, 5, 5
-    Y = np.random.normal(0, 1, (n, m))
+    m, d, n, n_z, n_samples = 10, 3, 5, 5, 2
+    Y = np.random.normal(0, 1, (n_samples, n, m))
     for i, manif_type in enumerate(
         [manifolds.Torus, manifolds.So3, manifolds.S3]):
         manif = manif_type(m, d)
         print(manif.name)
         lat_dist = mgplvm.rdist.ReLie(manif,
                                       m,
+                                      n_samples,
                                       sigma=0.4,
                                       diagonal=(True if i == 0 else False))
         kernel = mgplvm.kernels.QuadExp(n, manif.distance, Y=Y)

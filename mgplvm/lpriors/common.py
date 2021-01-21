@@ -35,8 +35,8 @@ class Uniform(Lprior):
         super().__init__(manif)
 
     def forward(self, g: Tensor, ts=None):
-        lp = self.manif.lprior(g)  #(n_b, m)
-        return lp.to(g.device).sum(-1)  #(n_b)
+        lp = self.manif.lprior(g)  #(n_b, n_samples, m)
+        return lp.to(g.device).sum(-1)  #(n_b, n_samples)
 
     def prms(self):
         pass
@@ -192,7 +192,7 @@ class ARP(Lprior):
                  learn_phi=True,
                  learn_eta=True,
                  learn_c=True,
-                diagonal = True):
+                 diagonal=True):
         '''
         ..math::
           :nowrap:
@@ -232,24 +232,23 @@ class ARP(Lprior):
         dy = dx[..., p:, :] - delta.sum(-1)  # n_b x (mx-1-p) x d (on alegbra)
 
         scale = torch.sqrt(ar_eta)
-        
-        if self.diagonal: #diagonal covariance
+
+        if self.diagonal:  #diagonal covariance
             lq = torch.stack([
                 self.manif.log_q(dists.Normal(ar_c[j], scale[j]).log_prob,
                                  dy[..., j, None],
                                  1,
                                  kmax=self.kmax).sum(-1) for j in range(self.d)
             ])  #(d x n_b x m-p-1)
-            lq = lq.sum(0) #(n_b x m-p-1)
-        else: #not diagonal (e.g. SO(3))
+            lq = lq.sum(0)  #(n_b x m-p-1)
+        else:  #not diagonal (e.g. SO(3))
             normal = dists.Normal(loc=ar_c, scale=scale)
             diagn = dists.Independent(normal, 1)
             lq = self.manif.log_q(diagn.log_prob,
-                                    dy,
-                                    self.manif.d,
-                                    kmax=self.kmax)
+                                  dy,
+                                  self.manif.d,
+                                  kmax=self.kmax)
             # (n_b x m-p-1)
-
 
         lq = lq.sum(-1)
 
@@ -264,4 +263,3 @@ class ARP(Lprior):
             ar_phi.detach().cpu().mean(),
             ar_eta.detach().cpu().sqrt().mean())
         return lp_msg
-

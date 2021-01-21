@@ -46,7 +46,7 @@ class Euclid(Manifold):
         return InducingPoints(n, self.d, n_z, z=z)
 
     def lprior(self, g):
-        '''need empirical data here. g is (n_b x m x d)'''
+        '''need empirical data here. g is (n_b x n_samples x m x d)'''
         ps = -0.5 * torch.square(g) - 0.5 * np.log(2 * np.pi)
         return ps.sum(2)  # sum over d
 

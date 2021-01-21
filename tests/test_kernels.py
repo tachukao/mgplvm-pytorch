@@ -60,7 +60,7 @@ def test_kernels_run():
     n = 100  # number of neurons
     m = 250  # number of conditions / time points
     n_z = 15  # number of inducing points
-    n_samples = 1  # number of samples
+    n_samples = 2  # number of samples
     l = float(0.55 * np.sqrt(d))
     gen = syndata.Gen(syndata.Euclid(d),
                       n,
@@ -80,7 +80,7 @@ def test_kernels_run():
     for kernel in kernels:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d)
-        lat_dist = mgplvm.rdist.ReLie(manif, m, initialization='random')
+        lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, initialization='random')
         # generate model
         lik = likelihoods.Gaussian(n)
         lprior = lpriors.Uniform(manif)

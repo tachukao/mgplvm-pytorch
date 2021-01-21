@@ -49,9 +49,9 @@ class ReLieBase(Rdist):
         """
         gmu, gamma = self.lat_prms(Y, batch_idxs)
         q = self.mvn(gamma)
-        # sample a batch with dims: (n_mc x batch_size x d)
+        # sample a batch with dims: (n_mc x n_samples x batch_size x d)
         x = q.rsample(size)
-        m = x.shape[1]
+        m = x.shape[-2]
         mu = torch.zeros(m).to(gamma.device)[..., None]
         if self.diagonal:  #compute diagonal covariance
             lq = torch.stack([

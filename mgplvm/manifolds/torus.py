@@ -49,7 +49,7 @@ class Torus(Manifold):
         return InducingPoints(n, self.d, n_z, z=z)
 
     def lprior(self, g: Tensor) -> Tensor:
-        return self.lprior_const * torch.ones(g.shape[:2])
+        return self.lprior_const * torch.ones(g.shape[:-1])
 
     # log of the uniform prior (negative log volume) for T^d
     @property
