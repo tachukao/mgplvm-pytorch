@@ -12,7 +12,7 @@ device = mgplvm.utils.get_device()
 
 def test_euclid(kmax=5, savefig=False):
     m = 100
-    n_samples = 1
+    n_samples = 2
     for d in [1, 2, 3]:
 
         manif = Euclid(m, d)
@@ -21,8 +21,8 @@ def test_euclid(kmax=5, savefig=False):
                                sigma=torch.tensor(sigmas)).mvn()
         x = q.rsample(torch.Size([200]))
         lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
-        H = -lq.mean(dim=0).detach().numpy()
-        std = lq.std(dim=0).detach().numpy()
+        H = -lq.mean(dim=0).mean(dim=0).detach().numpy()
+        std = lq.std(dim=0).mean(dim=0).detach().numpy()
 
         Hgauss = d / 2 + d / 2 * np.log(2 * np.pi) + d * np.log(sigmas[:, 0])
 
@@ -38,6 +38,7 @@ def test_euclid(kmax=5, savefig=False):
             plt.xscale('log')
             plt.savefig('test_euclid' + str(d) + '.png', dpi=120)
             plt.close()
+
         assert all(np.abs(H - Hgauss) < std)  # adhere to bound
 
 
@@ -54,8 +55,8 @@ def test_torus(kmax=5, savefig=False):
                                sigma=torch.tensor(sigmas)).mvn()
         x = q.rsample(torch.Size([200]))
         lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
-        H = -lq.mean(dim=0).detach().numpy()
-        std = lq.std(dim=0).detach().numpy()
+        H = -lq.mean(dim=0).mean(dim=0).detach().numpy()
+        std = lq.std(dim=0).mean(dim=0).detach().numpy()
 
         Hmax = -manif.lprior_const
         Hgauss = d / 2 + d / 2 * np.log(2 * np.pi) + d * np.log(sigmas)
@@ -87,8 +88,8 @@ def test_so3(kmax=5, savefig=False):
                            sigma=torch.tensor(sigmas)).mvn()
     x = q.rsample(torch.Size([200]))
     lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
-    H = -lq.mean(dim=0).detach().numpy()
-    std = lq.std(dim=0).detach().numpy()
+    H = -lq.mean(dim=0).mean(dim=0).detach().numpy()
+    std = lq.std(dim=0).mean(dim=0).detach().numpy()
 
     Hmax = -manif.lprior_const
     Hgauss = 3 / 2 + 3 / 2 * np.log(2 * np.pi) + 3 * np.log(sigmas)
@@ -118,8 +119,8 @@ def test_s3(kmax=5, savefig=False):
 
     x = q.rsample(torch.Size([200]))
     lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
-    H = -lq.mean(dim=0).detach().numpy()
-    std = lq.std(dim=0).detach().numpy()
+    H = -lq.mean(dim=0).mean(dim=0).detach().numpy()
+    std = lq.std(dim=0).mean(dim=0).detach().numpy()
 
     Hmax = -manif.lprior_const
     Hgauss = 3 / 2 + 3 / 2 * np.log(2 * np.pi) + 3 * np.log(sigmas)

@@ -126,9 +126,9 @@ class So3(Manifold):
         ks = np.arange(-kmax, kmax + 1)
         zs = np.meshgrid(*(ks for _ in range(1)))
         zs = np.stack([z.flatten() for z in zs]).T * np.pi
-        #zs = torch.from_numpy(zs).float().to(theta.device)
         zs = torch.tensor(zs, dtype=torch.get_default_dtype()).to(theta.device)
-        theta = theta + zs[:, None, None, ...]  # (nk, n_b, m, 1)
+        theta = theta + zs[:, None, None, None,
+                           ...]  # (nk, n_b, n_samples, m, 1)
         x = theta * v
 
         # |J|->1 as phi -> 0; cap at 1e-5 for numerical stability
