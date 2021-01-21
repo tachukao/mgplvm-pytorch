@@ -256,8 +256,8 @@ class Gen():
     def set_param(self, param, value):
         '''set the value of a parameter'''
         if param == "l":  # need separate lengthscale per neuron per manifold
-            if type(value) in [int,
-                               float]:  # one length scale for each manifold
+            if type(value) in [int, float, np.float64
+                               ]:  # one length scale for each manifold
                 value = [value for i in range(self.nman)]
             value = [
                 np.ones((self.n, 1)) * val +

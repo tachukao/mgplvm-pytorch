@@ -53,16 +53,16 @@ class GP(LpriorEuclid):
 
     def forward(self, x, ts):
         '''
-        x is a latent of shape (n_mc x mx x d)
-        ts is the corresponding timepoints of shape (mx)
+        x is a latent of shape (n_mc x n_samples x mx x d)
+        ts is the corresponding timepoints of shape (n_samples x mx)
         '''
-        n_mc, T, d = x.shape
-        # x now has shape (n_mc times d, mx)
-        x = x.transpose(-1, -2).reshape(-1, T)
+        n_mc, n_samples, T, d = x.shape
+        # x now has shape (n_samples, n_mc, d, mx)
+        x = x.permute(1, 0, 3, 2).reshape(n_samples, -1, T)
 
-        # shape (n_mc . d)
-        svgp_elbo = self.svgp.elbo(1, x, ts.reshape(1, 1, -1))
-        return svgp_elbo.reshape(n_mc, d).sum(-1)
+        # shape (n_samples, n_mc . d)
+        svgp_elbo = self.svgp.elbo(1, x, ts.reshape(1, n_samples, 1, -1))
+        return svgp_elbo.reshape(n_samples, n_mc, d).sum(-1).T
 
     @property
     def msg(self):

@@ -223,13 +223,15 @@ class ARP(Lprior):
     def forward(self, g, ts=None):
         p = self.p
         ar_c, ar_phi, ar_eta = self.prms
-        ginv = self.manif.inverse(g)  # n_b x mx x d2 (on group)
-        dg = self.manif.gmul(ginv[..., 0:-1, :],
-                             g[..., 1:, :])  # n_b x (mx-1) x d2 (on group)
-        dx = self.manif.logmap(dg)  # n_b x (mx-1) x d (on algebra)
+        ginv = self.manif.inverse(g)  # n_b x n_samplex mx x d2 (on group)
+        dg = self.manif.gmul(
+            ginv[..., 0:-1, :],
+            g[..., 1:, :])  # n_b x n_samples x (mx-1) x d2 (on group)
+        dx = self.manif.logmap(dg)  # n_b x n_samplex (mx-1) x d (on algebra)
         delta = ar_phi * torch.stack(
             [dx[..., p - j - 1:-j - 1, :] for j in range(p)], dim=-1)
-        dy = dx[..., p:, :] - delta.sum(-1)  # n_b x (mx-1-p) x d (on alegbra)
+        dy = dx[..., p:, :] - delta.sum(
+            -1)  # n_b x n_samples x (mx-1-p) x d (on alegbra)
 
         scale = torch.sqrt(ar_eta)
 
@@ -239,8 +241,8 @@ class ARP(Lprior):
                                  dy[..., j, None],
                                  1,
                                  kmax=self.kmax).sum(-1) for j in range(self.d)
-            ])  #(d x n_b x m-p-1)
-            lq = lq.sum(0)  #(n_b x m-p-1)
+            ])  #(d x n_b x n_samples x m-p-1)
+            lq = lq.sum(0)  #(n_b x n_samples x m-p-1)
         else:  #not diagonal (e.g. SO(3))
             normal = dists.Normal(loc=ar_c, scale=scale)
             diagn = dists.Independent(normal, 1)
@@ -248,7 +250,7 @@ class ARP(Lprior):
                                   dy,
                                   self.manif.d,
                                   kmax=self.kmax)
-            # (n_b x m-p-1)
+            # (n_b x n_samplesx m-p-1)
 
         lq = lq.sum(-1)
 
