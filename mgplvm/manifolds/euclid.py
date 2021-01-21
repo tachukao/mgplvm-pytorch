@@ -21,21 +21,23 @@ class Euclid(Manifold):
         super().__init__(d)
         self.m = m
         self.d2 = d  # dimensionality of the group parameterization
-        
+
     @staticmethod
-    def initialize(initialization, m, d, Y):
+    def initialize(initialization, n_samples, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
         if initialization == 'pca':
-            #Y is N x m; reduce to m x d
+            #Y is n_samples x n x m; reduce to n_samples x m x d
             if Y is None:
                 print('user must provide data for PCA initialization')
             else:
                 pca = decomposition.PCA(n_components=d)
-                mudata = pca.fit_transform(Y[:, :, 0].T)  #m x d
+                Y = Y.reshape(-1, m)
+                mudata = pca.fit_transform(Y)  #m x d
                 mudata = mudata / np.std(mudata, axis=0, keepdims=True)
+                mudata = mudata.reshape(Y.shape[0], Y.shape[-1], -1)
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         # default initialization
-        mudata = torch.randn(m, d) * 0.1
+        mudata = torch.randn(n_samples, m, d) * 0.1
         return mudata
 
     def inducing_points(self, n, n_z, z=None):

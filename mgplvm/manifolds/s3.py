@@ -33,11 +33,11 @@ class S3(Manifold):
             special.loggamma(2) - np.log(2) - 2 * np.log(np.pi))
 
     @staticmethod
-    def initialize(initialization, m, d, Y):
+    def initialize(initialization, n_samples, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
         # initialize at identity
-        mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]),
-                              dtype=torch.get_default_dtype())
+        mudata = torch.zeros(n_samples, m, 4)
+        mudata[:, :, 0] = 1
         return mudata
 
     def inducing_points(self, n, n_z, z=None):

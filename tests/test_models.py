@@ -18,7 +18,7 @@ def test_svgp_runs():
     also test that burda log likelihood runs and is smaller than elbo
     """
     d = 1  # dims of latent space
-    n = 5  # number of neurons
+    n = 8  # number of neurons
     m = 10  # number of conditions / time points
     n_z = 5  # number of inducing points
     n_samples = 1  # number of samples
@@ -26,16 +26,20 @@ def test_svgp_runs():
     sig0 = 1.5
     l = 0.4
     gen.set_param('l', l)
-    Y = gen.gen_data()[0]
+    Y = gen.gen_data()
     Y = Y + np.random.normal(size=Y.shape) * np.mean(Y) / 3
     # specify manifold, kernel and rdist
     manif = Euclid(m, d)
-    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=sig0, diagonal=False)
+    lat_dist = mgplvm.rdist.ReLie(manif,
+                                  m,
+                                  n_samples,
+                                  sigma=sig0,
+                                  diagonal=False)
     # initialize signal variance
-    alpha = np.std(Y, axis=1)
+    alpha = np.mean(np.std(Y, axis=-1), axis=0)
     kernel = kernels.QuadExp(n, manif.distance, alpha=alpha)
     # generate model
-    sigma = np.std(Y, axis=1)  # initialize noise
+    sigma = np.mean(np.std(Y, axis=-1), axis=0)  # initialize noise
     lik = likelihoods.Gaussian(n, variance=np.square(sigma))
     lprior = mgplvm.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
