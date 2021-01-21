@@ -56,23 +56,13 @@ class GP(LpriorEuclid):
         x is a latent of shape (n_mc x mx x d)
         ts is the corresponding timepoints of shape (mx)
         '''
-        #elbo(n_sample, n_mc, y, x)
-        #x is (n_mc x d x mx)
-        #y is (n x mx x n_samples)
+        n_mc, T, d = x.shape
+        # x now has shape (n_mc times d, mx)
+        x = x.transpose(-1, -2).reshape(-1, T)
 
-        #ts is (1 x 1 x mx)
-        #x is (d x mx x n_samples)
-
-        #elbo returns svgp_lik, svgp_kl
-        #LLs = [self.svgp.elbo(1, x[i, :, :, None].permute(1,0,2), ts.reshape(1,1,-1)) for i in range(x.shape[0])]
-        #LLs = torch.stack([LL[0] - LL[1] for LL in LLs], dim = 0)
-
-        svgp_elbo = self.svgp.elbo(x.shape[0], x.permute(2, 1, 0),
-                                   ts.reshape(1, 1, -1))
-
-        #shape: (1 x d x n_mc)
-
-        return svgp_elbo.sum(0).sum(0)
+        # shape (n_mc . d)
+        svgp_elbo = self.svgp.elbo(1, x, ts.reshape(1, 1, -1))
+        return svgp_elbo.reshape(n_mc, d).sum(-1)
 
     @property
     def msg(self):
