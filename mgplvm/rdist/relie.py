@@ -162,7 +162,7 @@ class ReLie(ReLieBase):
         mu : Optional[np.ndarray]
             initialization of the vartiational means (m x d2)
         Y : Optional[np.ndarray]
-            data used to initialize latents (n x m x n_samples)
+            data used to initialize latents (n x m)
             
         Notes
         -----
