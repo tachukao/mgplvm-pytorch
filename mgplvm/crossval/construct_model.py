@@ -1,6 +1,6 @@
 import mgplvm
 from mgplvm import lpriors, kernels, models
-from mgplvm.manifolds import Euclid, Torus
+from mgplvm.manifolds import Euclid, Torus, So3
 import torch
 import pickle
 import numpy as np
@@ -49,6 +49,9 @@ def load_model(params):
         manif = Euclid(m, d)
     elif params['manifold'] == 'torus':
         manif = Torus(m, d)
+    elif params['manifold'] in ['SO3', 'So3', 'so3', 'SO(3)']:
+        manif = So3(m, 3)
+        params['diagonal'] = False
         
     #### specify latent distribution ####
     lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=params['latent_sigma'], diagonal = params['diagonal'],
@@ -70,7 +73,8 @@ def load_model(params):
         lprior = lpriors.GP(manif, lprior_kernel, n_z = n_z, tmax = m)
     elif params['prior'] == 'ARP':
         lprior = lpriors.ARP(params['arp_p'], manif, ar_eta = torch.tensor(params['arp_eta']),
-                         learn_eta = params['arp_learn_eta'], learn_c = params['arp_learn_c'])
+                         learn_eta = params['arp_learn_eta'], learn_c = params['arp_learn_c'],
+                            diagonal = params['diagonal'])
     else:
         lprior = lpriors.Uniform(manif)
 

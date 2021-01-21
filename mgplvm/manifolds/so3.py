@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from .base import Manifold
 from typing import Tuple, Optional, List
 from ..inducing_variables import InducingPoints
-
+from sklearn import decomposition
 
 class So3(Manifold):
     # log of the uniform prior (negative log volume)
@@ -33,11 +33,25 @@ class So3(Manifold):
 
     def initialize(self, initialization, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
+        if initialization == 'pca':
+            #Y is N x m; reduce to d x m
+            if Y is None:
+                print('user must provide data for PCA initialization')
+            else:
+                pca = decomposition.PCA(n_components=3)
+                mudata = pca.fit_transform(Y[:, :, 0].T)  #m x d
+                #constrain to injectivity radius
+                mudata *= 0.5 * np.pi / np.amax(np.sqrt(np.sum(mudata**2, axis = 1)))
+                mudata = torch.tensor(mudata, dtype=torch.get_default_dtype())
+                return self.expmap(mudata)
         # initialize at identity
         mudata = self.expmap(torch.randn(m, 3) * 0.1)
         #mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]), dtype=torch.get_default_dtype())
         return mudata
 
+    def parameterise_inducing(self, x):
+        return self.expmap2(x, dim = -2)
+    
     def inducing_points(self, n, n_z, z=None):
         if z is None:
             z = torch.randn(n, self.d2, n_z)
@@ -47,7 +61,8 @@ class So3(Manifold):
                               self.d2,
                               n_z,
                               z=z,
-                              parameterise=lambda x: self.expmap2(x, dim=-2))
+                              parameterise = self.parameterise_inducing)
+                              #parameterise=lambda x: self.expmap2(x, dim=-2))
 
     @property
     def name(self):

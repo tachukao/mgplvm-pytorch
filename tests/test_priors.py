@@ -3,7 +3,9 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
+from mgplvm import manifolds, rdist, kernels, likelihoods, lpriors, models, optimisers
 torch.set_default_dtype(torch.float64)
+device = mgplvm.utils.get_device()
 
 
 def test_GP_prior():
@@ -92,7 +94,41 @@ def test_GP_prior():
     print(elbo1_b[:5])
     print(elbo2_b[:5])
 
+def test_ARP_runs():
+    m, d, n, n_z, p = 10, 3, 5, 5, 1
+    Y = np.random.normal(0, 1, (n, m, 1))
+    for i, manif_type in enumerate(
+        [manifolds.Euclid, manifolds.Torus, manifolds.So3]):
+        manif = manif_type(m, d)
+        print(manif.name)
+        lat_dist = mgplvm.rdist.ReLie(manif,
+                                      m,
+                                      sigma=0.4,
+                                      diagonal=(True if i in [0,1] else False))
+        kernel = mgplvm.kernels.QuadExp(n, manif.distance, Y=Y)
+        # generate model
+        lik = mgplvm.likelihoods.Gaussian(n)
+        lprior = mgplvm.lpriors.ARP(p, manif, diagonal=(True if i in [0,1] else False))
+        z = manif.inducing_points(n, n_z)
+        mod = mgplvm.models.SvgpLvm(n,
+                                    z,
+                                    kernel,
+                                    lik,
+                                    lat_dist,
+                                    lprior,
+                                    whiten=True).to(device)
+
+        # train model
+        trained_model = optimisers.svgp.fit(Y,
+                                            mod,
+                                            device,
+                                            max_steps=5,
+                                            n_mc=64,
+                                            optimizer=optim.Adam,
+                                            print_every=1000)
+    
 
 if __name__ == '__main__':
     test_GP_prior()
+    test_ARP_runs()
     print('Tested priors')
