@@ -21,7 +21,7 @@ def test_likelihood_runs():
     n = 5  # number of neurons
     m = 10  # number of conditions / time points
     n_z = 5  # number of inducing points
-    n_samples = 1  # number of samples
+    n_samples = 2  # number of samples
     gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25)
     Y = gen.gen_data()[0]
     Y = np.round(Y - np.amin(Y))
@@ -35,7 +35,7 @@ def test_likelihood_runs():
     ]:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d)
-        lat_dist = mgplvm.rdist.ReLie(manif, m, diagonal=False)
+        lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, diagonal=False)
         # initialize signal variance
         kernel = kernels.QuadExp(n, manif.distance)
         # generate model
@@ -59,7 +59,7 @@ def test_likelihood_runs():
         LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
         print("once")
         svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
-        elbo = (svgp_elbo - kl) / (Y.shape[0] * Y.shape[1])
+        elbo = (svgp_elbo - kl).mean() / Y.shape[-1]
 
         assert elbo <= LL
 
