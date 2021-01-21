@@ -40,14 +40,13 @@ class So3(Manifold):
             if Y is None:
                 print('user must provide data for PCA initialization')
             else:
-                Y = Y.reshape(-1, m)
-                pca = decomposition.PCA(n_components=3)
-                mudata = pca.fit_transform(Y.T)  #m x d
-                #constrain to injectivity radius
-                mudata *= 0.5 * np.pi / np.amax(
-                    np.sqrt(np.sum(mudata**2, axis=1)))
+                n = Y.shape[1]
+                pca = decomposition.PCA(n_components=d)
+                Y = Y.transpose(1, 2).reshape(n_samples*m, n)
+                mudata = pca.fit_transform(Y)  #m*n_samples x d
+                mudata *= 0.5 * np.pi / np.amax(np.sqrt(np.sum(mudata**2, axis=1)))
                 mudata = torch.tensor(mudata, dtype=torch.get_default_dtype())
-                return self.expmap(mudata).reshape(n_samples, m, -1)
+                return self.expmap(mudata).reshape(n_samples, m, d)
         # initialize at identity
         mudata = self.expmap(torch.randn(n_samples, m, 3) * 0.1)
         #mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]), dtype=torch.get_default_dtype())

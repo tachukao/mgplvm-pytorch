@@ -33,13 +33,12 @@ class Torus(Manifold):
             if Y is None:
                 print('user must provide data for PCA initialization')
             else:
-                Y = Y.reshape(-1, m)
+                n = Y.shape[1]
                 pca = decomposition.PCA(n_components=d)
-                mudata = pca.fit_transform(Y.T)  #m x d
-                #constrain to injectivity radius
-                mudata = mudata * 2 * np.pi / (np.amax(mudata) -
-                                               np.amin(mudata))
-                mudata = mudata.reshape(Y.shape[0], -1, d)
+                Y = Y.transpose(1, 2).reshape(n_samples*m, n)
+                mudata = pca.fit_transform(Y)  #m*n_samples x d
+                mudata *= 2 * np.pi / (np.amax(mudata) - np.amin(mudata))
+                mudata = mudata.reshape(n_samples, m, d)
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         mudata = torch.randn(n_samples, m, d) * 0.1
         return mudata
