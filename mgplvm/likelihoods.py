@@ -11,14 +11,17 @@ import warnings
 
 log2pi: float = np.log(2 * np.pi)
 n_gh_locs: int = 20  # default number of Gauss-Hermite points
-    
+
+
 def exp_link(x):
     '''exponential link function used for positive observations'''
     return torch.exp(x)
 
+
 def id_link(x):
     '''identity link function used for neg binomial data'''
     return x
+
 
 class Likelihood(Module, metaclass=abc.ABCMeta):
     def __init__(self, n: int, n_gh_locs: Optional[int] = n_gh_locs):
@@ -119,14 +122,15 @@ class Poisson(Likelihood):
         d = torch.zeros(n, ) if d is None else d
         self.c = nn.Parameter(data=c, requires_grad=not fixed_c)
         self.d = nn.Parameter(data=d, requires_grad=not fixed_d)
+        self.n_gh_locs = n_gh_locs
 
     @property
     def prms(self):
         return self.c, self.d
 
     def log_prob(self, lamb, y):
-        #lambd: (n_mc, n, m, n_samples, n_gh)
-        #y: (n, m, n_samples)
+        #lambd: (n_mc, n, m, n_gh)
+        #y: (n, m)
         p = dists.Poisson(lamb)
         return p.log_prob(y[None, ..., None])
 
@@ -138,7 +142,7 @@ class Poisson(Likelihood):
         y_samps = dist.sample()
         return y_samps
 
-    def variational_expectation(self, y, fmu, fvar, gh=False, by_sample=False):
+    def variational_expectation(self, y, fmu, fvar):
         """
         Parameters
         ----------
@@ -148,8 +152,6 @@ class Poisson(Likelihood):
             GP mean (n_mc x n x m)
         f_var : Tensor
             GP diagonal variance (n_mc x n x m)
-        gh [optional] : int
-            number of points used for Gauss-Hermite quadrature
 
         Returns
         -------
@@ -159,12 +161,13 @@ class Poisson(Likelihood):
         c, d = self.prms
         fmu = c[..., None] * fmu + d[..., None]
         fvar = fvar * torch.square(c[..., None])
-        if self.inv_link == exp_link and (not gh):
+        if self.inv_link == exp_link:
             n_mc = fmu.shape[0]
             v1 = (y * fmu) - (self.binsize * torch.exp(fmu + 0.5 * fvar))
             v2 = (y * np.log(self.binsize) - torch.lgamma(y + 1))
             #v1: (n_b x n x m)  v2: (n x m) (per mc sample)
-            return v1.sum(-2) + v2.sum(-2)[None, ...]
+            lp = v1.sum(-1) + v2.sum(-1)[None, ...]
+            return lp
 
         else:
             # use Gauss-Hermite quadrature to approximate integral
@@ -224,22 +227,22 @@ class NegativeBinomial(Likelihood):
         return y_samps
 
     def log_prob(self, total_count, rate, y):
-        #total count: (n) -> (n_mc, n, m, n_samples, n_gh)
-        #rate: (n_mc, n, m, n_samples, n_gh)
-        #y: (n, m, n_samples)
-        p = dists.NegativeBinomial(
-            total_count[None, ..., None, None, None], logits=rate)
+        #total count: (n) -> (n_mc, n, m, n_gh)
+        #rate: (n_mc, n, m, n_gh)
+        #y: (n, m)
+        p = dists.NegativeBinomial(total_count[None, ..., None, None],
+                                   logits=rate)
         return p.log_prob(y[None, ..., None])
 
-    def variational_expectation(self, y, fmu, fvar, by_sample=False):
+    def variational_expectation(self, y, fmu, fvar):
         """
         Parameters
         ----------
         y : Tensor
             number of MC samples (n x m)
-        f_mu : Tensor
+        fmu : Tensor
             GP mean (n_mc x n x m)
-        f_var : Tensor
+        fvar : Tensor
             GP diagonal variance (n_mc x n x m)
 
         Returns
@@ -266,7 +269,3 @@ class NegativeBinomial(Likelihood):
 
         #print(lp.shape, ws.shape, (lp * ws).shape)
         return 1 / np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-1)
-
-        #else:
-        #    return torch.sum(1 / np.sqrt(np.pi) * lp * ws)
-

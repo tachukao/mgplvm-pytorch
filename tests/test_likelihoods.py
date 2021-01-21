@@ -23,17 +23,22 @@ def test_likelihood_runs():
     n_z = 5  # number of inducing points
     n_samples = 1  # number of samples
     gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25)
-    Y = gen.gen_data()
-    Y = np.round(Y-np.amin(Y))
-    
-    for lik_type in [likelihoods.Gaussian, likelihoods.Poisson, likelihoods.NegativeBinomial]:
+    Y = gen.gen_data()[0]
+    Y = np.round(Y - np.amin(Y))
+
+    for lik in [
+            likelihoods.Gaussian(n),
+            likelihoods.Poisson(n),
+            # using the Gauss Hermite
+            likelihoods.Poisson(n, inv_link=lambda x: torch.exp(x + 2)),
+            likelihoods.NegativeBinomial(n)
+    ]:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d)
         lat_dist = mgplvm.rdist.ReLie(manif, m, diagonal=False)
         # initialize signal variance
         kernel = kernels.QuadExp(n, manif.distance)
         # generate model
-        lik = lik_type(n)
         lprior = mgplvm.lpriors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mod = models.SvgpLvm(n, z, kernel, lik, lat_dist, lprior,
@@ -49,15 +54,15 @@ def test_likelihood_runs():
                                             n_mc=64,
                                             lrate=2E-2,
                                             print_every=1000)
-    
-    
+
         ### test burda log likelihood ###
         LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
+        print("once")
         svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
-        elbo = (svgp_elbo-kl)/(Y.shape[0]*Y.shape[1])
+        elbo = (svgp_elbo - kl) / (Y.shape[0] * Y.shape[1])
 
         assert elbo <= LL
-    
+
 
 if __name__ == '__main__':
     test_likelihood_runs()
