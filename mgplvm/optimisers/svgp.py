@@ -70,9 +70,9 @@ def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
     if batch_pool is None:
         idxs = np.arange(data_size)
     else:
-        idxs = copy.copy(batch_pool)
-    if model.lprior.name == "Brownian":
-        # if prior is Brownian, then batches have to be contiguous
+        idxs = batch_pool
+    if model.lprior.name in ["Brownian", "ARP"]:
+        # if prior is Brownian or ARP, then batches have to be contiguous
         i0 = np.random.randint(1, data_size - 1)
         if i0 < batch_size / 2:
             batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
@@ -83,15 +83,11 @@ def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
                                         2)):int(round(i0 + batch_size / 2))]
         #print(len(batch_idxs))
         return batch_idxs
-
-        #start = np.random.randint(data_size - batch_size)
-        #return idxs[start:start + batch_size]
     else:
         if batch_size is None:
             return idxs
         else:
-            np.random.shuffle(idxs)
-            return idxs[0:batch_size]
+            return np.random.choice(idxs, size = batch_size, replace = False)
 
 
 def fit(Y,
