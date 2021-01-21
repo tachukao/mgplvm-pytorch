@@ -9,16 +9,16 @@ from torch.distributions import Bernoulli
 
 
 # %% base class
-def draw_GP(n, d, sig, ell, jitter=1e-6):
-    '''draw RBF GP samples with N samples, ell = l (in units of samples)'''
+def draw_GP(n, d, n_samples, sig, ell, jitter=1e-6):
+    '''draw RBF GP samples with (n*n_samples) x samples, ell = l (in units of samples)'''
     rep_ts = np.arange(n).reshape(-1, 1).repeat(n, 1)
     dts = rep_ts - rep_ts.T
     K = sig**2 * np.exp(-dts**2 / (2 * ell**2))  #nxn
     L = np.linalg.cholesky(K + jitter * np.eye(n))  #nxn
 
-    us = np.random.normal(size=(n, d))  #nxd
+    us = np.random.normal(size=(n_samples * n, d))  #nxd
     X = L @ us  #nxd
-    return X
+    return X.reshape(n_samples, n, d)
 
 
 class Manif(metaclass=abc.ABCMeta):
@@ -30,7 +30,7 @@ class Manif(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def gen(self, n, ell, sig):
+    def gen(self, n, n_samples, ell, sig):
         pass
 
     @abc.abstractmethod
@@ -49,18 +49,17 @@ class Euclid(Manif):
     def name(self):
         return "euclid(%i)" % self.d
 
-    def gen(self, n, ell=None, sig=10):
+    def gen(self, n, n_samples, ell=None, sig=10):
         if ell is None:
-            #gs = np.random.uniform(0, 4, size=(n, self.d))
-            gs = np.random.normal(2, 1, size=(n, self.d))
+            #gs = np.random.uniform(0, 4, size=(n_samples, n, self.d))
+            gs = np.random.normal(2, 1, size=(n_samples, n, self.d))
         else:
-            gs = draw_GP(n, self.d, sig, ell)
+            gs = draw_GP(n, self.d, n_samples, sig, ell)
             gs = gs - np.mean(gs, axis=0) + 2
-
         return gs
 
-    def gen_ginit(self, n):
-        gs = np.zeros((n, self.d))
+    def gen_ginit(self, n, n_samples):
+        gs = np.zeros((n_samples, n, self.d))
         return gs
 
     def noisy_conds(self, gs, variability):
@@ -68,10 +67,7 @@ class Euclid(Manif):
         return gs
 
     def distance(self, x, y):
-        return np.sum((x[:, None, ...] - y[None, ...])**2, axis=-1)
-
-
-# %% Torus class
+        return np.sum((x[:, :, None, ...] - y[:, None, ...])**2, axis=-1)
 
 
 class Torus(Manif):
@@ -85,19 +81,19 @@ class Torus(Manif):
     def norm(self, gs):
         return gs % (2 * np.pi)
 
-    def gen(self, n, ell=None, sig=10):
+    def gen(self, n, n_samples, ell=None, sig=10):
         """if l is none, draw random samples - otherwise draw from an RBF GP with ell = l"""
         if ell is None:
-            gs = np.random.uniform(0, 2 * np.pi, size=(n, self.d))
+            gs = np.random.uniform(0, 2 * np.pi, size=(n_samples, n, self.d))
         else:
-            gs = draw_GP(n, self.d, sig, ell)
+            gs = draw_GP(n, self.d, n_samples, sig, ell)
             gs = (gs + np.ceil(10 * sig) * 2 * np.pi) % (
                 2 * np.pi)  #put back on the torus
 
         return gs
 
     def gen_ginit(self, n):
-        gs = np.ones((n, self.d)) * np.pi
+        gs = np.ones((n_samples, n, self.d)) * np.pi
         return gs
 
     def noisy_conds(self, gs, variability):
@@ -105,7 +101,8 @@ class Torus(Manif):
         return self.norm(gs)
 
     def distance(self, x, y):
-        return np.sum(2 - 2 * np.cos(x[:, None, ...] - y[None, ...]), axis=-1)
+        return np.sum(2 - 2 * np.cos(x[:, :, None, ...] - y[:, None, ...]),
+                      axis=-1)
 
 
 # %% Sphere class
@@ -127,19 +124,19 @@ class Sphere(Manif):
         gs = gs + np.random.normal(0, np.std(gs) * variability, size=gs.shape)
         return self.norm(gs)
 
-    def gen(self, n, ell=None, sig=None):
+    def gen(self, n, n_samples, ell=None, sig=None):
         '''generate random points in spherical space according to the prior'''
-        gs = np.random.normal(0, 1, size=(n, self.d + 1))
+        gs = np.random.normal(0, 1, size=(n_samples, n, self.d + 1))
         return self.norm(gs)
 
-    def gen_ginit(self, n):
-        gs = np.zeros((n, self.d + 1))
+    def gen_ginit(self, n, n_samples):
+        gs = np.zeros((n_samples, n, self.d + 1))
         gs[:, 0] = 1
         return gs
 
     def distance(self, x, y):
-        4 * (1 - np.sum(x[:, None, ...] * y[None, ...], axis=-1)**2)
-        return 2 * (1 - np.sum(x[:, None, ...] * y[None, ...], axis=-1))
+        4 * (1 - np.sum(x[:, :, None, ...] * y[:, None, ...], axis=-1)**2)
+        return 2 * (1 - np.sum(x[:, :, None, ...] * y[:, None, ...], axis=-1))
 
 
 # %% SO(3) class
@@ -155,16 +152,16 @@ class So3(Manif):
 
     def norm(self, gs):
         gs = gs / norm(gs, axis=1, keepdims=True)
-        gs = gs * np.sign(gs[:, 0]).reshape(-1, 1)
+        gs = gs * np.sign(gs[..., :1])
         return gs
 
-    def gen(self, n, ell=None, sig=None):
+    def gen(self, n, n_samples, ell=None, sig=None):
         '''generate random points in spherical space according to the prior'''
-        gs = np.random.normal(0, 1, size=(n, self.d + 1))
+        gs = np.random.normal(0, 1, size=(n_samples, n, self.d + 1))
         return self.norm(gs)
 
-    def gen_ginit(self, n):
-        gs = np.zeros((n, self.d + 1))
+    def gen_ginit(self, n, n_samples):
+        gs = np.zeros((n_samples, n, self.d + 1))
         gs[:, 0] = 1
         return gs
 
@@ -173,7 +170,8 @@ class So3(Manif):
         return self.norm(gs)
 
     def distance(self, x, y):
-        return 4 * (1 - np.sum(x[:, None, ...] * y[None, ...], axis=-1)**2)
+        ds = 4 * (1 - np.sum(x[:, :, None, ...] * y[:, None, ...], axis=-1))
+        return ds
 
 
 # %% Product class
@@ -193,13 +191,13 @@ class Product(Manif):
         names = "x".join([m.name for m in self.manifs])
         return names
 
-    def gen(self, n, ell=None, sig=10):
-        gs = [m.gen(n, ell=ell, sig=sig) for m in self.manifs]
+    def gen(self, n, n_samples, ell=None, sig=10):
+        gs = [m.gen(n, n_samples, ell=ell, sig=sig) for m in self.manifs]
         return gs
 
-    def gen_ginit(self, n):
+    def gen_ginit(self, n, n_samples):
         '''generate a series of points at the origin'''
-        gs = [m.gen_ginit(n) for m in self.manifs]
+        gs = [m.gen_ginit(n, n_samples) for m in self.manifs]
         return gs
 
     def add_tangent_vector(self, gs, d, delta):
@@ -277,12 +275,12 @@ class Gen():
 
     def gen_gprefs(self):
         '''generate prefered directions for each neuron'''
-        self.gprefs = self.manifold.gen(self.n)
+        self.gprefs = self.manifold.gen(self.n, self.n_samples)
         return self.gprefs
 
     def gen_gconds(self, ell=None, sig=10):
         '''generate conditions for each neuron'''
-        self.gs = self.manifold.gen(self.m, ell=ell, sig=sig)
+        self.gs = self.manifold.gen(self.m, self.n_samples, ell=ell, sig=sig)
         return self.gs
 
     def noisy_conds(self):
@@ -316,40 +314,40 @@ class Gen():
         if not overwrite:
             gprefs_backup, gs_backup = self.gprefs, self.gs
 
-        for i in range(n_samples):
-            if gs_in is None:
-                if len(self.gs) == 0:
-                    self.gen_gconds(ell=ell, sig=sig)
-            else:
-                self.gs = gs_in
+        ### Generating G according to p(G)
+        if gs_in is None:
+            if len(self.gs) == 0:
+                self.gen_gconds(ell=ell, sig=sig)
+        else:
+            self.gs = gs_in
 
-            if gprefs_in is None:
-                if len(self.gprefs) == 0:
-                    self.gen_gprefs()
-            else:
-                self.gprefs = gprefs_in
+        if gprefs_in is None:
+            if len(self.gprefs) == 0:
+                self.gen_gprefs()
+        else:
+            self.gprefs = gprefs_in
 
-            ds_sqr = np.array(
-                self.manifold.distance_scaled(
-                    self.gprefs, self.gs, self.params['l']))  # nman x n x m
+        ### Generating according to p(F | G)
+        ds_sqr = np.array(
+            self.manifold.distance_scaled(
+                self.gprefs, self.gs,
+                self.params['l']))  # nman x n_samples x n x m
+        Ks = np.exp(-0.5 * ds_sqr)  # nman x n_samples x n x m
+        K = np.prod(Ks, axis=0)  # n_samples x n x m
+        fs = self.params['alpha'] * K + self.params['beta']
 
-            Ks = np.exp(-0.5 * ds_sqr)  # nman x n x m
-            K = np.prod(Ks, axis=0)  # n x m
-            fs = self.params['alpha'] * K + self.params['beta']
-
-            n, m = self.gprefs[0].shape[0], self.gs[0].shape[0]
-            self.Y = np.zeros((n, m, n_samples))
-
-            if mode == 'Gaussian':  # add noise
-                sigma = self.params['sigma'] if sigma is None else sigma
-                noise = np.random.normal(0, np.repeat(sigma, m, axis=1))
-                self.Y[:, :, i] = fs + noise
-            elif mode == 'Poisson':  # Poisson spiking
-                max_activity = np.mean(np.amax(fs, axis=1))
-                self.Y[:, :, i] = np.random.poisson(
-                    fs * rate / max_activity)  #draw poisson samples
-            else:
-                raise NotImplementedError('Synthetic data type not supported.')
+        ### Generating according to p(Y | F)
+        if mode == 'Gaussian':
+            # add Gaussian noise
+            sigma = self.params['sigma'] if sigma is None else sigma
+            noise = np.random.normal(0, np.repeat(sigma, self.m, axis=1))
+            self.Y = fs + noise
+        elif mode == 'Poisson':  # Poisson spiking
+            max_activity = np.mean(np.amax(fs, axis=1))
+            #draw poisson samples
+            self.Y = np.random.poisson(fs * rate / max_activity)
+        else:
+            raise NotImplementedError('Synthetic data type not supported.')
 
         if not overwrite:  # reset
             self.gprefs, self.gs = gprefs_backup, gs_backup
