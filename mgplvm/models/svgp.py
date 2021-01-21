@@ -141,9 +141,10 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         query = torch.unsqueeze(query.T, 0)  #add batch dimension
 
-        mu, v = self.predict(query, False)  #1xnxmx1, 1xnxm
-        mu = mu[0, :, :, 0]  #n x m,
-        v = v[0, :, :]  # nxm
+        mu, v = self.predict(query, False)  #1xnxm, 1xnxm
+        # remove batch dimension
+        mu = mu[0]  #n x m,
+        v = v[0]  # nxm
 
         #sample from p(f|u)
         dist = Normal(mu, torch.sqrt(v))
