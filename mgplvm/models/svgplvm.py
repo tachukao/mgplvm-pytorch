@@ -103,9 +103,8 @@ class SvgpLvm(nn.Module):
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
 
-        svgp_elbo = self.svgp.elbo(n_mc, data,
-                                   g.transpose(-1,
-                                               -2))  #(n_samples x n_mc x n)
+        #(n_samples x n_mc x n)
+        svgp_elbo = self.svgp.elbo(n_mc, data, g.transpose(-1, -2))
         if neuron_idxs is not None:
             svgp_elbo = svgp_elbo[..., neuron_idxs, :]
 

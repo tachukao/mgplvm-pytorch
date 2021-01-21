@@ -12,11 +12,13 @@ device = mgplvm.utils.get_device()
 
 def test_euclid(kmax=5, savefig=False):
     m = 100
+    n_samples = 1
     for d in [1, 2, 3]:
 
         manif = Euclid(m, d)
         sigmas = 10**np.linspace(-2, 1, num=m).reshape(m, 1)
-        q = mgplvm.rdist.ReLie(manif, m, sigma=torch.tensor(sigmas)).mvn()
+        q = mgplvm.rdist.ReLie(manif, m, n_samples,
+                               sigma=torch.tensor(sigmas)).mvn()
         x = q.rsample(torch.Size([200]))
         lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
         H = -lq.mean(dim=0).detach().numpy()
@@ -42,12 +44,14 @@ def test_euclid(kmax=5, savefig=False):
 def test_torus(kmax=5, savefig=False):
 
     m = 100
+    n_samples = 2
 
     for d in [1, 2, 3]:
 
         manif = Torus(m, d)
         sigmas = 10**np.linspace(-2, 1, num=m).reshape(m, 1)
-        q = mgplvm.rdist.ReLie(manif, m, sigma=torch.tensor(sigmas)).mvn()
+        q = mgplvm.rdist.ReLie(manif, m, n_samples,
+                               sigma=torch.tensor(sigmas)).mvn()
         x = q.rsample(torch.Size([200]))
         lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
         H = -lq.mean(dim=0).detach().numpy()
@@ -77,8 +81,10 @@ def test_torus(kmax=5, savefig=False):
 def test_so3(kmax=5, savefig=False):
     m = 100
     manif = So3(m)
+    n_samples = 2
     sigmas = 10**np.linspace(-2, 1, num=m).reshape(m, 1)
-    q = mgplvm.rdist.ReLie(manif, m, sigma=torch.tensor(sigmas)).mvn()
+    q = mgplvm.rdist.ReLie(manif, m, n_samples,
+                           sigma=torch.tensor(sigmas)).mvn()
     x = q.rsample(torch.Size([200]))
     lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
     H = -lq.mean(dim=0).detach().numpy()
@@ -103,10 +109,12 @@ def test_so3(kmax=5, savefig=False):
 
 def test_s3(kmax=5, savefig=False):
     m = 100
+    n_samples = 2
 
     manif = S3(m)
     sigmas = 10**np.linspace(-2, 1, num=m).reshape(m, 1)
-    q = mgplvm.rdist.ReLie(manif, m, sigma=torch.tensor(sigmas)).mvn()
+    q = mgplvm.rdist.ReLie(manif, m, n_samples,
+                           sigma=torch.tensor(sigmas)).mvn()
 
     x = q.rsample(torch.Size([200]))
     lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)

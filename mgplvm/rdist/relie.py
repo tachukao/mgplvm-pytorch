@@ -39,8 +39,8 @@ class ReLieBase(Rdist):
 
     def mvn(self, gamma=None):
         gamma = self.lat_gamma() if gamma is None else gamma
-        m = gamma.shape[0]
-        mu = torch.zeros(m, self.d).to(gamma.device)
+        n_samples, m, _, _ = gamma.shape
+        mu = torch.zeros(n_samples, m, self.d).to(gamma.device)
         return MultivariateNormal(mu, scale_tril=gamma)
 
     def sample(self, size, Y=None, batch_idxs=None, kmax=5):

@@ -21,7 +21,7 @@ def test_svgp_runs():
     n = 8  # number of neurons
     m = 10  # number of conditions / time points
     n_z = 5  # number of inducing points
-    n_samples = 1  # number of samples
+    n_samples = 2  # number of samples
     gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25)
     sig0 = 1.5
     l = 0.4
