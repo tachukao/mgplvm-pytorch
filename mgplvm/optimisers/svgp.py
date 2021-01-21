@@ -8,55 +8,32 @@ import torch
 from torch import optim, Tensor
 from torch.optim.lr_scheduler import LambdaLR
 from typing import List
+import itertools
 
 
 def sort_params(model, hook):
     '''apply burnin period to Sigma_Q and alpha^2
     allow for masking of certain conditions for use in crossvalidation'''
 
-    # SVGP Parameters
-    # - lat_dist
-    # - lprior
-    # - svgp parameters (includes z, likelihood, kernel)
-    # - z parameters
-    # - likelihood parameters
-    # - kernel parameters
-    gmu_parameters = model.lat_dist.f.gmu_parameters()
-    gamma_parameters = model.lat_dist.f.gamma_parameters()
-    assert (gmu_parameters is not None)
-    assert (gamma_parameters is not None)
-    params = [[model.svgp.q_mu, model.svgp.q_sqrt] +
-              list(model.lprior.parameters()) + list(model.z.parameters()) +
-              list(model.likelihood.parameters()) + gmu_parameters,
-              gamma_parameters + list(model.kernel.parameters())]
+    for prm in model.lat_dist.parameters():
+        prm.register_hook(hook)
 
+    params0 = list(
+        itertools.chain.from_iterable([
+            model.z.parameters(),
+            model.likelihood.parameters(),
+            model.lprior.parameters(),
+            model.lat_dist.gmu_parameters(),
+            model.kernel.parameters(),
+            [model.svgp.q_mu, model.svgp.q_sqrt],
+        ]))
 
+    params1 = list(
+        itertools.chain.from_iterable(
+            [model.lat_dist.concentration_parameters()]))
+
+    params = [params0, params1]
     return params
-    #print(dict(model.named_parameters()).keys())
-
-    #lat_params = list(model.lat_dist.parameters())
-    #params: List[List[Tensor]] = [[], []]
-    #for name, param in model.named_parameters():
-    #    if (param.shape == lat_params[1].shape) and torch.all(
-    #            param == lat_params[1]):
-    #        param.register_hook(hook)  # option to mask gradients
-    #        params[1].append(param)
-    #    elif (param.shape == lat_params[0].shape) and torch.all(
-    #            param == lat_params[0]):
-    #        param.register_hook(hook)  # option to mask gradients
-    #        params[0].append(param)
-    #    else:
-    #        # add ell to group 2
-    #        if (('QuadExp' in model.kernel.name)
-    #                and (param.shape == model.kernel.ell.shape)
-    #                and torch.all(param == model.kernel.ell)):
-    #            params[1].append(param)
-    #            print(name)
-    #            print(torch.mean(param))
-    #        else:
-    #            params[0].append(param)
-
-    #return params
 
 
 def print_progress(model,
@@ -93,9 +70,9 @@ def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
     if batch_pool is None:
         idxs = np.arange(data_size)
     else:
-        idxs = copy.copy(batch_pool)
+        idxs = batch_pool
     if model.lprior.name in ["Brownian", "ARP"]:
-        # if prior is Brownian, then batches have to be contiguous
+        # if prior is Brownian or ARP, then batches have to be contiguous
         i0 = np.random.randint(1, data_size - 1)
         if i0 < batch_size / 2:
             batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
@@ -106,12 +83,11 @@ def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
                                         2)):int(round(i0 + batch_size / 2))]
         #print(len(batch_idxs))
         return batch_idxs
-
-        #start = np.random.randint(data_size - batch_size)
-        #return idxs[start:start + batch_size]
     else:
-        np.random.shuffle(idxs)
-        return idxs[0:batch_size]
+        if batch_size is None:
+            return idxs
+        else:
+            return np.random.choice(idxs, size = batch_size, replace = False)
 
 
 def fit(Y,

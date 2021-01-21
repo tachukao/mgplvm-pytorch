@@ -68,6 +68,12 @@ class ReLieBase(Rdist):
         g = self.manif.gmul(gmu, gtilde)
         return g, lq
 
+    def gmu_parameters(self):
+        return self.f.gmu_parameters()
+
+    def concentration_parameters(self):
+        return self.f.concentration_parameters()
+
 
 class _F(Module):
     def __init__(self,
@@ -123,7 +129,7 @@ class _F(Module):
     def gmu_parameters(self):
         return [self.gmu]
 
-    def gamma_parameters(self):
+    def concentration_parameters(self):
         return [self.gamma]
 
 

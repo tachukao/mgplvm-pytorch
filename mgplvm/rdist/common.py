@@ -27,3 +27,11 @@ class Rdist(Module, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def sample(self, size, Y, batch_idxs, kmax) -> Tuple[Tensor, Tensor]:
         pass
+
+    @abc.abstractmethod
+    def gmu_parameters(self):
+        pass
+
+    @abc.abstractmethod
+    def concentration_parameters(self):
+        pass
