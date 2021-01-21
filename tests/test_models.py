@@ -15,6 +15,7 @@ else:
 def test_svgp_runs():
     """
     test that svgp runs without explicit check for correctness
+    also test that burda log likelihood runs and is smaller than elbo
     """
     d = 1  # dims of latent space
     n = 5  # number of neurons
@@ -51,7 +52,15 @@ def test_svgp_runs():
                                         n_mc=64,
                                         lrate=2E-2,
                                         print_every=1000)
-
+    
+    
+    ### test burda log likelihood ###
+    LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
+    svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
+    elbo = (svgp_elbo-kl)/(Y.shape[0]*Y.shape[1])
+    
+    assert elbo < LL
+    
 
 if __name__ == '__main__':
     test_svgp_runs()
