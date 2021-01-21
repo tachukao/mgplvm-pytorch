@@ -108,32 +108,28 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         n_mc : int
             number of monte carlo samples
         y : Tensor
-            data tensor with dimensions (n x m x n_samples)
+            data tensor with dimensions (n x m)
         x : Tensor (single kernel) or Tensor list (product kernels)
             input tensor(s) with dimensions (n_mc x d x m)
 
         Returns
         -------
-        evidence lower bound : torch.Tensor (n_mc x n x n_samples)
+        evidence lower bound : torch.Tensor (n_mc x n)
 
         Notes
         -----
         Implementation largely follows derivation of the ELBO presented in `here <https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html>`_.
         """
 
-        n_samples = y.shape[2]
         kernel = self.kernel
         n_inducing = self.n_inducing  # inducing points
         prior_kl = self.prior_kl()  # prior KL(q(u) || p(u)) (1 x n)
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
 
-        #(n_mc, n, n_samples)
-        lik = self.likelihood.variational_expectation(n_samples, y, f_mean,
-                                                      f_var)
-        #print(prior_kl.shape)
-        #prior_kl = prior_kl()
-        svgp_elbo = lik - prior_kl.mean(0)[None, :, None]
+        #(n_mc, n)
+        lik = self.likelihood.variational_expectation(y, f_mean, f_var)
+        svgp_elbo = lik - prior_kl
         return svgp_elbo
 
     def tuning(self, query, n_b=1000, square=False):
@@ -241,7 +237,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             v2 = torch.square(alpha).sum(-2)
             v = kxx + v1 - v2
 
-        return mu, v
+        return mu.squeeze(-1), v
 
 
 class Svgp(SvgpBase):
