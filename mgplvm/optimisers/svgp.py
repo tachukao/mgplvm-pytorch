@@ -87,7 +87,7 @@ def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
         if batch_size is None:
             return idxs
         else:
-            return np.random.choice(idxs, size = batch_size, replace = False)
+            return np.random.choice(idxs, size=batch_size, replace=False)
 
 
 def fit(Y,
@@ -117,7 +117,10 @@ def fit(Y,
     def fburn(x):
         return 1 - np.exp(-x / (3 * burnin))
 
-    n, m, _ = Y.shape  # neurons, conditions, samples
+    if len(Y.shape) > 2:
+        _, n, m = Y.shape  # samples, neurons, conditions
+    else:
+        n, m = Y.shape  # neuron x conditions
     data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
     ts = ts if ts is None else ts.to(device)
     data_size = m if batch_pool is None else len(batch_pool)  #total conditions

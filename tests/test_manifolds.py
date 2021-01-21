@@ -27,7 +27,7 @@ def test_so3_dimensions():
 
 def test_manifs_runs():
     m, d, n, n_z = 10, 3, 5, 5
-    Y = np.random.normal(0, 1, (n, m, 1))
+    Y = np.random.normal(0, 1, (n, m))
     for i, manif_type in enumerate(
         [manifolds.Torus, manifolds.So3, manifolds.S3]):
         manif = manif_type(m, d)
@@ -64,4 +64,3 @@ if __name__ == '__main__':
     test_torus_dimensions()
     test_so3_dimensions()
     test_manifs_runs()
-    print('Tested manifolds')

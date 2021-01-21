@@ -24,19 +24,19 @@ def test_GP_prior():
                              sigma=0.8,
                              beta=0.1)
     sig0 = 1.5
-    Y = gen.gen_data(ell=25, sig=1)
-
+    Y = gen.gen_data(ell=25, sig=1)[0]
     # specify manifold, kernel and rdist
     manif = mgplvm.manifolds.Euclid(m, d)
+    alpha = np.std(Y, axis=1)
+    sigma = np.std(Y, axis=1)  # initialize noise
+    kernel = mgplvm.kernels.QuadExp(n, manif.distance, alpha=alpha)
 
     #lat_dist = mgplvm.rdist.MVN(m, d, sigma=sig0)
     lat_dist = mgplvm.rdist.ReLie(manif,
                                   m,
                                   sigma=sig0,
                                   initialization='random',
-                                  Y=Y[:, :, 0])
-    alpha = np.mean(np.std(Y, axis=1), axis=1)
-    kernel = mgplvm.kernels.QuadExp(n, manif.distance, alpha=alpha)
+                                  Y=Y)
 
     ###construct prior
     lprior_kernel = mgplvm.kernels.QuadExp(d,
@@ -46,7 +46,6 @@ def test_GP_prior():
     #lprior = lpriors.Gaussian(manif)
 
     # generate model
-    sigma = np.mean(np.std(Y, axis=1), axis=1)  # initialize noise
     likelihood = mgplvm.likelihoods.Gaussian(n, variance=np.square(sigma))
     z = manif.inducing_points(n, n_z)
     mod = mgplvm.models.SvgpLvm(n, z, kernel, likelihood, lat_dist,
@@ -69,22 +68,22 @@ def test_GP_prior():
     ### test that two ways of computing the prior agree ###
     data = torch.tensor(Y).to(device)
     ts = torch.arange(m).to(device)
-    _, _, n_samples = data.shape  #n x mx x n_samples
     g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
 
     x = g  #input to prior
 
     #### naive computation ####
     LLs1 = [
-        mod.lprior.svgp.elbo(1, x[i, :, :, None].permute(1, 0, 2),
-                             ts.reshape(1, 1, -1)) for i in range(x.shape[0])
+        mod.lprior.svgp.elbo(1, x[i].transpose(-1, -2), ts.reshape(1, 1, -1))
+        for i in range(x.shape[0])
     ]
     elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
     #### try to batch things ####
-    elbo2_b = mod.lprior.svgp.elbo(x.shape[0], x.permute(2, 1, 0),
+    elbo2_b = mod.lprior.svgp.elbo(1,
+                                   x.transpose(-1, -2).reshape(-1, m),
                                    ts.reshape(1, 1, -1))
-    elbo2_b = elbo2_b.sum(0).sum(0)
+    elbo2_b = elbo2_b.reshape(n_mc, d).sum(-1)
     print(elbo1_b.shape, elbo2_b.shape)
 
     ### print comparison ###
@@ -94,21 +93,22 @@ def test_GP_prior():
     print(elbo1_b[:5])
     print(elbo2_b[:5])
 
+
 def test_ARP_runs():
     m, d, n, n_z, p = 10, 3, 5, 5, 1
-    Y = np.random.normal(0, 1, (n, m, 1))
+    Y = np.random.normal(0, 1, (n, m))
     for i, manif_type in enumerate(
         [manifolds.Euclid, manifolds.Torus, manifolds.So3]):
         manif = manif_type(m, d)
         print(manif.name)
-        lat_dist = mgplvm.rdist.ReLie(manif,
-                                      m,
-                                      sigma=0.4,
-                                      diagonal=(True if i in [0,1] else False))
+        lat_dist = mgplvm.rdist.ReLie(
+            manif, m, sigma=0.4, diagonal=(True if i in [0, 1] else False))
         kernel = mgplvm.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgplvm.likelihoods.Gaussian(n)
-        lprior = mgplvm.lpriors.ARP(p, manif, diagonal=(True if i in [0,1] else False))
+        lprior = mgplvm.lpriors.ARP(p,
+                                    manif,
+                                    diagonal=(True if i in [0, 1] else False))
         z = manif.inducing_points(n, n_z)
         mod = mgplvm.models.SvgpLvm(n,
                                     z,
@@ -126,7 +126,7 @@ def test_ARP_runs():
                                             n_mc=64,
                                             optimizer=optim.Adam,
                                             print_every=1000)
-    
+
 
 if __name__ == '__main__':
     test_GP_prior()
