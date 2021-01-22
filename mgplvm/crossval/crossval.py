@@ -66,10 +66,12 @@ def train_cv(mod,
         T1 = np.random.permutation(np.arange(m))[:nt_train]
     if N1 is None: # random shuffle of neurons
         N1 = np.random.permutation(np.arange(n))[:nn_train]
-    Y1, Y2 = Y[:, :, T1], Y[:, N1, :]
     split = {'Y': Y, 'N1': N1, 'T1': T1}
     
     train_ps1 = update_params(train_ps, batch_pool = T1)
+    
+    print(Y.shape, mod.lat_dist.prms[0].shape, mod.lat_dist.prms[1].shape)
+    
     _ = train_model(mod, Y, device, train_ps1)
     
     ### construct a mask for some of the time points ####
@@ -106,7 +108,7 @@ def test_cv(mod, split, device, n_mc = 32, Print = False):
     latents = mod.lat_dist.prms[0].detach()[:, T2, ...] #latent means (ntrial, T2, d)
     query = latents.transpose(-1,-2) #(ntrial, d, m)
     Ypred, var = mod.svgp.predict(query[None, ...], False)
-    Ypred = Ypred.detach().cpu().numpy()[0, :, N2, :] #(ntrial, N2, T2)
+    Ypred = Ypred.detach().cpu().numpy()[0][:, N2, :] #(ntrial, N2, T2)
     MSE = np.mean((Ypred - Ytest)**2)
     
     var_cap = 1-np.var(Ytest - Ypred)/np.var(Ytest)
