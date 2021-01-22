@@ -70,7 +70,7 @@ def test_kernels_run():
                       sigma=0.8,
                       beta=0.1)
     sig0 = 1.5
-    Y = gen.gen_data(ell=25, sig=1)
+    Y = gen.gen_data(ell=25, sig=1, n_samples = n_samples)
 
     kernels = [
         QuadExp(n, Euclid.distance),

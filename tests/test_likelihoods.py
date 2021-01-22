@@ -23,7 +23,7 @@ def test_likelihood_runs():
     n_z = 5  # number of inducing points
     n_samples = 2  # number of samples
     gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25)
-    Y = gen.gen_data()
+    Y = gen.gen_data(n_samples = n_samples)
     Y = np.round(Y - np.amin(Y))
     print(Y.shape)
 
