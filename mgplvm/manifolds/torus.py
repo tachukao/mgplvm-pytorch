@@ -26,19 +26,21 @@ class Torus(Manifold):
         self.lprior_const = torch.tensor(-self.d * np.log(2 * np.pi))
 
     @staticmethod
-    def initialize(initialization, m, d, Y):
+    def initialize(initialization, n_samples, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
         if initialization == 'pca':
             #Y is N x m; reduce to d x m
             if Y is None:
                 print('user must provide data for PCA initialization')
             else:
+                n = Y.shape[1]
                 pca = decomposition.PCA(n_components=d)
-                mudata = pca.fit_transform(Y[:, :, 0].T)  #m x d
-                #constrain to injectivity radius
+                Y = Y.transpose(0, 2, 1).reshape(n_samples*m, n)
+                mudata = pca.fit_transform(Y)  #m*n_samples x d
                 mudata *= 2 * np.pi / (np.amax(mudata) - np.amin(mudata))
+                mudata = mudata.reshape(n_samples, m, d)
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
-        mudata = torch.randn(m, d) * 0.1
+        mudata = torch.randn(n_samples, m, d) * 0.1
         return mudata
 
     def inducing_points(self, n, n_z, z=None):
@@ -46,7 +48,7 @@ class Torus(Manifold):
         return InducingPoints(n, self.d, n_z, z=z)
 
     def lprior(self, g: Tensor) -> Tensor:
-        return self.lprior_const * torch.ones(g.shape[:2])
+        return self.lprior_const * torch.ones(g.shape[:-1])
 
     # log of the uniform prior (negative log volume) for T^d
     @property
@@ -77,10 +79,11 @@ class Torus(Manifold):
         ks = np.arange(-kmax, kmax + 1)
         zs = np.meshgrid(*(ks for _ in range(d)))
         zs = np.stack([z.flatten() for z in zs]).T * 2. * np.pi
-        zs = torch.from_numpy(zs).float()
+        zs = torch.tensor(zs, dtype=torch.get_default_dtype())
         zs = zs.to(x.device)  # meshgrid shape (2kmax+1)^n
-        y = x + zs[:, None, None, ...]  # meshgrid x n_b x m x d
-        lp = torch.logsumexp(log_base_prob(y), dim=0)  # n_b x m
+        y = x + zs[:, None, None, None,
+                   ...]  # meshgrid x n_b x n_samples, m x d
+        lp = torch.logsumexp(log_base_prob(y), dim=0)  # n_b x n_samples, m
         return lp
 
     @staticmethod

@@ -108,13 +108,13 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         n_mc : int
             number of monte carlo samples
         y : Tensor
-            data tensor with dimensions (n x m)
+            data tensor with dimensions (n_samples x n x m)
         x : Tensor (single kernel) or Tensor list (product kernels)
-            input tensor(s) with dimensions (n_mc x d x m)
+            input tensor(s) with dimensions (n_mc x n_samples x d x m)
 
         Returns
         -------
-        evidence lower bound : torch.Tensor (n_mc x n)
+        evidence lower bound : torch.Tensor (n_mc x n_samples x n)
 
         Notes
         -----
@@ -127,7 +127,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
 
-        #(n_mc, n)
+        #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
         svgp_elbo = lik - prior_kl
         return svgp_elbo
@@ -135,20 +135,20 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
     def tuning(self, query, n_b=1000, square=False):
         '''
         query is mxd
-        return n_b samples from the full model (n_b x n x m)
+        return n_b samples from the full model (n_b x n_samples x n x m)
         if square, the outputs are squared (useful e.g. when fitting sqrt spike counts with a Gaussian likelihood)
         '''
 
         query = torch.unsqueeze(query.T, 0)  #add batch dimension
 
-        mu, v = self.predict(query, False)  #1xnxm, 1xnxm
+        mu, v = self.predict(query, False)  #1xn_samplesxnxm, 1xn_samplesxnxm
         # remove batch dimension
         mu = mu[0]  #n x m,
         v = v[0]  # nxm
 
         #sample from p(f|u)
         dist = Normal(mu, torch.sqrt(v))
-        f_samps = dist.sample((n_b, ))  #n_b x n x m
+        f_samps = dist.sample((n_b, ))  #n_mc x n_samples x n x m
 
         #sample from observation function p(y|f)
         y_samps = self.likelihood.sample(f_samps)
@@ -164,7 +164,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         Parameters
         ----------
         x : Tensor (single kernel) or Tensor list (product kernels)
-            test input tensor(s) with dimensions (n_b x d x m)
+            test input tensor(s) with dimensions (n_b x n_samples x d x m)
         full_cov : bool
             returns full covariance if true otherwise returns the diagonal
 
@@ -188,53 +188,53 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         # see ELBO for explanation of _expand
         z = self._expand_z(z)
         x = self._expand_x(x)
-        kzz = kernel(z, z)  # dims: (1 x n x n_inducing x n_inducing)
-        kzx = kernel(z, x)  # dims: (1 x n x n_inducing x m)
+        kzz = kernel(z, z)  # dims: (n_samples x n x n_inducing x n_inducing)
+        kzx = kernel(z, x)  # dims: (1 x n_samples x n x n_inducing x m)
         e = torch.eye(self.n_inducing,
                       dtype=torch.get_default_dtype()).to(kzz.device)
 
         # [ l ] has dims: (1 x n x n_inducing x n_inducing)
         l = torch.cholesky(kzz + (jitter * e), upper=False)
-        # [ alpha ] has dims: (n_b x n x n_inducing x m)
+        # [ alpha ] has dims: (n_b x n_samples x n x n_inducing x m)
         alpha = torch.triangular_solve(kzx, l, upper=False)[0]
-        alphat = alpha.permute(0, 1, 3, 2)
+        alphat = alpha.transpose(-1, -2)
 
         if self.whiten:
-            # [ mu ] has dims : (n_b x n x m x 1)
+            # [ mu ] has dims : (n_b x n_samples x n x m x 1)
             mu = torch.matmul(alphat, q_mu)
         else:
-            # [ beta ] has dims : (n_b x n x n_inducing x m)
+            # [ beta ] has dims : (n_b x n_samples x n x n_inducing x m)
             beta = torch.triangular_solve(alpha,
-                                          l.permute(0, 1, 3, 2),
+                                          l.transpose(-1, -2),
                                           upper=True)[0]
-            # [ betat ] has dims : (n_b x n x m x n_inducing)
-            betat = beta.permute(0, 1, 3, 2)
+            # [ betat ] has dims : (n_b x n_samples x n x m x n_inducing)
+            betat = beta.transpose(-1, -2)
             mu = torch.matmul(betat, q_mu)
 
         if full_cov:
-            # [ tmp1 ] has dims : (n_b x n x m x n_inducing)
+            # [ tmp1 ] has dims : (n_b x n_samples, n x m x n_inducing)
             if self.whiten:
                 tmp1 = torch.matmul(alphat, q_sqrt)
             else:
                 tmp1 = torch.matmul(betat, q_sqrt)
-            # [ v1 ] has dims : (n_b x n x m x m)
-            v1 = torch.matmul(tmp1, tmp1.permute(0, 1, 3, 2))
-            # [ v2 ] has dims : (n_b x n x m x m)
+            # [ v1 ] has dims : (n_b x n_samples x n x m x m)
+            v1 = torch.matmul(tmp1, tmp1.transpose(-1, -2))
+            # [ v2 ] has dims : (n_b x n_samples x n x m x m)
             v2 = torch.matmul(alphat, alphat)
-            # [ kxx ] has dims : (n_b x n x m x m)
+            # [ kxx ] has dims : (n_b x n_samples x n x m x m)
             kxx = kernel(x, x)
             v = kxx + v1 - v2
         else:
-            # [ kxx ] has dims : (n_b x n x m)
+            # [ kxx ] has dims : (n_b x n_samples x n x m)
             kxx = kernel.diagK(x)
-            # [ tmp1 ] has dims : (n_b x n x m x n_inducing)
+            # [ tmp1 ] has dims : (n_b x n_samples x n x m x n_inducing)
             if self.whiten:
                 tmp1 = torch.matmul(alphat, q_sqrt)
             else:
                 tmp1 = torch.matmul(betat, q_sqrt)
-            # [ v1 ] has dims : (n_b x n x m)
+            # [ v1 ] has dims : (n_b x n_samples x n x m)
             v1 = torch.square(tmp1).sum(-1)
-            # [ v2 ] has dims : (n_b x n x m)
+            # [ v2 ] has dims : (n_b x n_samples x n x m)
             v2 = torch.square(alpha).sum(-2)
             v = kxx + v1 - v2
 
@@ -295,7 +295,7 @@ class Svgp(SvgpBase):
         return z
 
     def _expand_x(self, x: Tensor) -> Tensor:
-        x = x[:, None, ...]
+        x = x[:, :, None, ...]
         return x
 
 

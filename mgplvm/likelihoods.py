@@ -79,28 +79,28 @@ class Gaussian(Likelihood):
         Parameters
         ----------
         y : Tensor
-            number of MC samples (n x m)
-        f_mu : Tensor
-            GP mean (n_mc x n x m)
-        f_var : Tensor
-            GP diagonal variance (n_mc x n x m)
+            number of MC samples (n_samples x n x m)
+        fmu : Tensor
+            GP mean (n_mc x n_samples x n x m)
+        fvar : Tensor
+            GP diagonal variance (n_mc x n_samples x n x m)
 
         Returns
         -------
         Log likelihood : Tensor
-            SVGP likelihood term per MC, neuron, sample (n_mc x n)
+            SVGP likelihood term per MC, neuron, sample (n_mc x n_samples x n)
         """
-        n_mc, m = fmu.shape[0], fmu.shape[2]
+        n_mc, m = fmu.shape[0], fmu.shape[-1]
         variance = self.prms  #(n)
         #print(variance.shape)
         ve1 = -0.5 * log2pi * m  #scalar
         ve2 = -0.5 * torch.log(variance) * m  #(n)
-        ve3 = -0.5 * torch.square(y - fmu) / variance[...,
-                                                      None]  #(n_mc x n x m )
-        ve4 = -0.5 * fvar / variance[..., None]  #(n_mc x n x m)
+        ve3 = -0.5 * torch.square(y - fmu) / variance[
+            ..., None]  #(n_mc x n_samples x n x m )
+        ve4 = -0.5 * fvar / variance[..., None]  #(n_mc x n_samples x n x m)
 
         #print(ve1.shape, ve2.shape, ve3.shape, ve4.shape)
-        #(n_mc x n)
+        #(n_mc x n_samples x n)
         return ve1 + ve2 + ve3.sum(-1) + ve4.sum(-1)
 
 
@@ -129,8 +129,8 @@ class Poisson(Likelihood):
         return self.c, self.d
 
     def log_prob(self, lamb, y):
-        #lambd: (n_mc, n, m, n_gh)
-        #y: (n, m)
+        #lambd: (n_mc, n_samples x n, m, n_gh)
+        #y: (n, n_samples x m)
         p = dists.Poisson(lamb)
         return p.log_prob(y[None, ..., None])
 
@@ -147,11 +147,11 @@ class Poisson(Likelihood):
         Parameters
         ----------
         y : Tensor
-            number of MC samples (n x m)
-        f_mu : Tensor
-            GP mean (n_mc x n x m)
-        f_var : Tensor
-            GP diagonal variance (n_mc x n x m)
+            number of MC samples (n_samples x n x m)
+        fmu : Tensor
+            GP mean (n_mc x n_samples x n x m)
+        fvar : Tensor
+            GP diagonal variance (n_mc x n_samples x n x m)
 
         Returns
         -------
@@ -165,8 +165,8 @@ class Poisson(Likelihood):
             n_mc = fmu.shape[0]
             v1 = (y * fmu) - (self.binsize * torch.exp(fmu + 0.5 * fvar))
             v2 = (y * np.log(self.binsize) - torch.lgamma(y + 1))
-            #v1: (n_b x n x m)  v2: (n x m) (per mc sample)
-            lp = v1.sum(-1) + v2.sum(-1)[None, ...]
+            #v1: (n_b x n_samples x n x m)  v2: (n_samples x n x m) (per mc sample)
+            lp = v1.sum(-1) + v2.sum(-1)
             return lp
 
         else:
@@ -227,9 +227,9 @@ class NegativeBinomial(Likelihood):
         return y_samps
 
     def log_prob(self, total_count, rate, y):
-        #total count: (n) -> (n_mc, n, m, n_gh)
-        #rate: (n_mc, n, m, n_gh)
-        #y: (n, m)
+        #total count: (n) -> (n_mc, n_samples, n, m, n_gh)
+        #rate: (n_mc, n_samples, n, m, n_gh)
+        #y: (n_samples, n, m)
         p = dists.NegativeBinomial(total_count[None, ..., None, None],
                                    logits=rate)
         return p.log_prob(y[None, ..., None])
@@ -239,16 +239,16 @@ class NegativeBinomial(Likelihood):
         Parameters
         ----------
         y : Tensor
-            number of MC samples (n x m)
+            number of MC samples (n_samples x n x m)
         fmu : Tensor
-            GP mean (n_mc x n x m)
+            GP mean (n_mc x n_samples x n x m)
         fvar : Tensor
-            GP diagonal variance (n_mc x n x m)
+            GP diagonal variance (n_mc x n_samples x n x m)
 
         Returns
         -------
         Log likelihood : Tensor
-            SVGP likelihood term per MC, neuron, sample (n_mc x n)
+            SVGP likelihood term per MC, neuron, sample (n_mc x n_samples x n)
         """
         total_count, c, d = self.prms
         fmu = c[..., None] * fmu + d[..., None]
@@ -265,7 +265,7 @@ class NegativeBinomial(Likelihood):
         locs = self.inv_link(torch.sqrt(2. * fvar) * locs +
                              fmu) * self.binsize  #coordinate transform
         #print(total_count.shape, locs.shape)
-        lp = self.log_prob(total_count, locs, y)  #(n_mc x n x m, n_gh)
+        lp = self.log_prob(total_count, locs, y)  #(n_mc x n_samples x n x m, n_gh)
 
         #print(lp.shape, ws.shape, (lp * ws).shape)
         return 1 / np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-1)

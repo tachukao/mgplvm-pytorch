@@ -33,11 +33,11 @@ class S3(Manifold):
             special.loggamma(2) - np.log(2) - 2 * np.log(np.pi))
 
     @staticmethod
-    def initialize(initialization, m, d, Y):
+    def initialize(initialization, n_samples, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
         # initialize at identity
-        mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]),
-                              dtype=torch.get_default_dtype())
+        mudata = torch.zeros(n_samples, m, 4)
+        mudata[:, :, 0] = 1
         return mudata
 
     def inducing_points(self, n, n_z, z=None):
@@ -56,7 +56,7 @@ class S3(Manifold):
         return 'S(' + str(self.d) + ')'
 
     def lprior(self, g):
-        return self.lprior_const * torch.ones(g.shape[:2])
+        return self.lprior_const * torch.ones(g.shape[:-1])
 
     @staticmethod
     def parameterise(x) -> Tensor:
@@ -106,7 +106,7 @@ class S3(Manifold):
         zs = np.stack([z.flatten() for z in zs
                        ]).T * 2 * np.pi  #need to add multiples of 2pi
         zs = torch.tensor(zs, dtype=torch.get_default_dtype()).to(theta.device)
-        theta = theta + zs[:, None, None, ...]  # (nk, n_b, m, 1)
+        theta = theta + zs[:, None, None, None, ...]  # (nk, n_b, n_samples, m, 1)
         x = theta * v
 
         # |J|->1 as phi -> 0; cap at 1e-5 for numerical stability

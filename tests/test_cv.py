@@ -12,7 +12,7 @@ else:
     device = torch.device("cpu")
 
 
-def test_svgp_runs():
+def test_cv_runs():
     """
     test that svgp runs without explicit check for correctness
     also test that burda log likelihood runs and is smaller than elbo
@@ -20,8 +20,8 @@ def test_svgp_runs():
     d = 1  # dims of latent space
     n = 8  # number of neurons
     m = 10  # number of conditions / time points
-    n_z = 5  # number of inducing points
-    n_samples = 2  # number of samples
+    n_z = 6  # number of inducing points
+    n_samples = 1  # number of samples
     gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25, n_samples=n_samples)
     Y = gen.gen_data()
     # specify manifold, kernel and rdist
@@ -37,32 +37,12 @@ def test_svgp_runs():
     mod = models.SvgpLvm(n, z, kernel, lik, lat_dist, lprior,
                          whiten=True).to(device)
 
-    # train model
-    trained_model = optimisers.svgp.fit(Y,
-                                        mod,
-                                        device,
-                                        optimizer=optim.Adam,
-                                        max_steps=5,
-                                        burnin=5 / 2E-2,
-                                        n_mc=64,
-                                        lrate=2E-2,
-                                        print_every=1000)
+    ### run cv ###
+    train_ps = mgplvm.crossval.training_params(lrate = 5e-2, burnin = 20, ts=None, batch_size = None,
+                                                  max_steps = 10, n_mc = 32)
+    mod, split = mgplvm.crossval.train_cv(mod,Y,device,train_ps,test = False)
+    _ = mgplvm.crossval.test_cv(mod, split, device, Print = True)
 
-    ### test burda log likelihood ###
-    LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
-    svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
-    elbo = (svgp_elbo - kl) / np.prod(Y.shape)
-    
-    assert elbo < LL
-    
-    #### test that batching works ####
-    trained_model = optimisers.svgp.fit(Y,
-                                        mod,
-                                        device,
-                                        optimizer=optim.Adam,
-                                        max_steps=5,
-                                        n_mc=64,
-                                        batch_size = int(np.round(m/2, 0)))
 
 if __name__ == '__main__':
-    test_svgp_runs()
+    test_cv_runs()
