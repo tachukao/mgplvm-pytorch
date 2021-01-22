@@ -50,7 +50,7 @@ def print_progress(model,
         mu = model.lat_dist.lat_gmu(Y, batch_idxs).data.cpu().numpy()
         gamma = model.lat_dist.lat_gamma(Y, batch_idxs).diagonal(
             dim1=-1, dim2=-2).data.cpu().numpy()
-        mu_mag = np.mean(np.sqrt(gamma))
+        mu_mag = np.mean(np.sqrt(mu**2))
         sig = np.median(np.concatenate([np.diag(sig) for sig in gamma]))
         msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
                '| |mu| {:.3f} | sig {:.3f} |').format(i,

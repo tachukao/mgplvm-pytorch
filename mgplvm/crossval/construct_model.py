@@ -6,10 +6,10 @@ import pickle
 import numpy as np
 
 
-def model_params(n, m, d, n_z, **kwargs):
+def model_params(n, m, d, n_z, n_samples, **kwargs):
     
     params = {
-        'n': n, 'm': m, 'd': d, 'n_z': n_z,
+        'n': n, 'm': m, 'd': d, 'n_z': n_z, 'n_samples': n_samples,
         'manifold': 'euclid',
         'kernel': 'RBF',
         'prior': 'Uniform',
@@ -42,7 +42,7 @@ def load_model(params):
 
     likelihoods = {'GP': lpriors.GP}
     
-    n, m, d, n_z = params['n'], params['m'], params['d'], params['n_z']
+    n, m, d, n_z, n_samples = params['n'], params['m'], params['d'], params['n_z'], params['n_samples']
     
     #### specify manifold ####
     if params['manifold'] == 'euclid':
@@ -54,7 +54,7 @@ def load_model(params):
         params['diagonal'] = False
         
     #### specify latent distribution ####
-    lat_dist = mgplvm.rdist.ReLie(manif, m, sigma=params['latent_sigma'], diagonal = params['diagonal'],
+    lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, sigma=params['latent_sigma'], diagonal = params['diagonal'],
                                  initialization = params['initialization'], Y = params['Y'],
                                  mu = params['latent_mu'])
     
