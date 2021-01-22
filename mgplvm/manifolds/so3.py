@@ -44,9 +44,10 @@ class So3(Manifold):
                 pca = decomposition.PCA(n_components=d)
                 Y = Y.transpose(0, 2, 1).reshape(n_samples*m, n)
                 mudata = pca.fit_transform(Y)  #m*n_samples x d
-                mudata *= 0.5 * np.pi / np.amax(np.sqrt(np.sum(mudata**2, axis=1)))
+                mudata *= 0.5 * np.pi / np.amax(np.sqrt(np.sum(mudata**2, axis=-1)))
                 mudata = torch.tensor(mudata, dtype=torch.get_default_dtype())
-                return self.expmap(mudata).reshape(n_samples, m, d)
+                mudata = self.expmap(mudata.reshape(n_samples, m, d))
+                return mudata
         # initialize at identity
         mudata = self.expmap(torch.randn(n_samples, m, 3) * 0.1)
         #mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]), dtype=torch.get_default_dtype())
@@ -76,7 +77,7 @@ class So3(Manifold):
 
     @staticmethod
     def parameterise(x) -> Tensor:
-        norms = torch.norm(x, dim=1, keepdim=True)
+        norms = torch.norm(x, dim=-1, keepdim=True)
         return x / norms
 
     @staticmethod
