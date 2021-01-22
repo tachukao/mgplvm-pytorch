@@ -23,8 +23,9 @@ def test_likelihood_runs():
     n_z = 5  # number of inducing points
     n_samples = 2  # number of samples
     gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25)
-    Y = gen.gen_data()[0]
+    Y = gen.gen_data()
     Y = np.round(Y - np.amin(Y))
+    print(Y.shape)
 
     for lik in [
             likelihoods.Gaussian(n),
@@ -59,7 +60,7 @@ def test_likelihood_runs():
         LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
         print("once")
         svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
-        elbo = (svgp_elbo - kl).mean() / Y.shape[-1]
+        elbo = (svgp_elbo - kl) / np.prod(Y.shape)
 
         assert elbo <= LL
 

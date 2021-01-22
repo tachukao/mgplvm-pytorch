@@ -138,7 +138,7 @@ class SvgpLvm(nn.Module):
         Returns
         -------
         elbo : Tensor
-            evidence lower bound of the GPLVM model averaged across MC samples (scalar)
+            evidence lower bound of the GPLVM model averaged across MC samples and summed over n, m, n_samples (scalar)
         """
 
         #(n_mc, n_samples, n), (n_mc, n_samples)
@@ -149,10 +149,10 @@ class SvgpLvm(nn.Module):
                                   ts=ts,
                                   neuron_idxs=neuron_idxs)
         #sum over neurons, mean over  MC samples
-        svgp_elbo = svgp_elbo.sum(-1).mean()
-        kl = kl.mean()
+        svgp_elbo = svgp_elbo.sum(-1).sum(-1).mean()
+        kl = kl.sum(-1).mean()
 
-        return svgp_elbo, kl  #mean across batches
+        return svgp_elbo, kl  #mean across batches, sum across everything else
 
     def calc_LL(self, data, n_mc, kmax=5, batch_idxs=None, ts=None):
         """
@@ -181,8 +181,10 @@ class SvgpLvm(nn.Module):
                                   kmax=kmax,
                                   batch_idxs=batch_idxs,
                                   ts=ts)
+        print(svgp_elbo.shape, kl.shape)
         svgp_elbo = svgp_elbo.sum(-1)  #(n_mc, n_samples)
-        LLs = svgp_elbo - kl  # LL for each batch (n_mc, n_samples)
-        LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)).mean() / data.shape[-1]
+        LLs = (svgp_elbo - kl).sum(-1)  # LL for each batch, mean across samples (n_mc)
+        print(LLs.shape)
+        LL = (torch.logsumexp(LLs, 0) - np.log(n_mc))/np.prod(data.shape)
 
         return LL.detach().cpu()
