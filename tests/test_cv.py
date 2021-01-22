@@ -22,8 +22,8 @@ def test_cv_runs():
     m = 10  # number of conditions / time points
     n_z = 6  # number of inducing points
     n_samples = 1  # number of samples
-    gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25)
-    Y = gen.gen_data(n_samples = n_samples)
+    gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25, n_samples=n_samples)
+    Y = gen.gen_data()
     # specify manifold, kernel and rdist
     manif = Euclid(m, d)
     lat_dist = mgplvm.rdist.ReLie(manif,

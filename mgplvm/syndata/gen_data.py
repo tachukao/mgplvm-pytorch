@@ -16,9 +16,9 @@ def draw_GP(n, d, n_samples, sig, ell, jitter=1e-6):
     K = sig**2 * np.exp(-dts**2 / (2 * ell**2))  #nxn
     L = np.linalg.cholesky(K + jitter * np.eye(n))  #nxn
 
-    us = np.random.normal(size=(n_samples * n, d))  #nxd
-    X = L @ us  #nxd
-    return X.reshape(n_samples, n, d)
+    us = np.random.normal(size=(n_samples, n, d))  #n_samples x n x d
+    X = L @ us  #n_samples x n x d (numpy deals with the shapes correctly here)
+    return X
 
 
 class Manif(metaclass=abc.ABCMeta):
@@ -294,7 +294,6 @@ class Gen():
         return gs
 
     def gen_data(self,
-                 n_samples=1,
                  gs_in=None,
                  gprefs_in=None,
                  mode='Gaussian',

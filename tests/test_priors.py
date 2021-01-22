@@ -22,9 +22,10 @@ def test_GP_prior():
                              variability=0.15,
                              l=l,
                              sigma=0.8,
-                             beta=0.1)
+                             beta=0.1,
+                             n_samples=n_samples)
     sig0 = 1.5
-    Y = gen.gen_data(ell=25, sig=1,n_samples = n_samples)
+    Y = gen.gen_data(ell=25, sig=1)
     # specify manifold, kernel and rdist
     manif = mgplvm.manifolds.Euclid(m, d)
     alpha = np.mean(np.std(Y, axis=-1), axis=0)
