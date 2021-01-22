@@ -52,9 +52,17 @@ def test_svgp_runs():
     LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
     svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
     elbo = (svgp_elbo - kl) / np.prod(Y.shape)
-
+    
     assert elbo < LL
-
+    
+    #### test that batching works ####
+    trained_model = optimisers.svgp.fit(Y,
+                                        mod,
+                                        device,
+                                        optimizer=optim.Adam,
+                                        max_steps=5,
+                                        n_mc=64,
+                                        batch_size = int(np.round(m/2, 0)))
 
 if __name__ == '__main__':
     test_svgp_runs()
