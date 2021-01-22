@@ -116,7 +116,7 @@ class _F(Module):
         if batch_idxs is None:
             return gmu, gamma
         else:
-            return gmu[:, batch_idxs], gamma[:, batch_idxs]
+            return gmu[:, batch_idxs, :], gamma[:, batch_idxs, :]
 
     @property
     def prms(self):
