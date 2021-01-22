@@ -70,7 +70,7 @@ def train_cv(mod,
     
     train_ps1 = update_params(train_ps, batch_pool = T1)
     
-    print(Y.shape, mod.lat_dist.prms[0].shape, mod.lat_dist.prms[1].shape)
+    #print(Y.shape, mod.lat_dist.prms[0].shape, mod.lat_dist.prms[1].shape)
     
     _ = train_model(mod, Y, device, train_ps1)
     

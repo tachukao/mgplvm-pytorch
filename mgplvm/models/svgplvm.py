@@ -106,7 +106,9 @@ class SvgpLvm(nn.Module):
         #(n_samples x n_mc x n)
         svgp_elbo = self.svgp.elbo(n_mc, data, g.transpose(-1, -2))
         if neuron_idxs is not None:
-            svgp_elbo = svgp_elbo[..., neuron_idxs, :]
+            #print('pre:', svgp_elbo.shape)
+            svgp_elbo = svgp_elbo[..., neuron_idxs]
+            #print('post:', svgp_elbo.shape)
 
         # compute kl term for the latents (n_mc, n_samples)
         prior = self.lprior(g, ts)  #(n_mc, n_samples)
