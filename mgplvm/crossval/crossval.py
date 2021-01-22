@@ -58,7 +58,7 @@ def train_cv(mod,
 
     """
 
-    n, m = Y.shape[:2]
+    n_samples, n, m = Y.shape
     nt_train = int(round(m/2)) if nt_train is None else nt_train
     nn_train = int(round(n/2)) if nn_train is None else nn_train
     
@@ -66,7 +66,7 @@ def train_cv(mod,
         T1 = np.random.permutation(np.arange(m))[:nt_train]
     if N1 is None: # random shuffle of neurons
         N1 = np.random.permutation(np.arange(n))[:nn_train]
-    Y1, Y2 = Y[:, T1, :], Y[N1, :, :]
+    Y1, Y2 = Y[:, :, T1], Y[:, N1, :]
     split = {'Y': Y, 'N1': N1, 'T1': T1}
     
     train_ps1 = update_params(train_ps, batch_pool = T1)
@@ -75,7 +75,7 @@ def train_cv(mod,
     ### construct a mask for some of the time points ####
     def mask_Ts(grad):
         ''' used to 'mask' some gradients for cv'''
-        grad[T1, ...] *= 0
+        grad[:, T1, ...] *= 0
         return grad
     train_ps2 = update_params(train_ps, neuron_idxs = N1, mask_Ts = mask_Ts)
     
@@ -95,33 +95,36 @@ def train_cv(mod,
 
 def test_cv(mod, split, device, n_mc = 32, Print = False):
     Y, T1, N1 = split['Y'], split['T1'], split['N1']
-    n, m = Y.shape[:2]
+    n_samples, n, m = Y.shape
     
     ##### assess the CV quality ####
     T2, N2 = not_in(np.arange(m), T1), not_in(np.arange(n), N1)
 
     #generate prediction for held out data#
-    Ytest = Y[N2, ...][:, T2, :]
-    latents = mod.lat_dist.prms[0].detach()[T2, ...] #latent means
-    Ypred, var = mod.svgp.predict(latents.T[None, ...], False)
-    Ypred = Ypred.detach().cpu().numpy()[0, N2, :, :]
+    
+    Ytest = Y[:, N2, :][..., T2] #(ntrial x N2 x T2)
+    latents = mod.lat_dist.prms[0].detach()[:, T2, ...] #latent means (ntrial, T2, d)
+    query = latents.transpose(-1,-2) #(ntrial, d, m)
+    Ypred, var = mod.svgp.predict(query[None, ...], False)
+    Ypred = Ypred.detach().cpu().numpy()[0, :, N2, :] #(ntrial, N2, T2)
     MSE = np.mean((Ypred - Ytest)**2)
     
     var_cap = 1-np.var(Ytest - Ypred)/np.var(Ytest)
 
 
     ### compute crossvalidated log likelihood ###
+    #(n_mc, n_samples, n), (n_mc, n_samples)
     svgp_elbo, kl = mod.elbo(torch.tensor(Y).to(device), n_mc, batch_idxs=T2, neuron_idxs = N2)
     
     svgp_elbo = svgp_elbo.sum(-1).sum(-1) #(n_mc)
-    LLs = svgp_elbo - kl  # LL for each batch (n_mc, )
+    LLs = svgp_elbo - kl.sum(-1)  # LL for each batch (n_mc, )
     LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)).detach().cpu().numpy()
-    LL = LL/(len(T2)*len(N2))
+    LL = LL/(len(T2)*len(N2)*n_samples)
     
     if Print:
         print('LL', LL)
         print('var_cap', var_cap)
-        print('MSE', MSE, np.sqrt(np.mean(np.var(Ytest, axis = 1))))
+        print('MSE', MSE, np.sqrt(np.mean(np.var(Ytest, axis = -1))))
     
     return MSE, LL, var_cap
     
