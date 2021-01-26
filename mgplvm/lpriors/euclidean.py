@@ -51,7 +51,7 @@ class GP(LpriorEuclid):
         sigma_n = self.svgp.likelihood.prms
         return q_mu, q_sqrt, z, sigma_n
 
-    def forward(self, x, ts, scale = 1.):
+    def forward(self, x, ts):
         '''
         x is a latent of shape (n_mc x n_samples x mx x d)
         ts is the corresponding timepoints of shape (n_samples x mx)
@@ -61,7 +61,12 @@ class GP(LpriorEuclid):
         x = x.permute(1, 0, 3, 2).reshape(n_samples, -1, T)
 
         # shape (d, n_mc)
-        svgp_elbo = self.svgp.elbo(1, x, ts.reshape(1, n_samples, 1, -1), scale = scale)
+        #svgp_elbo = self.svgp.elbo(1, x, ts.reshape(1, n_samples, 1, -1))
+        
+        #svgp_lik, svgp_kl = self.svgp.elbo(1, x, ts.reshape(1, n_samples, 1, -1))
+        #elbo = svgp_lik - n_b/m svgp_kl
+        #return reshaped elbo
+        
         print(svgp_elbo.shape)
         return svgp_elbo.sum(-2)  #sum over dimensions
 

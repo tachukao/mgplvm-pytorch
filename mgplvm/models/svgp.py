@@ -115,6 +115,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         
         svgp_elbo = lik - scale*prior_kl # (n_mc x n) and (1 x n); broadcast prior over MC samples
         return svgp_elbo #(n_mc x n)
+    
+        #return lik, prior_kl
 
     def tuning(self, query, n_b=1000, square=False):
         '''
