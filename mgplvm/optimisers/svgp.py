@@ -48,17 +48,15 @@ def print_progress(model,
                    Y=None,
                    batch_idxs=None):
     if i % print_every == 0:
-        Z = n*m*n_samples
+        Z = n * m * n_samples
         mu = model.lat_dist.lat_gmu(Y, batch_idxs).data.cpu().numpy()
         gamma = model.lat_dist.lat_gamma(Y, batch_idxs).diagonal(
             dim1=-1, dim2=-2).data.cpu().numpy()
         mu_mag = np.sqrt(np.mean(mu**2))
         sig = np.median(np.concatenate([np.diag(sig) for sig in gamma]))
         msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
-               '| |mu| {:.3f} | sig {:.3f} |').format(i,
-                                                      svgp_elbo_val / Z,
-                                                      kl_val / Z,
-                                                      loss_val / Z,
+               '| |mu| {:.3f} | sig {:.3f} |').format(i, svgp_elbo_val / Z,
+                                                      kl_val / Z, loss_val / Z,
                                                       mu_mag, sig)
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
@@ -98,14 +96,16 @@ def fit(Y,
         stop=None,
         print_every=50,
         batch_size=None,
-        ts=None,
         batch_pool=None,
         mask_Ts=None,
         neuron_idxs=None):
     '''
+    Y : np.array
+        data matrix of dimensions (n_samples x n x m)
+    device : torch.device
+        torch device
     max_steps : Optional[int], default=1000
         maximum number of training iterations
-    
     batch_pool : Optional[int list]
         pool of indices from which to batch (used to train a partial model)
     '''
@@ -119,7 +119,6 @@ def fit(Y,
     else:
         n, m = Y.shape  # neuron x conditions
     data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
-    ts = ts if ts is None else ts.to(device)
     data_size = m if batch_pool is None else len(batch_pool)  #total conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
     #optionally mask some time points
@@ -158,7 +157,6 @@ def fit(Y,
         svgp_elbo, kl = model(data,
                               n_mc,
                               batch_idxs=batch_idxs,
-                              ts=ts,
                               neuron_idxs=neuron_idxs)
 
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
@@ -171,7 +169,7 @@ def fit(Y,
         loss.backward()
         opt.step()
         scheduler.step()
-        print_progress(model, n, m, data.shape[0], i, loss_val, kl_val, svgp_elbo_val,
-                       print_every, data, batch_idxs)
+        print_progress(model, n, m, data.shape[0], i, loss_val, kl_val,
+                       svgp_elbo_val, print_every, data, batch_idxs)
 
     return model

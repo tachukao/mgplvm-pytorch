@@ -26,6 +26,7 @@ class GP(LpriorEuclid):
     def __init__(self,
                  manif: Manifold,
                  kernel: Kernel,
+                 ts: torch.Tensor,
                  n_z: Optional[int] = 20,
                  tmax: Optional[int] = 1):
         '''
@@ -40,6 +41,7 @@ class GP(LpriorEuclid):
         zinit = torch.linspace(0., tmax, n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
         z = InducingPoints(d, 1, n_z, z=zinit.repeat(d, 1, 1))
+        self.ts = ts
         lik = Gaussian(
             d, variance=np.square(0.2), learn_sigma=False
         )  #.to(kernel.alpha.device) #consider fixing this to a small value as in GPFA
@@ -51,11 +53,13 @@ class GP(LpriorEuclid):
         sigma_n = self.svgp.likelihood.prms
         return q_mu, q_sqrt, z, sigma_n
 
-    def forward(self, x, ts):
+    def forward(self, x, batch_idxs=None):
         '''
         x is a latent of shape (n_mc x n_samples x mx x d)
         ts is the corresponding timepoints of shape (n_samples x mx)
         '''
+        ts = self.ts if batch_idxs is None else self.ts[batch_idxs]
+        ts = ts.to(x.device)
         n_mc, n_samples, T, d = x.shape
         # x now has shape (n_samples, n_mc, d, mx)
         x = x.permute(1, 0, 3, 2).reshape(n_samples, -1, T)
