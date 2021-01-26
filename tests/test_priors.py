@@ -82,7 +82,7 @@ def test_GP_prior():
 
     #### try to batch things ####
     elbo2_b = mod.lprior.svgp.elbo(1, x.transpose(-1, -2), ts)
-    elbo2_b = elbo2_b.sum(-1).sum(-1)
+    elbo2_b = elbo2_b
     print(elbo1_b.shape, elbo2_b.shape)
 
     ### print comparison ###

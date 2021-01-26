@@ -70,7 +70,7 @@ class SgpLvm(nn.Module):
         Parameters
         ----------
         data : Tensor
-            data with dimensionality (n x m x n_samples)
+            data with dimensionality (n_samples x n x m)
         n_b : int
             batch size
         kmax : int
@@ -91,11 +91,14 @@ class SgpLvm(nn.Module):
         ----
         ELBO of the model per batch is [ sgp_elbo - kl ]
         """
-        _, _, n_samples = data.shape
+        #_, _, n_samples = data.shape
+        n_samples, n, m = data.shape
+        
         q = self.rdist()  # return reference distribution
 
         # sample a batch with dims: (n_b x m x d)
         x = q.rsample(torch.Size([n_b]))
+        print('xshape', x.shape)
         # compute entropy (n_b x m)
         lq = self.manif.log_q(q.log_prob, x, self.manif.d, kmax=kmax)
 

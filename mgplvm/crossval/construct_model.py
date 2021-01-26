@@ -80,7 +80,8 @@ def load_model(params):
 
     #### specify likelihood ####
     if params['likelihood'] == 'Gaussian':
-        likelihood = mgplvm.likelihoods.Gaussian(n, variance=np.square(params['lik_gauss_std']))
+        var = None if params['lik_gauss_std'] is None else np.square(params['lik_gauss_std'])
+        likelihood = mgplvm.likelihoods.Gaussian(n, variance=var)
     elif params['likelihood'] == 'Poisson':
         likelihood = mgplvm.likelihoods.Poisson(n)
     elif params['likelihood'] == 'NegBinom':

@@ -65,26 +65,6 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
     def _expand_x(self, x):
         pass
 
-    def _prior_kl(self):
-        q_mu, q_sqrt, z = self.prms
-        z = self._expand_z(z)
-        e = torch.eye(self.n_inducing).to(q_mu.device)
-        kzz = self.kernel(z, z) + (e * jitter)
-        l = torch.cholesky(kzz, upper=False)
-
-        # [ k1 ] has sims (1 x n x n_inducing)
-        k1 = 0.5 * torch.log(torch.diagonal(l, dim1=-1, dim2=-2))
-        # [ k2 ] has sims (1 x n x n_inducing)
-        k2 = 0.5 * torch.log(torch.diagonal(q_sqrt, dim1=-1, dim2=-2))
-        # trace term
-        k3 = 0.5 * torch.square(
-            torch.triangular_solve(q_sqrt, l, upper=False)[0])
-        # mean term
-        k4 = 0.5 * torch.square(
-            torch.triangular_solve(q_mu[..., None], l, upper=False)[0])
-        k5 = 0.5 * self.n_inducing * self.n
-        return k1.sum() - k2.sum() + k3.sum() + k4.sum() - k5
-
     def prior_kl(self):
         q_mu, q_sqrt, z = self.prms
         z = self._expand_z(z)
@@ -101,7 +81,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, n_mc: int, y: Tensor, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def elbo(self, n_mc: int, y: Tensor, x: Tensor, scale: float = 1.) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -111,10 +91,12 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             data tensor with dimensions (n_samples x n x m)
         x : Tensor (single kernel) or Tensor list (product kernels)
             input tensor(s) with dimensions (n_mc x n_samples x d x m)
+        scale: Optional[int]
+            scale factor for the prior term; n_batch/m
 
         Returns
         -------
-        evidence lower bound : torch.Tensor (n_mc x n_samples x n)
+        evidence lower bound : torch.Tensor (n_mc x n)
 
         Notes
         -----
@@ -129,8 +111,10 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
-        svgp_elbo = lik - prior_kl
-        return svgp_elbo
+        lik = lik.sum(-2) #n_mc x n -- sum over samples (similar to how we sum over conditions)
+        
+        svgp_elbo = lik - scale*prior_kl # (n_mc x n) and (1 x n); broadcast prior over MC samples
+        return svgp_elbo #(n_mc x n)
 
     def tuning(self, query, n_b=1000, square=False):
         '''
@@ -188,8 +172,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         # see ELBO for explanation of _expand
         z = self._expand_z(z)
         x = self._expand_x(x)
-        kzz = kernel(z, z)  # dims: (n_samples x n x n_inducing x n_inducing)
-        kzx = kernel(z, x)  # dims: (1 x n_samples x n x n_inducing x m)
+        kzz = kernel(z, z)  # dims: (1 x n x n_z x n_z)
+        kzx = kernel(z, x)  # dims: (n_mc x n_samples x n x n_inducing x m)
         e = torch.eye(self.n_inducing,
                       dtype=torch.get_default_dtype()).to(kzz.device)
 

@@ -173,5 +173,6 @@ def fit(Y,
         scheduler.step()
         print_progress(model, n, m, data.shape[0], i, loss_val, kl_val, svgp_elbo_val,
                        print_every, data, batch_idxs)
+        
 
     return model
