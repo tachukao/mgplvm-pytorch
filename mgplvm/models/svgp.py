@@ -109,6 +109,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
+        #(n_mc, n)
+        lik = lik.sum(-2)
 
         return lik, prior_kl
 

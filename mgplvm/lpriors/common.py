@@ -36,7 +36,7 @@ class Uniform(Lprior):
 
     def forward(self, g: Tensor, batch_idxs=None):
         lp = self.manif.lprior(g)  #(n_b, n_samples, m)
-        return lp.to(g.device).sum(-1)  #(n_b, n_samples)
+        return lp.to(g.device).sum(-1).sum(-1)  #(n_b)
 
     def prms(self):
         pass
@@ -57,7 +57,7 @@ class Null(Lprior):
 
     def forward(self, g: Tensor, batch_idxs=None):
         '''
-        g: (n_b x mx x d)
+        g: (n_b x n_samples x mx x d)
         output: (n_b)
         '''
         return 0 * torch.ones(g.shape[0])
@@ -117,8 +117,9 @@ class Gaussian(Lprior):
         #project onto tangent space
         x = self.manif.logmap(g)
         # compute log prior
-        lq = self.manif.log_q(q.log_prob, g, self.manif.d, kmax)  #(n_b, m)
-        return lq.sum(-1)
+        lq = self.manif.log_q(q.log_prob, g, self.manif.d,
+                              kmax)  #(n_b, n_samples, m)
+        return lq.sum(-1).sum(-1)
 
     @property
     def msg(self):
@@ -168,8 +169,8 @@ class Brownian(Lprior):
         normal = dists.Normal(loc=brownian_c, scale=torch.sqrt(brownian_eta))
         diagn = dists.Independent(normal, 1)
         lq = self.manif.log_q(diagn.log_prob, dx, self.manif.d, kmax=self.kmax)
-        #(n_b, m) -> (n_b)
-        return lq.sum(-1)
+        #(n_b, n_samples, m) -> (n_b)
+        return lq.sum(-1).sum(-1)
 
     @property
     def msg(self):
@@ -252,7 +253,7 @@ class ARP(Lprior):
                                   kmax=self.kmax)
             # (n_b x n_samplesx m-p-1)
 
-        lq = lq.sum(-1)
+        lq = lq.sum(-1).sum(-1)
 
         #in the future, we may want an explicit prior over the p initial points
         return lq

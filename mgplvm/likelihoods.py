@@ -265,7 +265,8 @@ class NegativeBinomial(Likelihood):
         locs = self.inv_link(torch.sqrt(2. * fvar) * locs +
                              fmu) * self.binsize  #coordinate transform
         #print(total_count.shape, locs.shape)
-        lp = self.log_prob(total_count, locs, y)  #(n_mc x n_samples x n x m, n_gh)
+        lp = self.log_prob(total_count, locs,
+                           y)  #(n_mc x n_samples x n x m, n_gh)
 
         #print(lp.shape, ws.shape, (lp * ws).shape)
         return 1 / np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-1)

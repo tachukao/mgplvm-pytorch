@@ -70,21 +70,24 @@ def test_GP_prior():
     ### test that two ways of computing the prior agree ###
     data = torch.tensor(Y).to(device)
     g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
+
     #input to prior
-    x = g.permute(1, 0, 3, 2).reshape(n_samples, -1, m)
 
     def elbo_for_batch(i):
+        x = g[i:i + 1].permute(1, 0, 3, 2).reshape(n_samples, -1, m)
         lik, kl = mod.lprior.svgp.elbo(1, x, ts.reshape(1, 1, 1, -1))
         return (lik - kl)
 
     #### naive computation ####
-    LLs1 = [elbo_for_batch(i) for i in range(x.shape[0])]
+    LLs1 = [elbo_for_batch(i) for i in range(n_mc)]
     elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
     #### try to batch things ####
     ts = ts.repeat(n_samples, 1).reshape(1, n_samples, 1, -1)
-    lik, kl = mod.lprior.svgp.elbo(1, x, ts)
-    elbo2_b = (lik - kl).sum(-1).sum(-1)
+    lik, kl = mod.lprior.svgp.elbo(
+        1,
+        g.permute(1, 0, 3, 2).reshape(n_samples, -1, m), ts)
+    elbo2_b = (lik - kl).sum(0)
     print(elbo1_b.shape, elbo2_b.shape)
 
     ### print comparison ###

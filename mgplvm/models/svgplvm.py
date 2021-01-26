@@ -99,7 +99,7 @@ class SvgpLvm(nn.Module):
 
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
-        #(n_mc x n_samples x n), (1 x n)
+        #(n_mc x n), (1 x n)
         svgp_lik, svgp_kl = self.svgp.elbo(n_mc, data, g.transpose(-1, -2))
         if neuron_idxs is not None:
             svgp_lik = svgp_lik[..., neuron_idxs]
@@ -112,8 +112,8 @@ class SvgpLvm(nn.Module):
         lik = ((m / batch_size) * svgp_lik) - svgp_kl
 
         # compute kl term for the latents (n_mc, n_samples) per batch
-        prior = self.lprior(g, batch_idxs)  #(n_mc, n_samples)
-        kl = lq.sum(-1) - prior  #(n_mc, n_samples) (sum q(g) over conditions)
+        prior = self.lprior(g, batch_idxs)  #(n_mc)
+        kl = lq.sum(-1).sum(-1) - prior  #(n_mc) (sum q(g) over conditions)
         #rescale KL to entire dataset (basically structured conditions)
         kl = (m / batch_size) * kl
         return lik, kl
@@ -174,10 +174,10 @@ class SvgpLvm(nn.Module):
 
         #(n_mc, n), (n_mc)
         svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax)
-        svgp_elbo = svgp_elbo.sum(-1).sum(-1)  #(n_mc)
-        LLs = svgp_elbo - kl.sum(-1)  # LL for each batch (n_mc)
+        svgp_elbo = svgp_elbo.sum(-1)  #(n_mc)
+        LLs = svgp_elbo - kl  # LL for each batch (n_mc)
+        assert (LLs.shape == torch.Size([n_mc]))
 
-        print(LLs.shape)
         LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)) / np.prod(data.shape)
 
         return LL.detach().cpu()

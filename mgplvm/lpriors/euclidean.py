@@ -63,16 +63,16 @@ class GP(LpriorEuclid):
         ts = ts.to(x.device)
         n_mc, n_samples, T, d = x.shape
         # x now has shape (n_samples, n_mc*d, T)
-        x = x.permute(1, 0, 3, 2).reshape(n_samples, -1, T)
+        x = x.permute(1, 0, 3, 2).reshape(n_samples, n_mc * d, T)
 
-        # (1, n_samples, n_mc . d) (1, n_mc . d)
+        # (1, n_mc . d) (n_mc . d)
         svgp_lik, svgp_kl = self.svgp.elbo(1, x,
                                            ts.reshape(1, n_samples, 1, -1))
         # Here, we need to rescale the KL term so that it is per batch
         # as the inducing points are shared across the full batch
         svgp_kl = (batch_size / m) * svgp_kl
         elbo = svgp_lik - ((batch_size / m) * svgp_kl)
-        return elbo.reshape(n_samples, n_mc, d).sum(-1).T  #sum over dimensions
+        return elbo.reshape(n_mc, d).sum(-1)  #sum over dimensions
 
     @property
     def msg(self):
