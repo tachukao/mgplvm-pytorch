@@ -1,13 +1,7 @@
 from __future__ import print_function
-import abc
 import numpy as np
-import mgplvm
-from mgplvm.utils import softplus
-from mgplvm.manifolds import Torus, Euclid, So3
-import torch
-from torch import optim, Tensor
+from torch import optim
 from torch.optim.lr_scheduler import LambdaLR
-from typing import List
 import itertools
 
 
@@ -32,7 +26,7 @@ def sort_params(model, hook):
         itertools.chain.from_iterable(
             [model.lat_dist.concentration_parameters()]))
 
-    params = [params0, params1]
+    params = [{'params': params0}, {'params': params1}]
     return params
 
 
@@ -127,14 +121,7 @@ def fit(Y,
     params = sort_params(model, mask_Ts)
 
     # instantiate optimizer
-    opt = optimizer([
-        {
-            'params': params[0]
-        },
-        {
-            'params': params[1]
-        },
-    ], lr=lrate)
+    opt = optimizer(params, lr=lrate)
 
     scheduler = LambdaLR(opt, lr_lambda=[lambda x: 1, fburn])
 
@@ -171,5 +158,4 @@ def fit(Y,
         scheduler.step()
         print_progress(model, n, m, data.shape[0], i, loss_val, kl_val,
                        svgp_elbo_val, print_every, data, batch_idxs)
-
     return model
