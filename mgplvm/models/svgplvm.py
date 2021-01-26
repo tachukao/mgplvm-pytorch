@@ -165,11 +165,9 @@ class SvgpLvm(nn.Module):
 
         #(n_mc, n_samples, n), (n_mc, n_samples)
         svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, batch_idxs=batch_idxs)
-        print(svgp_elbo.shape, kl.shape)
         svgp_elbo = svgp_elbo.sum(-1)  #(n_mc, n_samples)
         LLs = (svgp_elbo - kl).sum(
             -1)  # LL for each batch, mean across samples (n_mc)
-        print(LLs.shape)
         LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)) / np.prod(data.shape)
 
         return LL.detach().cpu()

@@ -57,27 +57,35 @@ def print_progress(model,
 
 
 def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
-    if batch_pool is None:
-        idxs = np.arange(data_size)
-    else:
-        idxs = batch_pool
-    if model.lprior.name in ["Brownian", "ARP"]:
-        # if prior is Brownian or ARP, then batches have to be contiguous
-        i0 = np.random.randint(1, data_size - 1)
-        if i0 < batch_size / 2:
-            batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
-        elif i0 > (data_size - batch_size / 2):
-            batch_idxs = idxs[int(round(i0 - batch_size / 2)):]
-        else:
-            batch_idxs = idxs[int(round(i0 - batch_size /
-                                        2)):int(round(i0 + batch_size / 2))]
-        #print(len(batch_idxs))
+    if (batch_size is None and batch_pool is None):
+        batch_idxs = None
+        return batch_idxs
+    elif batch_size is None:
+        batch_idxs = batch_pool
         return batch_idxs
     else:
-        if batch_size is None:
-            return idxs
+        if batch_pool is None:
+            idxs = np.arange(data_size)
         else:
-            return np.random.choice(idxs, size=batch_size, replace=False)
+            idxs = batch_pool
+        if model.lprior.name in ["Brownian", "ARP"]:
+            # if prior is Brownian or ARP, then batches have to be contiguous
+            i0 = np.random.randint(1, data_size - 1)
+            if i0 < batch_size / 2:
+                batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
+            elif i0 > (data_size - batch_size / 2):
+                batch_idxs = idxs[int(round(i0 - batch_size / 2)):]
+            else:
+                batch_idxs = idxs[int(round(i0 - batch_size /
+                                            2)):int(round(i0 +
+                                                          batch_size / 2))]
+            #print(len(batch_idxs))
+            return batch_idxs
+        else:
+            if batch_size is None:
+                return idxs
+            else:
+                return np.random.choice(idxs, size=batch_size, replace=False)
 
 
 def fit(Y,
@@ -132,17 +140,11 @@ def fit(Y,
         opt.zero_grad()
         ramp = 1 - np.exp(-i / burnin)
 
-        if (batch_size is None and batch_pool is None):
-            batch_idxs = None
-        elif batch_size is None:
-            batch_idxs = batch_pool
-            m = len(batch_idxs)
-        else:
-            batch_idxs = generate_batch_idxs(model,
-                                             data_size,
-                                             batch_pool=batch_pool,
-                                             batch_size=batch_size)
-            m = len(batch_idxs)  #use for printing likelihoods etc.
+        batch_idxs = generate_batch_idxs(model,
+                                         data_size,
+                                         batch_pool=batch_pool,
+                                         batch_size=batch_size)
+        m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo, kl = model(data,
                               n_mc,
