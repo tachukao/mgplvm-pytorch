@@ -72,8 +72,11 @@ def test_trial_structure():
     assert torch.allclose(mod1.lat_dist.prms[1].reshape(-1, d, d), mod2.lat_dist.prms[1].reshape(-1, d, d))
     assert torch.allclose(mod1.svgp.likelihood.prms, mod2.svgp.likelihood.prms)
     
-    nrep = 10
     n_mc = 9
+    print(mod1.forward(torch.tensor(Y).to(device), n_mc))
+    print(mod2.forward(torch.tensor(Y2).to(device), n_mc))
+    
+    nrep = 20
     mod1s, mod2s = [np.zeros(nrep) for i in range(2)]
     for i in range(nrep): #compute the LLs, should be similar
         mod1s[i] = mod1.forward(torch.tensor(Y).to(device), n_mc)[0].detach().cpu().numpy()
@@ -82,8 +85,7 @@ def test_trial_structure():
     print(comp)
     assert comp > 0 #basically check that one version is not consistently lower/higher than the other
     
-    print(mod1.forward(torch.tensor(Y).to(device), n_mc))
-    print(mod2.forward(torch.tensor(Y2).to(device), n_mc))
+    
     
 if __name__ == '__main__':
     test_trial_structure()

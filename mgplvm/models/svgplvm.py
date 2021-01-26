@@ -146,8 +146,8 @@ class SvgpLvm(nn.Module):
                             batch_idxs=batch_idxs,
                             neuron_idxs=neuron_idxs)
         #sum over neurons and number of samples, mean over  MC samples
-        lik = lik.sum(-1).sum(-1).mean()
-        kl = kl.sum(-1).mean()
+        lik = lik.sum(-1).mean()
+        kl = kl.mean()
 
         return lik, kl  #mean across batches, sum across everything else
 
