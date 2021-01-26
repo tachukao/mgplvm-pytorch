@@ -120,9 +120,10 @@ def fit(Y,
         return 1 - np.exp(-x / (3 * burnin))
 
     if len(Y.shape) > 2:
-        _, n, m = Y.shape  # samples, neurons, conditions
+        n_samples, n, m = Y.shape  # samples, neurons, conditions
     else:
         n, m = Y.shape  # neuron x conditions
+        n_samples = 1
     data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
     data_size = m if batch_pool is None else len(batch_pool)  #total conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
@@ -144,8 +145,6 @@ def fit(Y,
                                          data_size,
                                          batch_pool=batch_pool,
                                          batch_size=batch_size)
-        m = len(batch_idxs)  #use for printing likelihoods etc.
-
         svgp_elbo, kl = model(data,
                               n_mc,
                               batch_idxs=batch_idxs,
@@ -161,5 +160,5 @@ def fit(Y,
         loss.backward()
         opt.step()
         scheduler.step()
-        print_progress(model, n, m, data.shape[0], i, loss_val, kl_val,
+        print_progress(model, n, m, n_samples, i, loss_val, kl_val,
                        svgp_elbo_val, print_every, data, batch_idxs)

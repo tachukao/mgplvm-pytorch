@@ -81,7 +81,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, n_mc: int, y: Tensor, x: Tensor, scale: float = 1.) -> Tuple[Tensor, Tensor]:
+    def elbo(self, n_mc: int, y: Tensor, x: Tensor) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -91,8 +91,6 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             data tensor with dimensions (n_samples x n x m)
         x : Tensor (single kernel) or Tensor list (product kernels)
             input tensor(s) with dimensions (n_mc x n_samples x d x m)
-        scale: Optional[int]
-            scale factor for the prior term; n_batch/m
 
         Returns
         -------
@@ -111,12 +109,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
-        lik = lik.sum(-2) #n_mc x n -- sum over samples (similar to how we sum over conditions)
-        
-        svgp_elbo = lik - scale*prior_kl # (n_mc x n) and (1 x n); broadcast prior over MC samples
-        return svgp_elbo #(n_mc x n)
-    
-        #return lik, prior_kl
+
+        return lik, prior_kl
 
     def tuning(self, query, n_b=1000, square=False):
         '''

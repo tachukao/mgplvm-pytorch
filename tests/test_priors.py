@@ -41,8 +41,12 @@ def test_GP_prior():
 
     ###construct prior
     lprior_kernel = mgp.kernels.QuadExp(d, manif.distance, learn_alpha=False)
-    ts = torch.arange(m).to(device)[None, ...].repeat(n_samples, 1)
-    lprior = mgp.lpriors.GP(manif, lprior_kernel, n_z=20, ts=ts, tmax=m)
+    ts = torch.arange(m).to(device)[None, ...]
+    lprior = mgp.lpriors.GP(manif,
+                            lprior_kernel,
+                            n_z=20,
+                            ts=ts.repeat(n_samples, 1),
+                            tmax=m)
     #lprior = lpriors.Gaussian(manif)
 
     # generate model
@@ -66,18 +70,21 @@ def test_GP_prior():
     ### test that two ways of computing the prior agree ###
     data = torch.tensor(Y).to(device)
     g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
-    x = g  #input to prior
+    #input to prior
+    x = g.permute(1, 0, 3, 2).reshape(n_samples, -1, m)
+
+    def elbo_for_batch(i):
+        lik, kl = mod.lprior.svgp.elbo(1, x, ts.reshape(1, 1, 1, -1))
+        return (lik - kl)
 
     #### naive computation ####
-    LLs1 = [
-        mod.lprior.svgp.elbo(1, x[i].transpose(-1, -2), ts)
-        for i in range(x.shape[0])
-    ]
+    LLs1 = [elbo_for_batch(i) for i in range(x.shape[0])]
     elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
     #### try to batch things ####
-    elbo2_b = mod.lprior.svgp.elbo(1, x.transpose(-1, -2), ts)
-    elbo2_b = elbo2_b
+    ts = ts.repeat(n_samples, 1).reshape(1, n_samples, 1, -1)
+    lik, kl = mod.lprior.svgp.elbo(1, x, ts)
+    elbo2_b = (lik - kl).sum(-1).sum(-1)
     print(elbo1_b.shape, elbo2_b.shape)
 
     ### print comparison ###

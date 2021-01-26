@@ -90,7 +90,7 @@ class SvgpLvm(nn.Module):
         """
 
         n_samples, n, m = data.shape
-        
+
         g, lq = self.lat_dist.sample(torch.Size([n_mc]), data, batch_idxs)
         # g is shape (n_samples, n_mc, m, d)
         # lq is shape (n_mc x n_samples x m)
@@ -99,30 +99,24 @@ class SvgpLvm(nn.Module):
 
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
-        #scale the svgp prior by batch_size/m for unbiased estimator
-        #(n_mc x n)
-        svgp_elbo = self.svgp.elbo(n_mc, data, g.transpose(-1, -2), scale = batch_size/m)
+        #(n_mc x n_samples x n), (1 x n)
+        svgp_lik, svgp_kl = self.svgp.elbo(n_mc, data, g.transpose(-1, -2))
         if neuron_idxs is not None:
-            svgp_elbo = svgp_elbo[..., neuron_idxs]
-            
-        # compute kl term for the latents (n_mc, n_samples)
-        prior = self.lprior(g, ts)  #(n_mc, n_samples)
-        kl = lq.sum(-1) - prior  #(n_mc, n_samples) (sum q(g) over conditions)
-        kl = kl.sum(-1) #sum prior KL over samples (basically structured conditions)
+            svgp_lik = svgp_lik[..., neuron_idxs]
+            svgp_kl = svgp_kl[..., neuron_idxs]
 
-        #lik, svgp_kl = self.svgp.elbo(n_mc, data, g.transpose(-1, -2))
-        #ELBO = m/nb * svgp_lik - svgp_kl - m/nb * KL_LVM (sum over m, n_samples)
-        
-        
-        ### ELBO = m/nb * svgp_lik - svgp_kl + m/nb prior_lik - prior_kl
-        
-        
-        #return (m/nb * svgp_lik - svgp_kl), (m/n_b * KL)
-        
-        ### print normalized ELBO: ELBO / (n*m*n_samples)
-        
-        
-        return svgp_elbo, kl
+        batch_size = m if batch_idxs is None else len(batch_idxs)
+
+        # note that svgp_lik is computed over a batch, need to rescale to
+        # compute estimate for likelihood of entire dataset
+        lik = ((m / batch_size) * svgp_lik) - svgp_kl
+
+        # compute kl term for the latents (n_mc, n_samples) per batch
+        prior = self.lprior(g, batch_idxs)  #(n_mc, n_samples)
+        kl = lq.sum(-1) - prior  #(n_mc, n_samples) (sum q(g) over conditions)
+        #rescale KL to entire dataset (basically structured conditions)
+        kl = (m / batch_size) * kl
+        return lik, kl
 
     def forward(self, data, n_mc, kmax=5, batch_idxs=None, neuron_idxs=None):
         """
@@ -145,17 +139,17 @@ class SvgpLvm(nn.Module):
             evidence lower bound of the GPLVM model averaged across MC samples and summed over n, m, n_samples (scalar)
         """
 
-        #(n_mc, n), (n_mc)
-        svgp_elbo, kl = self.elbo(data,
-                                  n_mc,
-                                  kmax=kmax,
-                                  batch_idxs=batch_idxs,
-                                  neuron_idxs=neuron_idxs)
-        #sum over neurons, mean over  MC samples
-        svgp_elbo = svgp_elbo.sum(-1).mean()
-        kl = kl.mean()
+        #(n_mc, n_samples, n), (n_mc, n_samples)
+        lik, kl = self.elbo(data,
+                            n_mc,
+                            kmax=kmax,
+                            batch_idxs=batch_idxs,
+                            neuron_idxs=neuron_idxs)
+        #sum over neurons and number of samples, mean over  MC samples
+        lik = lik.sum(-1).sum(-1).mean()
+        kl = kl.sum(-1).mean()
 
-        return svgp_elbo, kl  #mean across batches, sum across everything else
+        return lik, kl  #mean across batches, sum across everything else
 
     def calc_LL(self, data, n_mc, kmax=5):
         """
@@ -179,15 +173,11 @@ class SvgpLvm(nn.Module):
         """
 
         #(n_mc, n), (n_mc)
-        svgp_elbo, kl = self.elbo(data,
-                                  n_mc,
-                                  kmax=kmax,
-                                  batch_idxs=batch_idxs)
-        print(svgp_elbo.shape, kl.shape)
-        svgp_elbo = svgp_elbo.sum(-1)  #(n_mc)
-        LLs = svgp_elbo - kl  # LL for each batch (n_mc)
-        
+        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax)
+        svgp_elbo = svgp_elbo.sum(-1).sum(-1)  #(n_mc)
+        LLs = svgp_elbo - kl.sum(-1)  # LL for each batch (n_mc)
+
         print(LLs.shape)
-        LL = (torch.logsumexp(LLs, 0) - np.log(n_mc))/np.prod(data.shape)
+        LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)) / np.prod(data.shape)
 
         return LL.detach().cpu()

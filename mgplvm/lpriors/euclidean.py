@@ -42,9 +42,8 @@ class GP(LpriorEuclid):
         #separate inducing points for each latent dimension
         z = InducingPoints(d, 1, n_z, z=zinit.repeat(d, 1, 1))
         self.ts = ts
-        lik = Gaussian(
-            d, variance=np.square(0.2), learn_sigma=False
-        )  #.to(kernel.alpha.device) #consider fixing this to a small value as in GPFA
+        lik = Gaussian(d, variance=np.square(0.2), learn_sigma=False
+                       )  #consider fixing this to a small value as in GPFA
         self.svgp = Svgp(kernel, d, z, lik, whiten=True)  #construct svgp
 
     @property
@@ -58,21 +57,22 @@ class GP(LpriorEuclid):
         x is a latent of shape (n_mc x n_samples x mx x d)
         ts is the corresponding timepoints of shape (n_samples x mx)
         '''
+        m = self.ts.shape[0]
+        batch_size = m if batch_idxs is None else len(batch_idxs)
         ts = self.ts if batch_idxs is None else self.ts[batch_idxs]
         ts = ts.to(x.device)
         n_mc, n_samples, T, d = x.shape
-        # x now has shape (n_samples, n_mc*d, mx)
+        # x now has shape (n_samples, n_mc*d, T)
         x = x.permute(1, 0, 3, 2).reshape(n_samples, -1, T)
 
-        # shape (d, n_mc)
-        #svgp_elbo = self.svgp.elbo(1, x, ts.reshape(1, n_samples, 1, -1))
-        
-        #svgp_lik, svgp_kl = self.svgp.elbo(1, x, ts.reshape(1, n_samples, 1, -1))
-        #elbo = svgp_lik - n_b/m svgp_kl
-        #return reshaped elbo
-        
-        print(svgp_elbo.shape)
-        return svgp_elbo.sum(-2)  #sum over dimensions
+        # (1, n_samples, n_mc . d) (1, n_mc . d)
+        svgp_lik, svgp_kl = self.svgp.elbo(1, x,
+                                           ts.reshape(1, n_samples, 1, -1))
+        # Here, we need to rescale the KL term so that it is per batch
+        # as the inducing points are shared across the full batch
+        svgp_kl = (batch_size / m) * svgp_kl
+        elbo = svgp_lik - ((batch_size / m) * svgp_kl)
+        return elbo.reshape(n_samples, n_mc, d).sum(-1).T  #sum over dimensions
 
     @property
     def msg(self):

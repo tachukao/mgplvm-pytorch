@@ -52,7 +52,7 @@ def test_svgp_runs():
     ### test burda log likelihood ###
     LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
     svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
-    elbo = (svgp_elbo - kl) / np.prod(Y.shape)
+    elbo = (svgp_elbo - kl).data.cpu().numpy() / np.prod(Y.shape)
 
     assert elbo < LL
 
