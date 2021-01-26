@@ -1,5 +1,6 @@
 from __future__ import print_function
 import numpy as np
+import torch
 from torch import optim
 from torch.optim.lr_scheduler import LambdaLR
 import itertools
@@ -94,6 +95,8 @@ def fit(Y,
         mask_Ts=None,
         neuron_idxs=None):
     '''
+    Parameters
+    ----------
     Y : np.array
         data matrix of dimensions (n_samples x n x m)
     device : torch.device
@@ -158,4 +161,3 @@ def fit(Y,
         scheduler.step()
         print_progress(model, n, m, data.shape[0], i, loss_val, kl_val,
                        svgp_elbo_val, print_every, data, batch_idxs)
-    return model
