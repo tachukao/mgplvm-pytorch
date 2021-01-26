@@ -1,13 +1,8 @@
 from __future__ import print_function
-import abc
 import numpy as np
-import mgplvm
-from mgplvm.utils import softplus
-from mgplvm.manifolds import Torus, Euclid, So3
 import torch
-from torch import optim, Tensor
+from torch import optim
 from torch.optim.lr_scheduler import LambdaLR
-from typing import List
 import itertools
 
 
@@ -32,7 +27,7 @@ def sort_params(model, hook):
         itertools.chain.from_iterable(
             [model.lat_dist.concentration_parameters()]))
 
-    params = [params0, params1]
+    params = [{'params': params0}, {'params': params1}]
     return params
 
 
@@ -48,43 +43,49 @@ def print_progress(model,
                    Y=None,
                    batch_idxs=None):
     if i % print_every == 0:
-        Z = n*m*n_samples
+        Z = n * m * n_samples
         mu = model.lat_dist.lat_gmu(Y, batch_idxs).data.cpu().numpy()
         gamma = model.lat_dist.lat_gamma(Y, batch_idxs).diagonal(
             dim1=-1, dim2=-2).data.cpu().numpy()
         mu_mag = np.sqrt(np.mean(mu**2))
         sig = np.median(np.concatenate([np.diag(sig) for sig in gamma]))
         msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
-               '| |mu| {:.3f} | sig {:.3f} |').format(i,
-                                                      svgp_elbo_val / Z,
-                                                      kl_val / Z,
-                                                      loss_val / Z,
+               '| |mu| {:.3f} | sig {:.3f} |').format(i, svgp_elbo_val / Z,
+                                                      kl_val / Z, loss_val / Z,
                                                       mu_mag, sig)
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
 
 def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
-    if batch_pool is None:
-        idxs = np.arange(data_size)
-    else:
-        idxs = batch_pool
-    if model.lprior.name in ["Brownian", "ARP"]:
-        # if prior is Brownian or ARP, then batches have to be contiguous
-        i0 = np.random.randint(1, data_size - 1)
-        if i0 < batch_size / 2:
-            batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
-        elif i0 > (data_size - batch_size / 2):
-            batch_idxs = idxs[int(round(i0 - batch_size / 2)):]
-        else:
-            batch_idxs = idxs[int(round(i0 - batch_size /
-                                        2)):int(round(i0 + batch_size / 2))]
-        #print(len(batch_idxs))
+    if (batch_size is None and batch_pool is None):
+        batch_idxs = None
+        return batch_idxs
+    elif batch_size is None:
+        batch_idxs = batch_pool
         return batch_idxs
     else:
-        if batch_size is None:
-            return idxs
+        if batch_pool is None:
+            idxs = np.arange(data_size)
         else:
-            return np.random.choice(idxs, size=batch_size, replace=False)
+            idxs = batch_pool
+        if model.lprior.name in ["Brownian", "ARP"]:
+            # if prior is Brownian or ARP, then batches have to be contiguous
+            i0 = np.random.randint(1, data_size - 1)
+            if i0 < batch_size / 2:
+                batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
+            elif i0 > (data_size - batch_size / 2):
+                batch_idxs = idxs[int(round(i0 - batch_size / 2)):]
+            else:
+                batch_idxs = idxs[int(round(i0 - batch_size /
+                                            2)):int(round(i0 +
+                                                          batch_size / 2))]
+            #print(len(batch_idxs))
+            return batch_idxs
+        else:
+            if batch_size is None:
+                return idxs
+            else:
+                return np.random.choice(idxs, size=batch_size, replace=False)
 
 
 def fit(Y,
@@ -98,14 +99,18 @@ def fit(Y,
         stop=None,
         print_every=50,
         batch_size=None,
-        ts=None,
         batch_pool=None,
         mask_Ts=None,
         neuron_idxs=None):
     '''
+    Parameters
+    ----------
+    Y : np.array
+        data matrix of dimensions (n_samples x n x m)
+    device : torch.device
+        torch device
     max_steps : Optional[int], default=1000
         maximum number of training iterations
-    
     batch_pool : Optional[int list]
         pool of indices from which to batch (used to train a partial model)
     '''
@@ -119,7 +124,6 @@ def fit(Y,
     else:
         n, m = Y.shape  # neuron x conditions
     data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
-    ts = ts if ts is None else ts.to(device)
     data_size = m if batch_pool is None else len(batch_pool)  #total conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
     #optionally mask some time points
@@ -128,14 +132,7 @@ def fit(Y,
     params = sort_params(model, mask_Ts)
 
     # instantiate optimizer
-    opt = optimizer([
-        {
-            'params': params[0]
-        },
-        {
-            'params': params[1]
-        },
-    ], lr=lrate)
+    opt = optimizer(params, lr=lrate)
 
     scheduler = LambdaLR(opt, lr_lambda=[lambda x: 1, fburn])
 
@@ -143,22 +140,15 @@ def fit(Y,
         opt.zero_grad()
         ramp = 1 - np.exp(-i / burnin)
 
-        if (batch_size is None and batch_pool is None):
-            batch_idxs = None
-        elif batch_size is None:
-            batch_idxs = batch_pool
-            m = len(batch_idxs)
-        else:
-            batch_idxs = generate_batch_idxs(model,
-                                             data_size,
-                                             batch_pool=batch_pool,
-                                             batch_size=batch_size)
-            m = len(batch_idxs)  #use for printing likelihoods etc.
+        batch_idxs = generate_batch_idxs(model,
+                                         data_size,
+                                         batch_pool=batch_pool,
+                                         batch_size=batch_size)
+        m = len(batch_idxs)  #use for printing likelihoods etc.
 
         svgp_elbo, kl = model(data,
                               n_mc,
                               batch_idxs=batch_idxs,
-                              ts=ts,
                               neuron_idxs=neuron_idxs)
 
         loss = (-svgp_elbo) + (ramp * kl)  # -LL
@@ -171,8 +161,5 @@ def fit(Y,
         loss.backward()
         opt.step()
         scheduler.step()
-        print_progress(model, n, m, data.shape[0], i, loss_val, kl_val, svgp_elbo_val,
-                       print_every, data, batch_idxs)
-        
-
-    return model
+        print_progress(model, n, m, data.shape[0], i, loss_val, kl_val,
+                       svgp_elbo_val, print_every, data, batch_idxs)

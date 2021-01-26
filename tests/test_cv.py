@@ -22,14 +22,15 @@ def test_cv_runs():
     m = 10  # number of conditions / time points
     n_z = 6  # number of inducing points
     n_samples = 1  # number of samples
-    gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25, n_samples=n_samples)
+    gen = syndata.Gen(syndata.Euclid(d),
+                      n,
+                      m,
+                      variability=0.25,
+                      n_samples=n_samples)
     Y = gen.gen_data()
     # specify manifold, kernel and rdist
     manif = Euclid(m, d)
-    lat_dist = mgplvm.rdist.ReLie(manif,
-                                  m,
-                                  n_samples,
-                                  diagonal=False)
+    lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, diagonal=False)
     kernel = kernels.QuadExp(n, manif.distance)
     lik = likelihoods.Gaussian(n)
     lprior = mgplvm.lpriors.Uniform(manif)
@@ -38,10 +39,13 @@ def test_cv_runs():
                          whiten=True).to(device)
 
     ### run cv ###
-    train_ps = mgplvm.crossval.training_params(lrate = 5e-2, burnin = 20, ts=None, batch_size = None,
-                                                  max_steps = 10, n_mc = 32)
-    mod, split = mgplvm.crossval.train_cv(mod,Y,device,train_ps,test = False)
-    _ = mgplvm.crossval.test_cv(mod, split, device, Print = True)
+    train_ps = mgplvm.crossval.training_params(lrate=5e-2,
+                                               burnin=20,
+                                               batch_size=None,
+                                               max_steps=10,
+                                               n_mc=32)
+    mod, split = mgplvm.crossval.train_cv(mod, Y, device, train_ps, test=False)
+    _ = mgplvm.crossval.test_cv(mod, split, device, Print=True)
 
 
 if __name__ == '__main__':

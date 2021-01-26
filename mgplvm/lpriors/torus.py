@@ -32,7 +32,7 @@ class VonMises(LpriorTorus):
         return dists.transform_to(dists.constraints.greater_than_eq(0))(
             self.concentration)
 
-    def forward(self, g):
+    def forward(self, g, batch_idxs=None):
         concentration = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
@@ -93,7 +93,7 @@ class IARP(LpriorTorus):
         mu = self.link(self.mu)
         return mu, self.phi, concentration
 
-    def forward(self, g):
+    def forward(self, g, batch_idxs=None):
         mu, phi, concentration = self.prms
         p = self.p
         g = (g - mu) % (np.pi * 2)  # make sure it's
@@ -154,7 +154,7 @@ class LARP(LpriorTorus):
         mu = self.link(self.mu)
         return mu, self.phi, torch.square(self.eta)
 
-    def forward(self, g):
+    def forward(self, g, batch_idxs=None):
         mu, phi, eta = self.prms
         p = self.p
         g = (g - mu) % (np.pi * 2)  # make sure it's on the circle

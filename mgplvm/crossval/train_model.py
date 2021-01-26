@@ -43,7 +43,6 @@ def train_model(mod, Y, device, params):
                                       print_every=params['print_every'],
                                       batch_size=params['batch_size'],
                                       stop=params['callback'],
-                                      ts=params['ts'],
                                       batch_pool=params['batch_pool'],
                                       neuron_idxs=params['neuron_idxs'],
                                       mask_Ts=params['mask_Ts']),

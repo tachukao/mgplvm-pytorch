@@ -34,7 +34,7 @@ class Uniform(Lprior):
         '''
         super().__init__(manif)
 
-    def forward(self, g: Tensor, ts=None):
+    def forward(self, g: Tensor, batch_idxs=None):
         lp = self.manif.lprior(g)  #(n_b, n_samples, m)
         return lp.to(g.device).sum(-1)  #(n_b, n_samples)
 
@@ -55,7 +55,7 @@ class Null(Lprior):
         '''
         super().__init__(manif)
 
-    def forward(self, g: Tensor, ts=None):
+    def forward(self, g: Tensor, batch_idxs=None):
         '''
         g: (n_b x mx x d)
         output: (n_b)
@@ -102,7 +102,7 @@ class Gaussian(Lprior):
             self.gamma)
         return gamma
 
-    def forward(self, g, ts=None, kmax=5):
+    def forward(self, g, batch_idxs=None, kmax=5):
         '''
         g: (n_b x mx x d)
         output: (n_b)
@@ -160,7 +160,7 @@ class Brownian(Lprior):
         brownian_c = self.brownian_c
         return brownian_c, brownian_eta
 
-    def forward(self, g, ts=None):
+    def forward(self, g, batch_idxs=None):
         brownian_c, brownian_eta = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
@@ -220,7 +220,7 @@ class ARP(Lprior):
     def prms(self):
         return self.ar_c, self.ar_phi, torch.square(self.ar_eta)
 
-    def forward(self, g, ts=None):
+    def forward(self, g, batch_idxs=None):
         p = self.p
         ar_c, ar_phi, ar_eta = self.prms
         ginv = self.manif.inverse(g)  # n_b x n_samplex mx x d2 (on group)

@@ -61,13 +61,7 @@ class SvgpLvm(nn.Module):
         self.lat_dist = lat_dist
         self.lprior = lprior
 
-    def elbo(self,
-             data,
-             n_mc,
-             kmax=5,
-             batch_idxs=None,
-             ts=None,
-             neuron_idxs=None):
+    def elbo(self, data, n_mc, kmax=5, batch_idxs=None, neuron_idxs=None):
         """
         Parameters
         ----------
@@ -102,8 +96,6 @@ class SvgpLvm(nn.Module):
         # lq is shape (n_mc x n_samples x m)
 
         data = data if batch_idxs is None else data[:, :, batch_idxs]
-        ts = ts if (ts is None or batch_idxs is None) else ts[batch_idxs]
-        batch_size = m if batch_idxs is None else len(batch_idxs) #batch size
 
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
@@ -132,18 +124,12 @@ class SvgpLvm(nn.Module):
         
         return svgp_elbo, kl
 
-    def forward(self,
-                data,
-                n_mc,
-                kmax=5,
-                batch_idxs=None,
-                ts=None,
-                neuron_idxs=None):
+    def forward(self, data, n_mc, kmax=5, batch_idxs=None, neuron_idxs=None):
         """
         Parameters
         ----------
         data : Tensor
-            data with dimensionality (n_samples, n x m)
+            data with dimensionality (n_samples x n x m)
         n_mc : int
             number of MC samples
         kmax : int
@@ -164,7 +150,6 @@ class SvgpLvm(nn.Module):
                                   n_mc,
                                   kmax=kmax,
                                   batch_idxs=batch_idxs,
-                                  ts=ts,
                                   neuron_idxs=neuron_idxs)
         #sum over neurons, mean over  MC samples
         svgp_elbo = svgp_elbo.sum(-1).mean()
@@ -172,7 +157,7 @@ class SvgpLvm(nn.Module):
 
         return svgp_elbo, kl  #mean across batches, sum across everything else
 
-    def calc_LL(self, data, n_mc, kmax=5, ts=None):
+    def calc_LL(self, data, n_mc, kmax=5):
         """
         Parameters
         ----------
@@ -197,8 +182,7 @@ class SvgpLvm(nn.Module):
         svgp_elbo, kl = self.elbo(data,
                                   n_mc,
                                   kmax=kmax,
-                                  batch_idxs=batch_idxs,
-                                  ts=ts)
+                                  batch_idxs=batch_idxs)
         print(svgp_elbo.shape, kl.shape)
         svgp_elbo = svgp_elbo.sum(-1)  #(n_mc)
         LLs = svgp_elbo - kl  # LL for each batch (n_mc)
