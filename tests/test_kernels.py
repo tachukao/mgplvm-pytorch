@@ -57,8 +57,8 @@ def test_kernels_diagK():
 def test_kernels_run():
     device = mgplvm.utils.get_device()
     d = 1  # dims of latent space
-    n = 100  # number of neurons
-    m = 250  # number of conditions / time points
+    n = 10  # number of neurons
+    m = 25  # number of conditions / time points
     n_z = 15  # number of inducing points
     n_samples = 2  # number of samples
     l = float(0.55 * np.sqrt(d))
