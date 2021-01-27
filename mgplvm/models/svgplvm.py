@@ -99,7 +99,7 @@ class SvgpLvm(nn.Module):
 
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
-        #(n_mc x n), (1 x n)
+        #(n_mc x n_samples x n), (1 x n)
         svgp_lik, svgp_kl = self.svgp.elbo(n_mc, data, g.transpose(-1, -2))
         if neuron_idxs is not None:
             svgp_lik = svgp_lik[..., neuron_idxs]
@@ -109,7 +109,7 @@ class SvgpLvm(nn.Module):
 
         # note that svgp_lik is computed over a batch, need to rescale to
         # compute estimate for likelihood of entire dataset
-        lik = ((m / batch_size) * svgp_lik) - svgp_kl
+        lik = ((m / batch_size) * svgp_lik.sum(-2)) - svgp_kl
 
         # compute kl term for the latents (n_mc, n_samples) per batch
         prior = self.lprior(g, batch_idxs)  #(n_mc)

@@ -24,6 +24,7 @@ class GP(LpriorEuclid):
     name = "GP"
 
     def __init__(self,
+                 n,
                  manif: Manifold,
                  kernel: Kernel,
                  ts: torch.Tensor,
@@ -34,17 +35,19 @@ class GP(LpriorEuclid):
         specifying tmax helps initialize the inducing points
         '''
         super().__init__(manif)
-        d = manif.d
+        self.n = n
+        self.d = manif.d
+        d = self.d
         assert (tmax is not None)
         assert (n_z is not None)
         #1d latent and n_z inducing points
         zinit = torch.linspace(0., tmax, n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
-        z = InducingPoints(d, 1, n_z, z=zinit.repeat(d, 1, 1))
+        z = InducingPoints(n, 1, n_z, z=zinit.repeat(n, 1, 1))
         self.ts = ts
-        lik = Gaussian(d, variance=np.square(0.2), learn_sigma=False
-                       )  #consider fixing this to a small value as in GPFA
-        self.svgp = Svgp(kernel, d, z, lik, whiten=True)  #construct svgp
+        #consider fixing this to a small value as in GPFA
+        lik = Gaussian(n, variance=np.square(0.2), learn_sigma=False)
+        self.svgp = Svgp(kernel, n, z, lik, whiten=True)  #construct svgp
 
     @property
     def prms(self):
@@ -61,17 +64,19 @@ class GP(LpriorEuclid):
         batch_size = m if batch_idxs is None else len(batch_idxs)
         ts = self.ts if batch_idxs is None else self.ts[batch_idxs]
         ts = ts.to(x.device)
-        n_mc, n_samples, T, d = x.shape
-        # x now has shape (n_samples, n_mc*d, T)
-        x = x.permute(1, 0, 3, 2).reshape(n_samples, n_mc * d, T)
+        n_mc, n_samples, T, n = x.shape
+        assert (n == self.n)
+        # x now has shape (n_mc . n_samples , n, T)
+        x = x.reshape(-1, T, n).transpose(-1, -2)
+        ts = ts.reshape(1, n_samples, self.d, -1).repeat(1, n_mc, 1, 1)
 
-        # (1, n_mc . d) (n_mc . d)
-        svgp_lik, svgp_kl = self.svgp.elbo(1, x,
-                                           ts.reshape(1, n_samples, 1, -1))
+        # (1, n_mc. n_samples, n) (1, n)
+        svgp_lik, svgp_kl = self.svgp.elbo(1, x, ts)
+        svgp_lik = svgp_lik.reshape(n_mc, n_samples, n)
         # Here, we need to rescale the KL term so that it is per batch
         # as the inducing points are shared across the full batch
-        elbo = svgp_lik - ((batch_size / m) * svgp_kl)
-        return elbo.reshape(n_mc, d).sum(-1)  #sum over dimensions
+        elbo = svgp_lik.sum(-2) - ((batch_size / m) * svgp_kl)
+        return elbo.sum(-1)  #sum over dimensions
 
     @property
     def msg(self):

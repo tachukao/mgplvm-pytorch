@@ -9,9 +9,10 @@ device = mgp.utils.get_device()
 
 def test_GP_prior():
     device = mgp.utils.get_device("cuda")  # get_device("cpu")
-    d = 1  # dims of latent space
-    n = 100  # number of neurons
-    m = 250  # number of conditions / time points
+    d = 3  # dims of latent space
+    d2 = 2  # dims of ts
+    n = 50  # number of neurons
+    m = 150  # number of conditions / time points
     n_z = 15  # number of inducing points
     n_samples = 2  # number of samples
     l = 0.55 * np.sqrt(d)
@@ -40,12 +41,16 @@ def test_GP_prior():
                                Y=Y)
 
     ###construct prior
-    lprior_kernel = mgp.kernels.QuadExp(d, manif.distance, learn_alpha=False)
+    lprior_manif = mgp.manifolds.Euclid(m, d2)
+    lprior_kernel = mgp.kernels.QuadExp(d,
+                                        lprior_manif.distance,
+                                        learn_alpha=False)
     ts = torch.arange(m).to(device)[None, ...]
-    lprior = mgp.lpriors.GP(manif,
+    lprior = mgp.lpriors.GP(d,
+                            lprior_manif,
                             lprior_kernel,
                             n_z=20,
-                            ts=ts.repeat(n_samples, 1),
+                            ts=ts.repeat(n_samples, d2),
                             tmax=m)
     #lprior = lpriors.Gaussian(manif)
 
@@ -74,20 +79,21 @@ def test_GP_prior():
     #input to prior
 
     def elbo_for_batch(i):
-        x = g[i:i + 1].permute(1, 0, 3, 2).reshape(n_samples, -1, m)
-        lik, kl = mod.lprior.svgp.elbo(1, x, ts.reshape(1, 1, 1, -1))
-        return (lik - kl)
+        x = g[i:i + 1].transpose(-1, -2)
+        lik, kl = mod.lprior.svgp.elbo(
+            1, x,
+            ts.repeat(n_samples, d2).reshape(1, n_samples, d2, -1))
+        return (lik.sum(-2) - kl)
 
     #### naive computation ####
     LLs1 = [elbo_for_batch(i) for i in range(n_mc)]
     elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
     #### try to batch things ####
-    ts = ts.repeat(n_samples, 1).reshape(1, n_samples, 1, -1)
-    lik, kl = mod.lprior.svgp.elbo(
-        1,
-        g.permute(1, 0, 3, 2).reshape(n_samples, -1, m), ts)
-    elbo2_b = (lik - kl).sum(0)
+    ts = ts.repeat(n_samples * n_mc, d2).reshape(1, n_mc * n_samples, d2, -1)
+    lik, kl = mod.lprior.svgp.elbo(1,
+                                   g.transpose(-1, -2).reshape(-1, d, m), ts)
+    elbo2_b = (lik.reshape(n_mc, n_samples, d).sum(-2) - kl).sum(-1)
     print(elbo1_b.shape, elbo2_b.shape)
 
     ### print comparison ###
