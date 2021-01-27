@@ -34,9 +34,9 @@ class Uniform(Lprior):
         '''
         super().__init__(manif)
 
-    def forward(self, g: Tensor, ts=None):
+    def forward(self, g: Tensor, batch_idxs=None):
         lp = self.manif.lprior(g)  #(n_b, n_samples, m)
-        return lp.to(g.device).sum(-1)  #(n_b, n_samples)
+        return lp.to(g.device).sum(-1).sum(-1)  #(n_b)
 
     def prms(self):
         pass
@@ -55,9 +55,9 @@ class Null(Lprior):
         '''
         super().__init__(manif)
 
-    def forward(self, g: Tensor, ts=None):
+    def forward(self, g: Tensor, batch_idxs=None):
         '''
-        g: (n_b x mx x d)
+        g: (n_b x n_samples x mx x d)
         output: (n_b)
         '''
         return 0 * torch.ones(g.shape[0])
@@ -102,7 +102,7 @@ class Gaussian(Lprior):
             self.gamma)
         return gamma
 
-    def forward(self, g, ts=None, kmax=5):
+    def forward(self, g, batch_idxs=None, kmax=5):
         '''
         g: (n_b x mx x d)
         output: (n_b)
@@ -117,8 +117,9 @@ class Gaussian(Lprior):
         #project onto tangent space
         x = self.manif.logmap(g)
         # compute log prior
-        lq = self.manif.log_q(q.log_prob, g, self.manif.d, kmax)  #(n_b, m)
-        return lq.sum(-1)
+        lq = self.manif.log_q(q.log_prob, g, self.manif.d,
+                              kmax)  #(n_b, n_samples, m)
+        return lq.sum(-1).sum(-1)
 
     @property
     def msg(self):
@@ -160,7 +161,7 @@ class Brownian(Lprior):
         brownian_c = self.brownian_c
         return brownian_c, brownian_eta
 
-    def forward(self, g, ts=None):
+    def forward(self, g, batch_idxs=None):
         brownian_c, brownian_eta = self.prms
         ginv = self.manif.inverse(g)
         dg = self.manif.gmul(ginv[..., 0:-1, :], g[..., 1:, :])
@@ -168,8 +169,8 @@ class Brownian(Lprior):
         normal = dists.Normal(loc=brownian_c, scale=torch.sqrt(brownian_eta))
         diagn = dists.Independent(normal, 1)
         lq = self.manif.log_q(diagn.log_prob, dx, self.manif.d, kmax=self.kmax)
-        #(n_b, m) -> (n_b)
-        return lq.sum(-1)
+        #(n_b, n_samples, m) -> (n_b)
+        return lq.sum(-1).sum(-1)
 
     @property
     def msg(self):
@@ -220,7 +221,7 @@ class ARP(Lprior):
     def prms(self):
         return self.ar_c, self.ar_phi, torch.square(self.ar_eta)
 
-    def forward(self, g, ts=None):
+    def forward(self, g, batch_idxs=None):
         p = self.p
         ar_c, ar_phi, ar_eta = self.prms
         ginv = self.manif.inverse(g)  # n_b x n_samplex mx x d2 (on group)
@@ -252,7 +253,7 @@ class ARP(Lprior):
                                   kmax=self.kmax)
             # (n_b x n_samplesx m-p-1)
 
-        lq = lq.sum(-1)
+        lq = lq.sum(-1).sum(-1)
 
         #in the future, we may want an explicit prior over the p initial points
         return lq

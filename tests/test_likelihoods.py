@@ -22,7 +22,11 @@ def test_likelihood_runs():
     m = 10  # number of conditions / time points
     n_z = 5  # number of inducing points
     n_samples = 2  # number of samples
-    gen = syndata.Gen(syndata.Euclid(d), n, m, variability=0.25, n_samples=n_samples)
+    gen = syndata.Gen(syndata.Euclid(d),
+                      n,
+                      m,
+                      variability=0.25,
+                      n_samples=n_samples)
     Y = gen.gen_data()
     Y = np.round(Y - np.amin(Y))
     print(Y.shape)
@@ -46,15 +50,15 @@ def test_likelihood_runs():
                              whiten=True).to(device)
 
         # train model
-        trained_model = optimisers.svgp.fit(Y,
-                                            mod,
-                                            device,
-                                            optimizer=optim.Adam,
-                                            max_steps=5,
-                                            burnin=5 / 2E-2,
-                                            n_mc=64,
-                                            lrate=2E-2,
-                                            print_every=1000)
+        optimisers.svgp.fit(Y,
+                            mod,
+                            device,
+                            optimizer=optim.Adam,
+                            max_steps=5,
+                            burnin=5 / 2E-2,
+                            n_mc=64,
+                            lrate=2E-2,
+                            print_every=1000)
 
         ### test burda log likelihood ###
         LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
