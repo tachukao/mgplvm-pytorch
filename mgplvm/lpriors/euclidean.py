@@ -71,7 +71,7 @@ class GP(LpriorEuclid):
         ts = ts.reshape(1, n_samples, self.d, -1).repeat(1, n_mc, 1, 1)
 
         # (1, n_mc. n_samples, n) (1, n)
-        svgp_lik, svgp_kl = self.svgp.elbo(1, x, ts)
+        svgp_lik, svgp_kl = self.svgp.elbo(1, x, ts, sum_samples=False)
         svgp_lik = svgp_lik.reshape(n_mc, n_samples, n)
         # Here, we need to rescale the KL term so that it is per batch
         # as the inducing points are shared across the full batch

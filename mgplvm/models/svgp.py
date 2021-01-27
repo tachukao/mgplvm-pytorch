@@ -81,7 +81,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, n_mc: int, y: Tensor, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def elbo(self, n_mc: int, y: Tensor, x: Tensor,
+             sum_samples=True) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -91,10 +92,14 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             data tensor with dimensions (n_samples x n x m)
         x : Tensor (single kernel) or Tensor list (product kernels)
             input tensor(s) with dimensions (n_mc x n_samples x d x m)
+        sum_samples_dim : bool
+            if True, sum over samples dimension of the likelihood term
 
         Returns
         -------
-        evidence lower bound : torch.Tensor (n_mc x n)
+        lik, prior_kl : Tuple[torch.Tensor, torch.Tensor]
+            lik has dimensions (n_mc x n) if sum_samples_dim True, (n_mc x n_samples x n) otherwise
+            prior_kl has dimensions (1 x n)
 
         Notes
         -----
@@ -109,8 +114,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
-        #(n_mc, n_samples, n)
-        lik = lik
+        if sum_samples:
+            lik = lik.sum(-2)
 
         return lik, prior_kl
 

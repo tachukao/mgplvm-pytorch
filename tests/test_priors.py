@@ -80,9 +80,11 @@ def test_GP_prior():
 
     def elbo_for_batch(i):
         x = g[i:i + 1].transpose(-1, -2)
-        lik, kl = mod.lprior.svgp.elbo(
-            1, x,
-            ts.repeat(n_samples, d2).reshape(1, n_samples, d2, -1))
+        lik, kl = mod.lprior.svgp.elbo(1,
+                                       x,
+                                       ts.repeat(n_samples, d2).reshape(
+                                           1, n_samples, d2, -1),
+                                       sum_samples=False)
         return (lik.sum(-2) - kl)
 
     #### naive computation ####
@@ -92,7 +94,9 @@ def test_GP_prior():
     #### try to batch things ####
     ts = ts.repeat(n_samples * n_mc, d2).reshape(1, n_mc * n_samples, d2, -1)
     lik, kl = mod.lprior.svgp.elbo(1,
-                                   g.transpose(-1, -2).reshape(-1, d, m), ts)
+                                   g.transpose(-1, -2).reshape(-1, d, m),
+                                   ts,
+                                   sum_samples=False)
     elbo2_b = (lik.reshape(n_mc, n_samples, d).sum(-2) - kl).sum(-1)
     print(elbo1_b.shape, elbo2_b.shape)
 

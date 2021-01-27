@@ -109,7 +109,7 @@ class SvgpLvm(nn.Module):
 
         # note that svgp_lik is computed over a batch, need to rescale to
         # compute estimate for likelihood of entire dataset
-        lik = ((m / batch_size) * svgp_lik.sum(-2)) - svgp_kl
+        lik = ((m / batch_size) * svgp_lik) - svgp_kl
 
         # compute kl term for the latents (n_mc, n_samples) per batch
         prior = self.lprior(g, batch_idxs)  #(n_mc)
