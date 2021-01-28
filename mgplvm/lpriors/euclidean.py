@@ -40,8 +40,6 @@ class GP(LpriorEuclid):
         self.n_samples = n_samples
         self.d = manif.d
         d = self.d
-        assert (tmax is not None)
-        assert (n_z is not None)
         #1d latent and n_z inducing points
         zinit = torch.linspace(0., tmax, n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
@@ -76,18 +74,14 @@ class GP(LpriorEuclid):
         assert (n == self.n)
         # x now has shape (n_mc . n_samples , n, T)
         x = x.transpose(-1, -2)
-        ts = ts.reshape(1, n_samples, self.d, -1)
+        ts = ts.reshape(1, n_samples, self.d, -1).repeat(n_mc, 1, 1, 1)
 
-        def for_batch(i):
-            svgp_lik, svgp_kl = self.svgp.elbo(x[i:i + 1], ts)
-            elbo = svgp_lik - ((batch_size / m) * svgp_kl)
-            return elbo
-
-        elbos = torch.cat([for_batch(i) for i in range(n_mc)])
+        svgp_lik, svgp_kl = self.svgp.elbo(x, ts)
+        elbo = svgp_lik - ((batch_size / m) * svgp_kl)
 
         # Here, we need to rescale the KL term so that it is per batch
         # as the inducing points are shared across the full batch
-        return elbos.sum(-1)  #sum over dimensions
+        return elbo.sum(-1)  #sum over dimensions
 
     @property
     def msg(self):

@@ -45,13 +45,14 @@ def test_GP_prior():
     lprior_kernel = mgp.kernels.QuadExp(d,
                                         lprior_manif.distance,
                                         learn_alpha=False)
-    ts = torch.arange(m).to(device)[None, ...]
+    ts = torch.arange(m).to(device)[None, None, ...].repeat(
+        1, n_samples, d2, 1)
     lprior = mgp.lpriors.GP(d,
                             n_samples,
                             lprior_manif,
                             lprior_kernel,
                             n_z=20,
-                            ts=ts.repeat(n_samples, d2),
+                            ts=ts,
                             tmax=m)
     #lprior = lpriors.Gaussian(manif)
 
@@ -63,50 +64,45 @@ def test_GP_prior():
 
     ### test that training runs ###
     n_mc = 64
+
     mgp.optimisers.svgp.fit(Y,
                             mod,
                             device,
                             optimizer=optim.Adam,
                             n_mc=n_mc,
                             max_steps=5,
-                            burnin=100,
+                            burnin=1,
                             lrate=10E-2,
                             print_every=50)
 
+    # check that we are indeed optimizing different q_mu in the GP prior for each sample
+    assert (not (torch.allclose(mod.lprior.svgp.q_mu[0].detach().data,
+                                mod.lprior.svgp.q_mu[1].detach().data)))
+
     ### test that two ways of computing the prior agree ###
-    #data = torch.tensor(Y).to(device)
-    #g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
+    data = torch.tensor(Y).to(device)
+    g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
+    g = g.transpose(-1, -2)
 
-    ##input to prior
-
-    #def elbo_for_batch(i):
-    #    x = g[i:i + 1].transpose(-1, -2)
-    #    lik, kl = mod.lprior.svgp.elbo(1,
-    #                                   x,
-    #                                   ts.repeat(n_samples, d2).reshape(
-    #                                       1, n_samples, d2, -1),
-    #                                   sum_samples=False)
-    #    return (lik.sum(-2) - kl)
+    def for_batch(i):
+        svgp_lik, svgp_kl = mod.lprior.svgp.elbo(g[i:i + 1], ts)
+        elbo = svgp_lik - svgp_kl
+        return elbo
 
     ##### naive computation ####
-    #LLs1 = [elbo_for_batch(i) for i in range(n_mc)]
-    #elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
+    LLs1 = [for_batch(i) for i in range(n_mc)]
+    elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
     ##### try to batch things ####
-    #ts = ts.repeat(n_samples * n_mc, d2).reshape(1, n_mc * n_samples, d2, -1)
-    #lik, kl = mod.lprior.svgp.elbo(1,
-    #                               g.transpose(-1, -2).reshape(-1, d, m),
-    #                               ts,
-    #                               sum_samples=False)
-    #elbo2_b = (lik.reshape(n_mc, n_samples, d).sum(-2) - kl).sum(-1)
-    #print(elbo1_b.shape, elbo2_b.shape)
+    lik, kl = mod.lprior.svgp.elbo(g, ts)
+    elbo2_b = (lik - kl).sum(-1)
 
     #### print comparison ###
-    #print('ELBOs:', elbo1_b.sum().detach().data, elbo2_b.sum().detach().data)
-    #assert all(torch.isclose(elbo1_b.detach().data, elbo2_b.detach().data))
+    print('ELBOs:', elbo1_b.sum().detach().data, elbo2_b.sum().detach().data)
+    assert all(torch.isclose(elbo1_b.detach().data, elbo2_b.detach().data))
 
-    #print(elbo1_b[:5])
-    #print(elbo2_b[:5])
+    print(elbo1_b[:2])
+    print(elbo2_b[:2])
 
 
 def test_ARP_runs():

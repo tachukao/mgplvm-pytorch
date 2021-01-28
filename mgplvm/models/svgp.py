@@ -70,6 +70,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         if self.tied_samples:
             assert (q_mu.shape[0] == 1)
             assert (q_sqrt.shape[0] == 1)
+        else:
+            assert (q_mu.shape[0] == n_samples)
+            assert (q_sqrt.shape[0] == n_samples)
 
         self.q_mu = nn.Parameter(q_mu, requires_grad=True)
         self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
@@ -87,6 +90,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
     def prior_kl(self):
         q_mu, q_sqrt, z = self.prms
+        assert (q_mu.shape[0] == q_sqrt.shape[0])
         z = self._expand_z(z)
         e = torch.eye(self.n_inducing).to(q_mu.device)
         if not self.whiten:
@@ -106,8 +110,6 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         """
         Parameters
         ----------
-        n_mc : int
-            number of monte carlo samples
         y : Tensor
             data tensor with dimensions (n_samples x n x m)
         x : Tensor (single kernel) or Tensor list (product kernels)
@@ -140,7 +142,6 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         if sum_samples:
             lik = lik.sum(-2)
             prior_kl = prior_kl.sum(-2)
-
 
         return lik, prior_kl
 
@@ -196,6 +197,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         q_mu, q_sqrt, z = self.prms
         kernel = self.kernel
         q_mu = q_mu[..., None]
+
+        assert (q_mu.shape[0] == q_sqrt.shape[0])
 
         # see ELBO for explanation of _expand
         z = self._expand_z(z)
@@ -291,15 +294,11 @@ class Svgp(SvgpBase):
         kzz = kernel(_z, _z) + (e * jitter)
         l = torch.cholesky(kzz, upper=False)[None, ...]
 
-        if not tied_samples:
-            l = l.repeat(n_samples, 1, 1, 1)
-
         super().__init__(kernel,
                          n,
                          n_inducing,
                          likelihood,
                          n_samples=n_samples,
-                         q_sqrt=l,
                          whiten=whiten,
                          tied_samples=tied_samples)
         self.z = z
