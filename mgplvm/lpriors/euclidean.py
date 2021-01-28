@@ -30,7 +30,8 @@ class GP(LpriorEuclid):
                  kernel: Kernel,
                  ts: torch.Tensor,
                  n_z: Optional[int] = 20,
-                 tmax: Optional[int] = 1):
+                 tmax: Optional[int] = 1,
+                d = 1):
         '''
         instantiate with a Kernel. This already specifies which parameters are learnable
         specifying tmax helps initialize the inducing points
@@ -38,8 +39,8 @@ class GP(LpriorEuclid):
         super().__init__(manif)
         self.n = n
         self.n_samples = n_samples
-        self.d = manif.d
-        d = self.d
+        self.d = d#manif.d
+        #d = self.d
         #1d latent and n_z inducing points
         zinit = torch.linspace(0., tmax, n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
