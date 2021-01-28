@@ -105,8 +105,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, y: Tensor, x: Tensor,
-             sum_samples=True) -> Tuple[Tensor, Tensor]:
+    def elbo(self, y: Tensor, x: Tensor) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -114,14 +113,12 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             data tensor with dimensions (n_samples x n x m)
         x : Tensor (single kernel) or Tensor list (product kernels)
             input tensor(s) with dimensions (n_mc x n_samples x d x m)
-        sum_samples_dim : bool
-            if True, sum over samples dimension of the likelihood term
 
         Returns
         -------
         lik, prior_kl : Tuple[torch.Tensor, torch.Tensor]
-            lik has dimensions (n_mc x n) if sum_samples_dim True, (n_mc x n_samples x n) otherwise
-            prior_kl has dimensions (1 x n)
+            lik has dimensions (n_mc x n) 
+            prior_kl has dimensions (n)
 
         Notes
         -----
@@ -133,15 +130,15 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         kernel = self.kernel
         n_inducing = self.n_inducing  # inducing points
-        prior_kl = self.prior_kl()  # prior KL(q(u) || p(u)) (1 x n)
+        prior_kl = self.prior_kl(
+        )  # prior KL(q(u) || p(u)) (1 x n) if tied_samples otherwise (n_samples x n)
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
-        if sum_samples:
-            lik = lik.sum(-2)
-            prior_kl = prior_kl.sum(-2)
+        lik = lik.sum(-2)
+        prior_kl = prior_kl.sum(-2)
 
         return lik, prior_kl
 
