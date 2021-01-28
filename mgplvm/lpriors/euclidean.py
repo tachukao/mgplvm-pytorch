@@ -25,6 +25,7 @@ class GP(LpriorEuclid):
 
     def __init__(self,
                  n,
+                 n_samples,
                  manif: Manifold,
                  kernel: Kernel,
                  ts: torch.Tensor,
@@ -36,6 +37,7 @@ class GP(LpriorEuclid):
         '''
         super().__init__(manif)
         self.n = n
+        self.n_samples = n_samples
         self.d = manif.d
         d = self.d
         assert (tmax is not None)
@@ -47,7 +49,13 @@ class GP(LpriorEuclid):
         self.ts = ts
         #consider fixing this to a small value as in GPFA
         lik = Gaussian(n, variance=np.square(0.2), learn_sigma=False)
-        self.svgp = Svgp(kernel, n, z, lik, whiten=True)  #construct svgp
+        self.svgp = Svgp(kernel,
+                         n,
+                         z,
+                         lik,
+                         whiten=True,
+                         n_samples=n_samples,
+                         tied_samples=False)  #construct svgp
 
     @property
     def prms(self):
@@ -67,16 +75,19 @@ class GP(LpriorEuclid):
         n_mc, n_samples, T, n = x.shape
         assert (n == self.n)
         # x now has shape (n_mc . n_samples , n, T)
-        x = x.reshape(-1, T, n).transpose(-1, -2)
-        ts = ts.reshape(1, n_samples, self.d, -1).repeat(1, n_mc, 1, 1)
+        x = x.transpose(-1, -2)
+        ts = ts.reshape(1, n_samples, self.d, -1)
 
-        # (1, n_mc. n_samples, n) (1, n)
-        svgp_lik, svgp_kl = self.svgp.elbo(1, x, ts, sum_samples=False)
-        svgp_lik = svgp_lik.reshape(n_mc, n_samples, n)
+        def for_batch(i):
+            svgp_lik, svgp_kl = self.svgp.elbo(x[i:i + 1], ts)
+            elbo = svgp_lik - ((batch_size / m) * svgp_kl)
+            return elbo
+
+        elbos = torch.cat([for_batch(i) for i in range(n_mc)])
+
         # Here, we need to rescale the KL term so that it is per batch
         # as the inducing points are shared across the full batch
-        elbo = svgp_lik.sum(-2) - ((batch_size / m) * svgp_kl)
-        return elbo.sum(-1)  #sum over dimensions
+        return elbos.sum(-1)  #sum over dimensions
 
     @property
     def msg(self):

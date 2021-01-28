@@ -47,6 +47,7 @@ def test_GP_prior():
                                         learn_alpha=False)
     ts = torch.arange(m).to(device)[None, ...]
     lprior = mgp.lpriors.GP(d,
+                            n_samples,
                             lprior_manif,
                             lprior_kernel,
                             n_z=20,
@@ -73,39 +74,39 @@ def test_GP_prior():
                             print_every=50)
 
     ### test that two ways of computing the prior agree ###
-    data = torch.tensor(Y).to(device)
-    g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
+    #data = torch.tensor(Y).to(device)
+    #g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
 
-    #input to prior
+    ##input to prior
 
-    def elbo_for_batch(i):
-        x = g[i:i + 1].transpose(-1, -2)
-        lik, kl = mod.lprior.svgp.elbo(1,
-                                       x,
-                                       ts.repeat(n_samples, d2).reshape(
-                                           1, n_samples, d2, -1),
-                                       sum_samples=False)
-        return (lik.sum(-2) - kl)
+    #def elbo_for_batch(i):
+    #    x = g[i:i + 1].transpose(-1, -2)
+    #    lik, kl = mod.lprior.svgp.elbo(1,
+    #                                   x,
+    #                                   ts.repeat(n_samples, d2).reshape(
+    #                                       1, n_samples, d2, -1),
+    #                                   sum_samples=False)
+    #    return (lik.sum(-2) - kl)
 
-    #### naive computation ####
-    LLs1 = [elbo_for_batch(i) for i in range(n_mc)]
-    elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
+    ##### naive computation ####
+    #LLs1 = [elbo_for_batch(i) for i in range(n_mc)]
+    #elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
-    #### try to batch things ####
-    ts = ts.repeat(n_samples * n_mc, d2).reshape(1, n_mc * n_samples, d2, -1)
-    lik, kl = mod.lprior.svgp.elbo(1,
-                                   g.transpose(-1, -2).reshape(-1, d, m),
-                                   ts,
-                                   sum_samples=False)
-    elbo2_b = (lik.reshape(n_mc, n_samples, d).sum(-2) - kl).sum(-1)
-    print(elbo1_b.shape, elbo2_b.shape)
+    ##### try to batch things ####
+    #ts = ts.repeat(n_samples * n_mc, d2).reshape(1, n_mc * n_samples, d2, -1)
+    #lik, kl = mod.lprior.svgp.elbo(1,
+    #                               g.transpose(-1, -2).reshape(-1, d, m),
+    #                               ts,
+    #                               sum_samples=False)
+    #elbo2_b = (lik.reshape(n_mc, n_samples, d).sum(-2) - kl).sum(-1)
+    #print(elbo1_b.shape, elbo2_b.shape)
 
-    ### print comparison ###
-    print('ELBOs:', elbo1_b.sum().detach().data, elbo2_b.sum().detach().data)
-    assert all(torch.isclose(elbo1_b.detach().data, elbo2_b.detach().data))
+    #### print comparison ###
+    #print('ELBOs:', elbo1_b.sum().detach().data, elbo2_b.sum().detach().data)
+    #assert all(torch.isclose(elbo1_b.detach().data, elbo2_b.detach().data))
 
-    print(elbo1_b[:5])
-    print(elbo2_b[:5])
+    #print(elbo1_b[:5])
+    #print(elbo2_b[:5])
 
 
 def test_ARP_runs():

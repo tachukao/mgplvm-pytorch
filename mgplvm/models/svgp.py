@@ -21,35 +21,55 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                  n: int,
                  n_inducing: int,
                  likelihood: Likelihood,
+                 n_samples: int = 1,
                  q_mu: Optional[Tensor] = None,
                  q_sqrt: Optional[Tensor] = None,
-                 whiten=True):
+                 whiten=True,
+                 tied_samples=True):
         """
         __init__ method for Base Sparse Variational GP Class
         Parameters
         ----------
         n : int
             number of neurons
-        m : int
-            number of conditions
         n_inducing : int
             number of inducing points
+        likelihood : Likelihood
+            likliehood module used for computing variational expectation
+        n_samples : int 
+            number of samples
         q_mu : Optional Tensor
             optional Tensor for initialization
         q_sqrt : Optional Tensor
             optional Tensor for initialization
         whiten : Optional bool
             whiten q if true
+        tied_samples : Optional bool
         """
         super().__init__()
         self.n = n
         self.n_inducing = n_inducing
+        self.tied_samples = tied_samples
+        self.n_samples = n_samples
         self.kernel = kernel
 
-        q_mu = torch.zeros(n, n_inducing) if q_mu is None else q_mu
-        q_sqrt = torch.diag_embed(torch.ones(
-            n, n_inducing)) if q_sqrt is None else transform_to(
-                constraints.lower_cholesky).inv(q_sqrt)
+        if q_mu is None:
+            if tied_samples:
+                q_mu = torch.zeros(1, n, n_inducing)
+            else:
+                q_mu = torch.zeros(n_samples, n, n_inducing)
+
+        if q_sqrt is None:
+            if tied_samples:
+                q_sqrt = torch.diag_embed(torch.ones(1, n, n_inducing))
+            else:
+                q_sqrt = torch.diag_embed(torch.ones(n_samples, n, n_inducing))
+        else:
+            q_sqrt = transform_to(constraints.lower_cholesky).inv(q_sqrt)
+
+        if self.tied_samples:
+            assert (q_mu.shape[0] == 1)
+            assert (q_sqrt.shape[0] == 1)
 
         self.q_mu = nn.Parameter(q_mu, requires_grad=True)
         self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
@@ -81,7 +101,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, n_mc: int, y: Tensor, x: Tensor,
+    def elbo(self, y: Tensor, x: Tensor,
              sum_samples=True) -> Tuple[Tensor, Tensor]:
         """
         Parameters
@@ -106,6 +126,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         Implementation largely follows derivation of the ELBO presented in `here <https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html>`_.
         """
 
+        assert (x.shape[-3] == y.shape[-3])
+        assert (x.shape[-1] == y.shape[-1])
+
         kernel = self.kernel
         n_inducing = self.n_inducing  # inducing points
         prior_kl = self.prior_kl()  # prior KL(q(u) || p(u)) (1 x n)
@@ -116,6 +139,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
         if sum_samples:
             lik = lik.sum(-2)
+            prior_kl = prior_kl.sum(-2)
+
 
         return lik, prior_kl
 
@@ -234,7 +259,9 @@ class Svgp(SvgpBase):
                  n: int,
                  z: InducingPoints,
                  likelihood: Likelihood,
-                 whiten: Optional[bool] = True):
+                 n_samples=1,
+                 whiten: Optional[bool] = True,
+                 tied_samples: Optional[bool] = True):
         """
         __init__ method for Sparse GP Class
         Parameters
@@ -243,14 +270,15 @@ class Svgp(SvgpBase):
             kernel used for sparse GP (e.g., QuadExp)
         n : int
             number of neurons
-        m : int
-            number of conditions
         z : InducingPoints
             inducing points for sparse GP
         likelihood : Likelihood
             likleihood p(y | f) 
+        n_samples : int
+            number of samples 
         whiten : Optional bool
             whiten q if true
+        tied_samples : Optional bool
 
         Returns
         -------
@@ -261,13 +289,19 @@ class Svgp(SvgpBase):
         _z = self._expand_z(z.prms)
         e = torch.eye(n_inducing)
         kzz = kernel(_z, _z) + (e * jitter)
-        l = torch.cholesky(kzz, upper=False)
+        l = torch.cholesky(kzz, upper=False)[None, ...]
+
+        if not tied_samples:
+            l = l.repeat(n_samples, 1, 1, 1)
+
         super().__init__(kernel,
                          n,
                          n_inducing,
                          likelihood,
+                         n_samples=n_samples,
                          q_sqrt=l,
-                         whiten=whiten)
+                         whiten=whiten,
+                         tied_samples=tied_samples)
         self.z = z
 
     @property
@@ -278,7 +312,6 @@ class Svgp(SvgpBase):
         return q_mu, q_sqrt, z
 
     def _expand_z(self, z: Tensor) -> Tensor:
-        z = z[None, ...]
         return z
 
     def _expand_x(self, x: Tensor) -> Tensor:
@@ -339,7 +372,7 @@ class Svgp(SvgpBase):
 #        return q_mu, q_sqrt, zs
 #
 #    def _expand_z(self, zs: List[Tensor]) -> Tuple[List[Tensor]]:
-#        zs = [z[None, ...] for z in zs]
+#        zs = [z for z in zs]
 #        return zs
 #
 #    def _expand_x(self, xs: List[Tensor]) -> Tuple[List[Tensor]]:

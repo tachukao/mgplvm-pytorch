@@ -26,7 +26,9 @@ class SvgpLvm(nn.Module):
                  likelihood: Likelihood,
                  lat_dist: Rdist,
                  lprior=Lprior,
-                 whiten: bool = True):
+                 whiten: bool = True,
+                 n_samples: int = 1,
+                 tied_samples=True):
         """
         __init__ method for Vanilla model
         Parameters
@@ -56,7 +58,9 @@ class SvgpLvm(nn.Module):
                               n,
                               self.z,
                               likelihood,
-                              whiten=whiten)
+                              n_samples=n_samples,
+                              whiten=whiten,
+                              tied_samples=tied_samples)
         # latent distribution
         self.lat_dist = lat_dist
         self.lprior = lprior
@@ -100,7 +104,7 @@ class SvgpLvm(nn.Module):
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
         #(n_mc x n_samples x n), (1 x n)
-        svgp_lik, svgp_kl = self.svgp.elbo(n_mc, data, g.transpose(-1, -2))
+        svgp_lik, svgp_kl = self.svgp.elbo(data, g.transpose(-1, -2))
         if neuron_idxs is not None:
             svgp_lik = svgp_lik[..., neuron_idxs]
             svgp_kl = svgp_kl[..., neuron_idxs]
