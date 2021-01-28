@@ -314,7 +314,7 @@ class Svgp(SvgpBase):
         return z
 
     def _expand_x(self, x: Tensor) -> Tensor:
-        x = x[:, :, None, ...]
+        x = x[..., None, :, :]
         return x
 
 

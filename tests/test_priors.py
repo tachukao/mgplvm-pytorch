@@ -46,7 +46,7 @@ def test_GP_prior():
                                         lprior_manif.distance,
                                         learn_alpha=False)
     ts = torch.arange(m).to(device)[None, None, ...].repeat(
-        1, n_samples, d2, 1)
+        n_samples, d2, 1)
     lprior = mgp.lpriors.GP(d,
                             n_samples,
                             lprior_manif,
