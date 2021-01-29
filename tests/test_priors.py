@@ -9,9 +9,10 @@ device = mgp.utils.get_device()
 
 def test_GP_prior():
     device = mgp.utils.get_device("cuda")  # get_device("cpu")
-    d = 1  # dims of latent space
-    n = 100  # number of neurons
-    m = 250  # number of conditions / time points
+    d = 3  # dims of latent space
+    d2 = 2  # dims of ts
+    n = 50  # number of neurons
+    m = 150  # number of conditions / time points
     n_z = 15  # number of inducing points
     n_samples = 2  # number of samples
     l = 0.55 * np.sqrt(d)
@@ -40,13 +41,19 @@ def test_GP_prior():
                                Y=Y)
 
     ###construct prior
-    lprior_kernel = mgp.kernels.QuadExp(d, manif.distance, learn_alpha=False)
-    ts = torch.arange(m).to(device)[None, ...]
-    lprior = mgp.lpriors.GP(manif,
+    lprior_manif = mgp.manifolds.Euclid(m, d2)
+    lprior_kernel = mgp.kernels.QuadExp(d,
+                                        lprior_manif.distance,
+                                        learn_alpha=False)
+    ts = torch.arange(m).to(device)[None, None, ...].repeat(
+        n_samples, d2, 1)
+    lprior = mgp.lpriors.GP(d,
+                            n_samples,
+                            lprior_manif,
                             lprior_kernel,
                             n_z=20,
-                            ts=ts.repeat(n_samples, 1),
-                            tmax=m)
+                            ts=ts,
+                           d = d2)
     #lprior = lpriors.Gaussian(manif)
 
     # generate model
@@ -57,45 +64,45 @@ def test_GP_prior():
 
     ### test that training runs ###
     n_mc = 64
+
     mgp.optimisers.svgp.fit(Y,
                             mod,
                             device,
                             optimizer=optim.Adam,
                             n_mc=n_mc,
                             max_steps=5,
-                            burnin=100,
+                            burnin=1,
                             lrate=10E-2,
                             print_every=50)
+
+    # check that we are indeed optimizing different q_mu in the GP prior for each sample
+    assert (not (torch.allclose(mod.lprior.svgp.q_mu[0].detach().data,
+                                mod.lprior.svgp.q_mu[1].detach().data)))
 
     ### test that two ways of computing the prior agree ###
     data = torch.tensor(Y).to(device)
     g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
+    g = g.transpose(-1, -2)
 
-    #input to prior
+    def for_batch(i):
+        svgp_lik, svgp_kl = mod.lprior.svgp.elbo(g[i:i + 1], ts)
+        elbo = svgp_lik - svgp_kl
+        return elbo
 
-    def elbo_for_batch(i):
-        x = g[i:i + 1].permute(1, 0, 3, 2).reshape(n_samples, -1, m)
-        lik, kl = mod.lprior.svgp.elbo(1, x, ts.reshape(1, 1, 1, -1))
-        return (lik - kl)
-
-    #### naive computation ####
-    LLs1 = [elbo_for_batch(i) for i in range(n_mc)]
+    ##### naive computation ####
+    LLs1 = [for_batch(i) for i in range(n_mc)]
     elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
-    #### try to batch things ####
-    ts = ts.repeat(n_samples, 1).reshape(1, n_samples, 1, -1)
-    lik, kl = mod.lprior.svgp.elbo(
-        1,
-        g.permute(1, 0, 3, 2).reshape(n_samples, -1, m), ts)
-    elbo2_b = (lik - kl).sum(0)
-    print(elbo1_b.shape, elbo2_b.shape)
+    ##### try to batch things ####
+    lik, kl = mod.lprior.svgp.elbo(g, ts)
+    elbo2_b = (lik - kl).sum(-1)
 
-    ### print comparison ###
+    #### print comparison ###
     print('ELBOs:', elbo1_b.sum().detach().data, elbo2_b.sum().detach().data)
     assert all(torch.isclose(elbo1_b.detach().data, elbo2_b.detach().data))
 
-    print(elbo1_b[:5])
-    print(elbo2_b[:5])
+    print(elbo1_b[:2])
+    print(elbo2_b[:2])
 
 
 def test_ARP_runs():

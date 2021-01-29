@@ -99,7 +99,6 @@ class Gaussian(Likelihood):
             ..., None]  #(n_mc x n_samples x n x m )
         ve4 = -0.5 * fvar / variance[..., None]  #(n_mc x n_samples x n x m)
 
-        #print(ve1.shape, ve2.shape, ve3.shape, ve4.shape)
         #(n_mc x n_samples x n)
         return ve1 + ve2 + ve3.sum(-1) + ve4.sum(-1)
 

@@ -24,27 +24,51 @@ class GP(LpriorEuclid):
     name = "GP"
 
     def __init__(self,
+                 n,
+                 n_samples,
                  manif: Manifold,
                  kernel: Kernel,
                  ts: torch.Tensor,
                  n_z: Optional[int] = 20,
-                 tmax: Optional[int] = 1):
-        '''
-        instantiate with a Kernel. This already specifies which parameters are learnable
-        specifying tmax helps initialize the inducing points
-        '''
+                d = 1):
+        """
+        __init__ method for GP prior class (only works for Euclidean manif)
+        Parameters
+        ----------
+        n : int
+            number of output dimensions (i.e. dimensionality of the latent space)
+        n_samples : int 
+            number of samples (each with a separate GP posterior)
+        manif : mgplvm.manifolds.Manifold
+            latent manifold
+        kernel : mgplvm.kernels.kernel
+            kernel used in the prior (does not haave to mtach the p(Y|G) kernel)
+        ts: Tensor
+            input timepoints for each sample (n_samples x d2 x 1)
+        n_z : Optional[int]
+            number of inducing points used in the GP prior
+        d : Optional[int]
+            number of input dimensions -- defaults to 1 since the input is assumed to be time, but could also be other higher-dimensional observed variables.
+
+        """
         super().__init__(manif)
-        d = manif.d
-        assert (tmax is not None)
-        assert (n_z is not None)
+        self.n = n
+        self.n_samples = n_samples
+        self.d = d
         #1d latent and n_z inducing points
-        zinit = torch.linspace(0., tmax, n_z).reshape(1, 1, n_z)
+        zinit = torch.linspace(0., torch.max(ts), n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
-        z = InducingPoints(d, 1, n_z, z=zinit.repeat(d, 1, 1))
+        z = InducingPoints(n, 1, n_z, z=zinit.repeat(n, 1, 1))
         self.ts = ts
-        lik = Gaussian(d, variance=np.square(0.2), learn_sigma=False
-                       )  #consider fixing this to a small value as in GPFA
-        self.svgp = Svgp(kernel, d, z, lik, whiten=True)  #construct svgp
+        #consider fixing this to a small value as in GPFA
+        lik = Gaussian(n, variance=np.square(0.2), learn_sigma=False)
+        self.svgp = Svgp(kernel,
+                         n,
+                         z,
+                         lik,
+                         whiten=True,
+                         n_samples=n_samples,
+                         tied_samples=False)  #construct svgp
 
     @property
     def prms(self):
@@ -61,17 +85,18 @@ class GP(LpriorEuclid):
         batch_size = m if batch_idxs is None else len(batch_idxs)
         ts = self.ts if batch_idxs is None else self.ts[batch_idxs]
         ts = ts.to(x.device)
-        n_mc, n_samples, T, d = x.shape
-        # x now has shape (n_samples, n_mc*d, T)
-        x = x.permute(1, 0, 3, 2).reshape(n_samples, n_mc * d, T)
+        n_mc, n_samples, T, n = x.shape
+        assert (n == self.n)
+        # x now has shape (n_mc . n_samples , n, T)
+        x = x.transpose(-1, -2)
+        ts = ts.reshape(1, n_samples, self.d, -1).repeat(n_mc, 1, 1, 1)
 
-        # (1, n_mc . d) (n_mc . d)
-        svgp_lik, svgp_kl = self.svgp.elbo(1, x,
-                                           ts.reshape(1, n_samples, 1, -1))
+        svgp_lik, svgp_kl = self.svgp.elbo(x, ts)
+        elbo = svgp_lik - ((batch_size / m) * svgp_kl)
+
         # Here, we need to rescale the KL term so that it is per batch
         # as the inducing points are shared across the full batch
-        elbo = svgp_lik - ((batch_size / m) * svgp_kl)
-        return elbo.reshape(n_mc, d).sum(-1)  #sum over dimensions
+        return elbo.sum(-1)  #sum over dimensions
 
     @property
     def msg(self):
