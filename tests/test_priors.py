@@ -53,7 +53,6 @@ def test_GP_prior():
                             lprior_kernel,
                             n_z=20,
                             ts=ts,
-                            tmax=m,
                            d = d2)
     #lprior = lpriors.Gaussian(manif)
 

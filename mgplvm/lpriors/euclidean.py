@@ -30,19 +30,33 @@ class GP(LpriorEuclid):
                  kernel: Kernel,
                  ts: torch.Tensor,
                  n_z: Optional[int] = 20,
-                 tmax: Optional[int] = 1,
                 d = 1):
-        '''
-        instantiate with a Kernel. This already specifies which parameters are learnable
-        specifying tmax helps initialize the inducing points
-        '''
+        """
+        __init__ method for GP prior class (only works for Euclidean manif)
+        Parameters
+        ----------
+        n : int
+            number of output dimensions (i.e. dimensionality of the latent space)
+        n_samples : int 
+            number of samples (each with a separate GP posterior)
+        manif : mgplvm.manifolds.Manifold
+            latent manifold
+        kernel : mgplvm.kernels.kernel
+            kernel used in the prior (does not haave to mtach the p(Y|G) kernel)
+        ts: Tensor
+            input timepoints for each sample (n_samples x d2 x 1)
+        n_z : Optional[int]
+            number of inducing points used in the GP prior
+        d : Optional[int]
+            number of input dimensions -- defaults to 1 since the input is assumed to be time, but could also be other higher-dimensional observed variables.
+
+        """
         super().__init__(manif)
         self.n = n
         self.n_samples = n_samples
-        self.d = d#manif.d
-        #d = self.d
+        self.d = d
         #1d latent and n_z inducing points
-        zinit = torch.linspace(0., tmax, n_z).reshape(1, 1, n_z)
+        zinit = torch.linspace(0., torch.max(ts), n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
         z = InducingPoints(n, 1, n_z, z=zinit.repeat(n, 1, 1))
         self.ts = ts

@@ -34,7 +34,7 @@ def model_params(n, m, d, n_z, n_samples, **kwargs):
         'arp_learn_c': False,
         'arp_learn_phi': True,
         'lik_gauss_std': None,
-        'ts': torch.arange(m)[None, ...].repeat(n_samples, 1),
+        'ts': torch.arange(m)[None, None, ...].repeat(n_samples, 1, 1),
         'device': None
     }
 
@@ -91,14 +91,13 @@ def load_model(params):
         lprior_kernel = kernels.QuadExp(d,
                                         manif.distance,
                                         learn_alpha=False,
-                                        ell=np.ones(d) * m / 20)
+                                        ell=np.ones(d) * m / 10)
         lprior = lpriors.GP(d,
                             n_samples,
                             manif,
                             lprior_kernel,
                             n_z=n_z,
-                            ts=params['ts'],
-                            tmax=m)
+                            ts=params['ts'])
     elif params['prior'] == 'ARP':
         lprior = lpriors.ARP(params['arp_p'],
                              manif,
