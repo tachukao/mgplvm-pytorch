@@ -95,8 +95,15 @@ class Gaussian(Likelihood):
         #print(variance.shape)
         ve1 = -0.5 * log2pi * m  #scalar
         ve2 = -0.5 * torch.log(variance) * m  #(n)
-        ve3 = -0.5 * torch.square(y - fmu) / variance[
-            ..., None]  #(n_mc x n_samples x n x m )
+        
+        y = y.reshape(-1, self.n, m)[None, ...] #(n_mc x n_samples x n x m )
+        n_samples = y.shape[1]
+        print(y.shape)
+        print(fmu.shape)
+        fmu = fmu[0].reshape(-1, n_samples, *fmu.shape[2:])
+        #
+        ve3 = -0.5 * torch.square(y - fmu) / variance[..., 
+                None]  #(n_mc x n_samples x n x m )
         ve4 = -0.5 * fvar / variance[..., None]  #(n_mc x n_samples x n x m)
 
         #print(ve1.shape, ve2.shape, ve3.shape, ve4.shape)

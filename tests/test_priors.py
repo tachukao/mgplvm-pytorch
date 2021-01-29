@@ -8,8 +8,8 @@ device = mgp.utils.get_device()
 
 
 def test_GP_prior():
-    device = mgp.utils.get_device("cuda")  # get_device("cpu")
-    d = 1  # dims of latent space
+    device = mgp.utils.get_device("cuda:5")  # get_device("cpu")
+    d = 2  # dims of latent space
     n = 100  # number of neurons
     m = 250  # number of conditions / time points
     n_z = 15  # number of inducing points
