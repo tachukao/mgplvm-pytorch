@@ -10,7 +10,7 @@ else:
     device = torch.device("cpu")
 
 
-def test_svgplvm_runs():
+def test_svgplvm_LL():
     """
     test that svgplvm runs without explicit check for correctness
     also test that burda log likelihood runs and is smaller than elbo
@@ -54,14 +54,51 @@ def test_svgplvm_runs():
 
     assert elbo < LL
 
-    #### test that batching with svgplvm runs ####
-    trained_model = mgp.optimisers.svgp.fit(Y,
-                                            mod,
-                                            device,
-                                            optimizer=optim.Adam,
-                                            max_steps=5,
-                                            n_mc=64,
-                                            batch_size=int(np.round(m / 2, 0)))
+
+def test_svgplvm_batching():
+    """
+    test that svgplvm runs without explicit check for correctness
+    also test that burda log likelihood runs and is smaller than elbo
+    """
+    d = 1  # dims of latent space
+    n = 8  # number of neurons
+    m = 100  # number of conditions / time points
+    n_z = 5  # number of inducing points
+    n_samples = 1  # number of samples
+    gen = mgp.syndata.Gen(mgp.syndata.Euclid(d),
+                          n,
+                          m,
+                          variability=0.25,
+                          n_samples=n_samples)
+    Y = gen.gen_data()
+    # specify manifold, kernel and rdist
+    manif = mgp.manifolds.Euclid(m, d)
+    lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+    kernel = mgp.kernels.QuadExp(n, manif.distance)
+    lik = mgp.likelihoods.Gaussian(n)
+    lprior = mgp.lpriors.Uniform(manif)
+    z = manif.inducing_points(n, n_z)
+    mod = mgp.models.SvgpLvm(n, z, kernel, lik, lat_dist, lprior,
+                             whiten=True).to(device)
+
+    data = torch.tensor(Y).to(device)
+    n_mc = 64
+    svgp_elbo, kl = mod.forward(data, n_mc=n_mc)
+    elbo = (svgp_elbo - kl).sum().item()
+
+    batch_size = 20
+
+    def for_batch():
+        batch_idxs = np.random.choice(m, batch_size, replace=False)
+        svgp_elbo, svgp_kl = mod.forward(data,
+                                         n_mc=n_mc,
+                                         batch_idxs=batch_idxs)
+        elbo = svgp_elbo - svgp_kl
+        return elbo.sum().item()
+
+    est_elbos = [for_batch() for _ in range(1000)]
+    err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
+    assert err < 1E-4
 
 
 def test_svgp_batching():
@@ -109,11 +146,12 @@ def test_svgp_batching():
         elbo = ((m / batch_size) * svgp_lik) - svgp_kl
         return elbo.sum().item()
 
-    estimated_elbo = np.mean([for_batch() for _ in range(2000)])
-
-    assert (np.abs((elbo - estimated_elbo) / (elbo + estimated_elbo)) < 1e-4)
+    est_elbos = [for_batch() for _ in range(1000)]
+    err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
+    assert err < 1e-5
 
 
 if __name__ == '__main__':
-    test_svgplvm_runs()
     test_svgp_batching()
+    test_svgplvm_batching()
+    test_svgplvm_LL()
