@@ -3,6 +3,10 @@ import torch
 from torch import optim
 import mgplvm as mgp
 import matplotlib.pyplot as plt
+
+torch.manual_seed(0)
+np.random.seed(0)
+
 torch.set_default_dtype(torch.float64)
 if torch.cuda.is_available():
     device = torch.device("cuda")
