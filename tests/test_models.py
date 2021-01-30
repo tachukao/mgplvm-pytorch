@@ -37,7 +37,13 @@ def test_svgplvm_LL():
     lik = mgp.likelihoods.Gaussian(n)
     lprior = mgp.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n, z, kernel, lik, lat_dist, lprior,
+    mod = mgp.models.SvgpLvm(n,
+                             m,
+                             z,
+                             kernel,
+                             lik,
+                             lat_dist,
+                             lprior,
                              whiten=True).to(device)
 
     # train model
@@ -82,7 +88,13 @@ def test_svgplvm_batching():
     lik = mgp.likelihoods.Gaussian(n)
     lprior = mgp.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n, z, kernel, lik, lat_dist, lprior,
+    mod = mgp.models.SvgpLvm(n,
+                             m,
+                             z,
+                             kernel,
+                             lik,
+                             lat_dist,
+                             lprior,
                              whiten=True).to(device)
 
     data = torch.tensor(Y).to(device)
@@ -127,6 +139,7 @@ def test_svgp_batching():
     z = manif.inducing_points(n, n_z)
     svgp = mgp.models.svgp.Svgp(kernel,
                                 n,
+                                m,
                                 z,
                                 lik,
                                 n_samples=n_samples,
@@ -147,7 +160,7 @@ def test_svgp_batching():
         y = data[..., batch_idxs]
         g = lat_dist.lat_gmu(data, batch_idxs=batch_idxs).transpose(-1, -2)
         svgp_lik, svgp_kl = mod.elbo(y, g)
-        elbo = ((m / batch_size) * svgp_lik) - svgp_kl
+        elbo = svgp_lik - svgp_kl
         return elbo.sum().item()
 
     est_elbos = [for_batch() for _ in range(1000)]

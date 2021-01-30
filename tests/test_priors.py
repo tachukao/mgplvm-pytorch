@@ -45,21 +45,21 @@ def test_GP_prior():
     lprior_kernel = mgp.kernels.QuadExp(d,
                                         lprior_manif.distance,
                                         learn_alpha=False)
-    ts = torch.arange(m).to(device)[None, None, ...].repeat(
-        n_samples, d2, 1)
+    ts = torch.arange(m).to(device)[None, None, ...].repeat(n_samples, d2, 1)
     lprior = mgp.lpriors.GP(d,
+                            m,
                             n_samples,
                             lprior_manif,
                             lprior_kernel,
                             n_z=20,
                             ts=ts,
-                           d = d2)
+                            d=d2)
     #lprior = lpriors.Gaussian(manif)
 
     # generate model
     likelihood = mgp.likelihoods.Gaussian(n, variance=np.square(sigma))
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n, z, kernel, likelihood, lat_dist,
+    mod = mgp.models.SvgpLvm(n, m, z, kernel, likelihood, lat_dist,
                              lprior).to(device)
 
     ### test that training runs ###
@@ -126,6 +126,7 @@ def test_ARP_runs():
                                  diagonal=(True if i in [0, 1] else False))
         z = manif.inducing_points(n, n_z)
         mod = mgp.models.SvgpLvm(n,
+                                 m,
                                  z,
                                  kernel,
                                  lik,
