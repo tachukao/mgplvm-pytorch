@@ -41,7 +41,7 @@ def test_trial_structure():
     lik1 = likelihoods.Gaussian(n)
     lprior1 = mgplvm.lpriors.Uniform(manif1)
     z1 = manif1.inducing_points(n, n_z, z = zs)
-    mod1 = models.SvgpLvm(n, z1, kernel1, lik1, lat_dist1, lprior1,
+    mod1 = models.SvgpLvm(n, m, z1, kernel1, lik1, lat_dist1, lprior1,
                          whiten=True).to(device)
     
     
@@ -60,7 +60,7 @@ def test_trial_structure():
     lik2 = likelihoods.Gaussian(n2)
     lprior2 = mgplvm.lpriors.Uniform(manif2)
     z2 = manif2.inducing_points(n2, n_z, z = zs)
-    mod2 = models.SvgpLvm(n2, z2, kernel2, lik2, lat_dist2, lprior2,
+    mod2 = models.SvgpLvm(n2, m2, z2, kernel2, lik2, lat_dist2, lprior2,
                          whiten=True).to(device)
     
     assert torch.allclose(mod1.svgp.kernel.prms[0], mod2.svgp.kernel.prms[0])

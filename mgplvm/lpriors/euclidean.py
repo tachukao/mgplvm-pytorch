@@ -25,18 +25,21 @@ class GP(LpriorEuclid):
 
     def __init__(self,
                  n,
+                 m,
                  n_samples,
                  manif: Manifold,
                  kernel: Kernel,
                  ts: torch.Tensor,
                  n_z: Optional[int] = 20,
-                d = 1):
+                 d=1):
         """
         __init__ method for GP prior class (only works for Euclidean manif)
         Parameters
         ----------
         n : int
             number of output dimensions (i.e. dimensionality of the latent space)
+        m : int
+            number of time points
         n_samples : int 
             number of samples (each with a separate GP posterior)
         manif : mgplvm.manifolds.Manifold
@@ -44,7 +47,7 @@ class GP(LpriorEuclid):
         kernel : mgplvm.kernels.kernel
             kernel used in the prior (does not haave to mtach the p(Y|G) kernel)
         ts: Tensor
-            input timepoints for each sample (n_samples x d2 x 1)
+            input timepoints for each sample (n_samples x d x m)
         n_z : Optional[int]
             number of inducing points used in the GP prior
         d : Optional[int]
@@ -53,6 +56,7 @@ class GP(LpriorEuclid):
         """
         super().__init__(manif)
         self.n = n
+        self.m = m
         self.n_samples = n_samples
         self.d = d
         #1d latent and n_z inducing points
@@ -64,6 +68,7 @@ class GP(LpriorEuclid):
         lik = Gaussian(n, variance=np.square(0.2), learn_sigma=False)
         self.svgp = Svgp(kernel,
                          n,
+                         m,
                          z,
                          lik,
                          whiten=True,
@@ -81,20 +86,21 @@ class GP(LpriorEuclid):
         x is a latent of shape (n_mc x n_samples x mx x d)
         ts is the corresponding timepoints of shape (n_samples x mx)
         '''
-        m = self.ts.shape[0]
+        n_mc, n_samples, m, n = x.shape
+        assert (m == self.m)
         batch_size = m if batch_idxs is None else len(batch_idxs)
-        ts = self.ts if batch_idxs is None else self.ts[batch_idxs]
+        ts = self.ts if batch_idxs is None else self.ts[..., batch_idxs]
         ts = ts.to(x.device)
-        n_mc, n_samples, T, n = x.shape
         assert (n == self.n)
-        # x now has shape (n_mc . n_samples , n, T)
+        # x now has shape (n_mc . n_samples , n, m)
         x = x.transpose(-1, -2)
         ts = ts.reshape(1, n_samples, self.d, -1).repeat(n_mc, 1, 1, 1)
 
         svgp_lik, svgp_kl = self.svgp.elbo(x, ts)
-        elbo = svgp_lik - ((batch_size / m) * svgp_kl)
 
-        # Here, we need to rescale the KL term so that it is per batch
+        # Here, we need to rescale the KL term so that it is over the batch not the full dataset, as that is what is expected in SVGPLVM
+        elbo = (batch_size / m) * (svgp_lik - svgp_kl)
+
         # as the inducing points are shared across the full batch
         return elbo.sum(-1)  #sum over dimensions
 

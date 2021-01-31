@@ -19,6 +19,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
     def __init__(self,
                  kernel: Kernel,
                  n: int,
+                 m: int,
                  n_inducing: int,
                  likelihood: Likelihood,
                  n_samples: int = 1,
@@ -32,6 +33,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         ----------
         n : int
             number of neurons
+        m : int 
+            number of conditions
         n_inducing : int
             number of inducing points
         likelihood : Likelihood
@@ -48,6 +51,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         """
         super().__init__()
         self.n = n
+        self.m = m
         self.n_inducing = n_inducing
         self.tied_samples = tied_samples
         self.n_samples = n_samples
@@ -134,11 +138,15 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         )  # prior KL(q(u) || p(u)) (1 x n) if tied_samples otherwise (n_samples x n)
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
+        prior_kl = prior_kl.sum(-2)
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
+        batch_size = x.shape[-1]
+        # scale is (m / batch_size) to compute an unbiased estimate of the full dataset
+        scale = 1 if batch_size == self.m else (self.m / batch_size)
         lik = lik.sum(-2)
-        prior_kl = prior_kl.sum(-2)
+        lik = lik * scale
 
         return lik, prior_kl
 
@@ -257,6 +265,7 @@ class Svgp(SvgpBase):
     def __init__(self,
                  kernel: Kernel,
                  n: int,
+                 m: int,
                  z: InducingPoints,
                  likelihood: Likelihood,
                  n_samples=1,
@@ -270,6 +279,8 @@ class Svgp(SvgpBase):
             kernel used for sparse GP (e.g., QuadExp)
         n : int
             number of neurons
+        m : int
+            number of conditions
         z : InducingPoints
             inducing points for sparse GP
         likelihood : Likelihood
@@ -293,6 +304,7 @@ class Svgp(SvgpBase):
 
         super().__init__(kernel,
                          n,
+                         m,
                          n_inducing,
                          likelihood,
                          n_samples=n_samples,

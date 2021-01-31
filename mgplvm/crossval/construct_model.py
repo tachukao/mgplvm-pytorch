@@ -93,6 +93,7 @@ def load_model(params):
                                         learn_alpha=False,
                                         ell=np.ones(d) * m / 10)
         lprior = lpriors.GP(d,
+                            m,
                             n_samples,
                             manif,
                             lprior_kernel,
@@ -124,6 +125,6 @@ def load_model(params):
     #### construct model ####
     device = (mgplvm.utils.get_device()
               if params['device'] is None else params['device'])
-    mod = models.SvgpLvm(n, z, kernel, likelihood, lat_dist, lprior).to(device)
+    mod = models.SvgpLvm(n, m, z, kernel, likelihood, lat_dist, lprior).to(device)
 
     return mod

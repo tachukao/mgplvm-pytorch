@@ -21,6 +21,7 @@ class SvgpLvm(nn.Module):
 
     def __init__(self,
                  n: int,
+                 m: int,
                  z: InducingPoints,
                  kernel: Kernel,
                  likelihood: Likelihood,
@@ -35,6 +36,8 @@ class SvgpLvm(nn.Module):
         ----------
         n : int
             number of neurons
+        m : int
+            number of conditions
         z : Inducing Points
             inducing points
         kernel : Kernel
@@ -56,6 +59,7 @@ class SvgpLvm(nn.Module):
         self.whiten = whiten
         self.svgp = svgp.Svgp(self.kernel,
                               n,
+                              m,
                               self.z,
                               likelihood,
                               n_samples=n_samples,
@@ -99,7 +103,7 @@ class SvgpLvm(nn.Module):
         # g is shape (n_samples, n_mc, m, d)
         # lq is shape (n_mc x n_samples x m)
 
-        data = data if batch_idxs is None else data[:, :, batch_idxs]
+        data = data if batch_idxs is None else data[..., batch_idxs]
 
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
@@ -110,10 +114,7 @@ class SvgpLvm(nn.Module):
             svgp_kl = svgp_kl[..., neuron_idxs]
 
         batch_size = m if batch_idxs is None else len(batch_idxs)
-
-        # note that svgp_lik is computed over a batch, need to rescale to
-        # compute estimate for likelihood of entire dataset
-        lik = ((m / batch_size) * svgp_lik) - svgp_kl
+        lik = svgp_lik - svgp_kl
 
         # compute kl term for the latents (n_mc, n_samples) per batch
         prior = self.lprior(g, batch_idxs)  #(n_mc)

@@ -43,6 +43,7 @@ def test_manifs_runs():
         lprior = mgplvm.lpriors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mod = mgplvm.models.SvgpLvm(n,
+                                    m,
                                     z,
                                     kernel,
                                     lik,

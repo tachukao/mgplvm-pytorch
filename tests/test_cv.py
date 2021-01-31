@@ -35,7 +35,7 @@ def test_cv_runs():
     lik = likelihoods.Gaussian(n)
     lprior = mgplvm.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = models.SvgpLvm(n, z, kernel, lik, lat_dist, lprior,
+    mod = models.SvgpLvm(n, m, z, kernel, lik, lat_dist, lprior,
                          whiten=True).to(device)
 
     ### run cv ###
