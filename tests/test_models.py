@@ -75,48 +75,55 @@ def test_svgplvm_batching():
     n = 8  # number of neurons
     m = 100  # number of conditions / time points
     n_z = 5  # number of inducing points
-    n_samples = 1  # number of samples
+    n_samples = 100  # number of samples
     gen = mgp.syndata.Gen(mgp.syndata.Euclid(d),
                           n,
                           m,
                           variability=0.25,
                           n_samples=n_samples)
-    Y = gen.gen_data()
-    # specify manifold, kernel and rdist
-    manif = mgp.manifolds.Euclid(m, d)
-    lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
-    kernel = mgp.kernels.QuadExp(n, manif.distance)
-    lik = mgp.likelihoods.Gaussian(n)
-    lprior = mgp.lpriors.Uniform(manif)
-    z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n,
-                             m,
-                             n_samples,
-                             z,
-                             kernel,
-                             lik,
-                             lat_dist,
-                             lprior,
-                             whiten=True).to(device)
+    for tied_samples in [True, False]:
+        Y = gen.gen_data()
+        # specify manifold, kernel and rdist
+        manif = mgp.manifolds.Euclid(m, d)
+        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        kernel = mgp.kernels.QuadExp(n, manif.distance)
+        lik = mgp.likelihoods.Gaussian(n)
+        lprior = mgp.lpriors.Uniform(manif)
+        z = manif.inducing_points(n, n_z)
+        mod = mgp.models.SvgpLvm(n,
+                                 m,
+                                 n_samples,
+                                 z,
+                                 kernel,
+                                 lik,
+                                 lat_dist,
+                                 lprior,
+                                 whiten=True,
+                                 tied_samples=tied_samples).to(device)
 
-    data = torch.tensor(Y).to(device)
-    n_mc = 64
-    svgp_elbo, kl = mod.forward(data, n_mc=n_mc)
-    elbo = (svgp_elbo - kl).sum().item()
+        data = torch.tensor(Y).to(device)
+        n_mc = 64
+        svgp_elbo, kl = mod.forward(data, n_mc=n_mc)
+        elbo = (svgp_elbo - kl).sum().item()
 
-    batch_size = 20
+        batch_size = 10
+        sample_size = 10
 
-    def for_batch():
-        batch_idxs = np.random.choice(m, batch_size, replace=False)
-        svgp_elbo, svgp_kl = mod.forward(data,
-                                         n_mc=n_mc,
-                                         batch_idxs=batch_idxs)
-        elbo = svgp_elbo - svgp_kl
-        return elbo.sum().item()
+        def for_batch():
+            batch_idxs = np.random.choice(m, batch_size, replace=False)
+            sample_idxs = np.random.choice(n_samples,
+                                           sample_size,
+                                           replace=False)
+            svgp_elbo, svgp_kl = mod.forward(data,
+                                             n_mc=n_mc,
+                                             batch_idxs=batch_idxs,
+                                             sample_idxs=sample_idxs)
+            elbo = svgp_elbo - svgp_kl
+            return elbo.sum().item()
 
-    est_elbos = [for_batch() for _ in range(1000)]
-    err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
-    assert err < 1E-4
+        est_elbos = [for_batch() for _ in range(1000)]
+        err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
+        assert err < 1E-5
 
 
 def test_svgp_batching():
