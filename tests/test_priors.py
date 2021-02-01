@@ -59,7 +59,7 @@ def test_GP_prior():
     # generate model
     likelihood = mgp.likelihoods.Gaussian(n, variance=np.square(sigma))
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n, m, z, kernel, likelihood, lat_dist,
+    mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
                              lprior).to(device)
 
     ### test that training runs ###
@@ -127,6 +127,7 @@ def test_ARP_runs():
         z = manif.inducing_points(n, n_z)
         mod = mgp.models.SvgpLvm(n,
                                  m,
+                                 n_samples,
                                  z,
                                  kernel,
                                  lik,

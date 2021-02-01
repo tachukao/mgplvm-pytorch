@@ -20,9 +20,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                  kernel: Kernel,
                  n: int,
                  m: int,
+                 n_samples: int,
                  n_inducing: int,
                  likelihood: Likelihood,
-                 n_samples: int = 1,
                  q_mu: Optional[Tensor] = None,
                  q_sqrt: Optional[Tensor] = None,
                  whiten=True,
@@ -35,12 +35,12 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             number of neurons
         m : int 
             number of conditions
+        n_samples : int 
+            number of samples
         n_inducing : int
             number of inducing points
         likelihood : Likelihood
             likliehood module used for computing variational expectation
-        n_samples : int 
-            number of samples
         q_mu : Optional Tensor
             optional Tensor for initialization
         q_sqrt : Optional Tensor
@@ -92,9 +92,12 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
     def _expand_x(self, x):
         pass
 
-    def prior_kl(self):
+    def prior_kl(self, sample_idxs=None):
         q_mu, q_sqrt, z = self.prms
         assert (q_mu.shape[0] == q_sqrt.shape[0])
+        if not self.tied_samples and sample_idxs is not None:
+            q_mu = q_mu[sample_idxs]
+            q_sqrt = q_sqrt[sample_idxs]
         z = self._expand_z(z)
         e = torch.eye(self.n_inducing).to(q_mu.device)
         if not self.whiten:
@@ -109,7 +112,10 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return kl_divergence(q, prior)
 
-    def elbo(self, y: Tensor, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def elbo(self,
+             y: Tensor,
+             x: Tensor,
+             sample_idxs: Optional[List[int]] = None) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -131,20 +137,27 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         assert (x.shape[-3] == y.shape[-3])
         assert (x.shape[-1] == y.shape[-1])
+        batch_size = x.shape[-1]
+        sample_size = x.shape[-3]
 
         kernel = self.kernel
         n_inducing = self.n_inducing  # inducing points
-        prior_kl = self.prior_kl(
-        )  # prior KL(q(u) || p(u)) (1 x n) if tied_samples otherwise (n_samples x n)
+
+        # prior KL(q(u) || p(u)) (1 x n) if tied_samples otherwise (n_samples x n)
+        prior_kl = self.prior_kl(sample_idxs)
         # predictive mean and var at x
-        f_mean, f_var = self.predict(x, full_cov=False)
+        f_mean, f_var = self.predict(x,
+                                     full_cov=False,
+                                     sample_idxs=sample_idxs)
         prior_kl = prior_kl.sum(-2)
+        if not self.tied_samples:
+            prior_kl = prior_kl * (self.n_samples / sample_size)
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
-        batch_size = x.shape[-1]
-        # scale is (m / batch_size) to compute an unbiased estimate of the full dataset
-        scale = 1 if batch_size == self.m else (self.m / batch_size)
+        # scale is (m / batch_size) * (self.n_samples / sample size)
+        # to compute an unbiased estimate of the likelihood of the full dataset
+        scale = (self.m / batch_size) * (self.n_samples / sample_size)
         lik = lik.sum(-2)
         lik = lik * scale
 
@@ -177,7 +190,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return y_samps
 
-    def predict(self, x: Tensor, full_cov: bool) -> Tuple[Tensor, Tensor]:
+    def predict(self, x: Tensor, full_cov: bool,
+                sample_idxs=None) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -204,6 +218,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         q_mu = q_mu[..., None]
 
         assert (q_mu.shape[0] == q_sqrt.shape[0])
+        if (not self.tied_samples) and sample_idxs is not None:
+            q_mu = q_mu[sample_idxs]
+            q_sqrt = q_sqrt[sample_idxs]
 
         # see ELBO for explanation of _expand
         z = self._expand_z(z)
@@ -266,9 +283,9 @@ class Svgp(SvgpBase):
                  kernel: Kernel,
                  n: int,
                  m: int,
+                 n_samples: int,
                  z: InducingPoints,
                  likelihood: Likelihood,
-                 n_samples=1,
                  whiten: Optional[bool] = True,
                  tied_samples: Optional[bool] = True):
         """
@@ -281,12 +298,12 @@ class Svgp(SvgpBase):
             number of neurons
         m : int
             number of conditions
+        n_samples : int
+            number of samples 
         z : InducingPoints
             inducing points for sparse GP
         likelihood : Likelihood
             likleihood p(y | f) 
-        n_samples : int
-            number of samples 
         whiten : Optional bool
             whiten q if true
         tied_samples : Optional bool
@@ -305,9 +322,9 @@ class Svgp(SvgpBase):
         super().__init__(kernel,
                          n,
                          m,
+                         n_samples,
                          n_inducing,
                          likelihood,
-                         n_samples=n_samples,
                          whiten=whiten,
                          tied_samples=tied_samples)
         self.z = z

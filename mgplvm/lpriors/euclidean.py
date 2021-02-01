@@ -69,10 +69,10 @@ class GP(LpriorEuclid):
         self.svgp = Svgp(kernel,
                          n,
                          m,
+                         n_samples,
                          z,
                          lik,
                          whiten=True,
-                         n_samples=n_samples,
                          tied_samples=False)  #construct svgp
 
     @property
