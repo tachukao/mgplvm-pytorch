@@ -1,7 +1,6 @@
 import numpy as np
 
 
-
 class LossMarginStop():
     def __init__(self, loss_margin=0, stop_after=10):
         '''
@@ -21,8 +20,8 @@ class LossMarginStop():
             self.stop_ = 0
         else:
             self.stop_ += 1
-            
+
         if loss_val < self.lowest_loss:
             self.lowest_loss = loss_val
-            
+
         return (self.stop_ > self.stop_after)

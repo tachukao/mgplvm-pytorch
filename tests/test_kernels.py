@@ -81,12 +81,21 @@ def test_kernels_run():
     for kernel in kernels:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d)
-        lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, initialization='random')
+        lat_dist = mgplvm.rdist.ReLie(manif,
+                                      m,
+                                      n_samples,
+                                      initialization='random')
         # generate model
         lik = likelihoods.Gaussian(n)
         lprior = lpriors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = models.SvgpLvm(n, m, z, kernel, lik, lat_dist, lprior,
+        mod = models.SvgpLvm(n,
+                             m,
+                             z,
+                             kernel,
+                             lik,
+                             lat_dist,
+                             lprior,
                              whiten=True).to(device)
 
         ### test that training runs ###

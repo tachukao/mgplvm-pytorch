@@ -93,7 +93,7 @@ class SgpLvm(nn.Module):
         """
         #_, _, n_samples = data.shape
         n_samples, n, m = data.shape
-        
+
         q = self.rdist()  # return reference distribution
 
         # sample a batch with dims: (n_b x m x d)

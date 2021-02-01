@@ -99,13 +99,13 @@ class _F(Module):
         else:
             assert mu.shape == (n_samples, m, manif.d2)
             gmu = torch.tensor(mu)
-        
+
         self.gmu = nn.Parameter(data=gmu, requires_grad=True)
 
         if gamma is None:
             gamma = torch.ones(n_samples, m, manif.d) * sigma
         assert gamma.shape == (n_samples, m, manif.d)
-        
+
         if diagonal:
             gamma = inv_softplus(gamma)
         else:
