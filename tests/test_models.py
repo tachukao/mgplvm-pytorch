@@ -127,47 +127,55 @@ def test_svgp_batching():
     n = 8  # number of neurons
     m = 100  # number of conditions / time points
     n_z = 10  # number of inducing points
-    n_samples = 1  # number of samples
+    n_samples = 100  # number of samples
     gen = mgp.syndata.Gen(mgp.syndata.Euclid(d),
                           n,
                           m,
                           variability=0.25,
                           n_samples=n_samples)
-    Y = gen.gen_data()
-    manif = mgp.manifolds.Euclid(m, d)
-    lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
-    kernel = mgp.kernels.QuadExp(n, manif.distance)
-    lik = mgp.likelihoods.Gaussian(n)
-    z = manif.inducing_points(n, n_z)
-    svgp = mgp.models.svgp.Svgp(kernel,
-                                n,
-                                m,
-                                n_samples,
-                                z,
-                                lik,
-                                whiten=True)
-    mod = svgp.to(device)
-    lat_dist = lat_dist.to(device)
-    data = torch.tensor(Y).to(device)
-    g = lat_dist.lat_gmu(data).transpose(-1, -2)
+    for tied_samples in [True, False]:
+        Y = gen.gen_data()
+        manif = mgp.manifolds.Euclid(m, d)
+        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        kernel = mgp.kernels.QuadExp(n, manif.distance)
+        lik = mgp.likelihoods.Gaussian(n)
+        z = manif.inducing_points(n, n_z)
+        svgp = mgp.models.svgp.Svgp(kernel,
+                                    n,
+                                    m,
+                                    n_samples,
+                                    z,
+                                    lik,
+                                    whiten=True,
+                                    tied_samples=tied_samples)
+        mod = svgp.to(device)
+        lat_dist = lat_dist.to(device)
+        data = torch.tensor(Y).to(device)
+        g = lat_dist.lat_gmu(data).transpose(-1, -2)
 
-    # not batched
-    svgp_lik, svgp_kl = mod.elbo(data, g)
-    elbo = (svgp_lik - svgp_kl).sum().item()
+        # not batched
+        svgp_lik, svgp_kl = mod.elbo(data, g)
+        elbo = (svgp_lik - svgp_kl).sum().item()
 
-    batch_size = 20
+        batch_size = 10
+        sample_size = 10
 
-    def for_batch():
-        batch_idxs = np.random.choice(m, batch_size, replace=False)
-        y = data[..., batch_idxs]
-        g = lat_dist.lat_gmu(data, batch_idxs=batch_idxs).transpose(-1, -2)
-        svgp_lik, svgp_kl = mod.elbo(y, g)
-        elbo = svgp_lik - svgp_kl
-        return elbo.sum().item()
+        def for_batch():
+            batch_idxs = np.random.choice(m, batch_size, replace=False)
+            sample_idxs = np.random.choice(n_samples,
+                                           sample_size,
+                                           replace=False)
+            y = data[sample_idxs][..., batch_idxs]
+            g = lat_dist.lat_gmu(data,
+                                 batch_idxs=batch_idxs,
+                                 sample_idxs=sample_idxs).transpose(-1, -2)
+            svgp_lik, svgp_kl = mod.elbo(y, g, sample_idxs=sample_idxs)
+            elbo = svgp_lik - svgp_kl
+            return elbo.sum().item()
 
-    est_elbos = [for_batch() for _ in range(1000)]
-    err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
-    assert err < 1e-5
+        est_elbos = [for_batch() for _ in range(1000)]
+        err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
+        assert err < 1e-5
 
 
 if __name__ == '__main__':

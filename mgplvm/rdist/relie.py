@@ -23,15 +23,15 @@ class ReLieBase(Rdist):
         self.f = f
         self.diagonal = diagonal
 
-    def lat_prms(self, Y=None, batch_idxs=None):
-        gmu, gamma = self.f(Y, batch_idxs)
+    def lat_prms(self, Y=None, batch_idxs=None, sample_idxs=None):
+        gmu, gamma = self.f(Y, batch_idxs, sample_idxs)
         return gmu, gamma
 
-    def lat_gmu(self, Y=None, batch_idxs=None):
-        return self.lat_prms(Y, batch_idxs)[0]
+    def lat_gmu(self, Y=None, batch_idxs=None, sample_idxs=None):
+        return self.lat_prms(Y, batch_idxs, sample_idxs)[0]
 
-    def lat_gamma(self, Y=None, batch_idxs=None):
-        return self.lat_prms(Y, batch_idxs)[1]
+    def lat_gamma(self, Y=None, batch_idxs=None, sample_idxs=None):
+        return self.lat_prms(Y, batch_idxs, sample_idxs)[1]
 
     @property
     def prms(self):
@@ -43,11 +43,11 @@ class ReLieBase(Rdist):
         mu = torch.zeros(n_samples, m, self.d).to(gamma.device)
         return MultivariateNormal(mu, scale_tril=gamma)
 
-    def sample(self, size, Y=None, batch_idxs=None, kmax=5):
+    def sample(self, size, Y=None, batch_idxs=None, sample_idxs=None, kmax=5):
         """
         generate samples and computes its log entropy
         """
-        gmu, gamma = self.lat_prms(Y, batch_idxs)
+        gmu, gamma = self.lat_prms(Y, batch_idxs, sample_idxs)
         q = self.mvn(gamma)
         # sample a batch with dims: (n_mc x n_samples x batch_size x d)
         x = q.rsample(size)
@@ -114,12 +114,19 @@ class _F(Module):
 
         self.gamma = nn.Parameter(data=gamma, requires_grad=(not fixed_gamma))
 
-    def forward(self, Y=None, batch_idxs=None):
+    def forward(self, Y=None, batch_idxs=None, sample_idxs=None):
         gmu, gamma = self.prms
+
+        if sample_idxs is not None:
+            gmu = gmu[sample_idxs]
+            gamma= gamma[sample_idxs]
+
         if batch_idxs is None:
             return gmu, gamma
         else:
             return gmu[:, batch_idxs, :], gamma[:, batch_idxs, :]
+
+
 
     @property
     def prms(self):

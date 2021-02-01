@@ -13,19 +13,19 @@ class Rdist(Module, metaclass=abc.ABCMeta):
         self.kmax = kmax
 
     @abc.abstractmethod
-    def lat_gmu(self, Y, batch_idxs) -> Tensor:
+    def lat_gmu(self, Y, batch_idxs, sample_idxs) -> Tensor:
         pass
 
     @abc.abstractmethod
-    def lat_gamma(self, Y, batch_idxs) -> Tensor:
+    def lat_gamma(self, Y, batch_idxs, sample_idxs) -> Tensor:
         pass
 
     @abc.abstractmethod
-    def lat_prms(self, Y, batch_idxs) -> Tuple[Tensor, Tensor]:
+    def lat_prms(self, Y, batch_idxs, sample_idxs) -> Tuple[Tensor, Tensor]:
         pass
 
     @abc.abstractmethod
-    def sample(self, size, Y, batch_idxs, kmax) -> Tuple[Tensor, Tensor]:
+    def sample(self, size, Y, batch_idxs, sample_idxs, kmax) -> Tuple[Tensor, Tensor]:
         pass
 
     @abc.abstractmethod
