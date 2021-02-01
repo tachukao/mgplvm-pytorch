@@ -20,9 +20,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                  kernel: Kernel,
                  n: int,
                  m: int,
+                 n_samples: int,
                  n_inducing: int,
                  likelihood: Likelihood,
-                 n_samples: int = 1,
                  q_mu: Optional[Tensor] = None,
                  q_sqrt: Optional[Tensor] = None,
                  whiten=True,
@@ -35,12 +35,12 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             number of neurons
         m : int 
             number of conditions
+        n_samples : int 
+            number of samples
         n_inducing : int
             number of inducing points
         likelihood : Likelihood
             likliehood module used for computing variational expectation
-        n_samples : int 
-            number of samples
         q_mu : Optional Tensor
             optional Tensor for initialization
         q_sqrt : Optional Tensor
@@ -144,7 +144,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         n_inducing = self.n_inducing  # inducing points
 
         # prior KL(q(u) || p(u)) (1 x n) if tied_samples otherwise (n_samples x n)
-        prior_kl = self.prior_kl()
+        prior_kl = self.prior_kl(sample_idxs)
         # predictive mean and var at x
         f_mean, f_var = self.predict(x, full_cov=False)
         prior_kl = prior_kl.sum(-2)
@@ -281,9 +281,9 @@ class Svgp(SvgpBase):
                  kernel: Kernel,
                  n: int,
                  m: int,
+                 n_samples: int,
                  z: InducingPoints,
                  likelihood: Likelihood,
-                 n_samples=1,
                  whiten: Optional[bool] = True,
                  tied_samples: Optional[bool] = True):
         """
@@ -296,12 +296,12 @@ class Svgp(SvgpBase):
             number of neurons
         m : int
             number of conditions
+        n_samples : int
+            number of samples 
         z : InducingPoints
             inducing points for sparse GP
         likelihood : Likelihood
             likleihood p(y | f) 
-        n_samples : int
-            number of samples 
         whiten : Optional bool
             whiten q if true
         tied_samples : Optional bool
@@ -320,9 +320,9 @@ class Svgp(SvgpBase):
         super().__init__(kernel,
                          n,
                          m,
+                         n_samples,
                          n_inducing,
                          likelihood,
-                         n_samples=n_samples,
                          whiten=whiten,
                          tied_samples=tied_samples)
         self.z = z

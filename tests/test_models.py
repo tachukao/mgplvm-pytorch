@@ -39,6 +39,7 @@ def test_svgplvm_LL():
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
                              m,
+                             n_samples,
                              z,
                              kernel,
                              lik,
@@ -90,6 +91,7 @@ def test_svgplvm_batching():
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
                              m,
+                             n_samples,
                              z,
                              kernel,
                              lik,
@@ -140,9 +142,9 @@ def test_svgp_batching():
     svgp = mgp.models.svgp.Svgp(kernel,
                                 n,
                                 m,
+                                n_samples,
                                 z,
                                 lik,
-                                n_samples=n_samples,
                                 whiten=True)
     mod = svgp.to(device)
     lat_dist = lat_dist.to(device)

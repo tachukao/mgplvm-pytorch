@@ -43,6 +43,7 @@ def test_trial_structure():
     z1 = manif1.inducing_points(n, n_z, z=zs)
     mod1 = models.SvgpLvm(n,
                           m,
+                          n_samples,
                           z1,
                           kernel1,
                           lik1,
@@ -67,6 +68,7 @@ def test_trial_structure():
     z2 = manif2.inducing_points(n2, n_z, z=zs)
     mod2 = models.SvgpLvm(n2,
                           m2,
+                          1,
                           z2,
                           kernel2,
                           lik2,

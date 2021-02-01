@@ -44,6 +44,7 @@ def test_manifs_runs():
         z = manif.inducing_points(n, n_z)
         mod = mgplvm.models.SvgpLvm(n,
                                     m,
+                                    n_samples,
                                     z,
                                     kernel,
                                     lik,

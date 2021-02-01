@@ -22,13 +22,13 @@ class SvgpLvm(nn.Module):
     def __init__(self,
                  n: int,
                  m: int,
+                 n_samples: int,
                  z: InducingPoints,
                  kernel: Kernel,
                  likelihood: Likelihood,
                  lat_dist: Rdist,
                  lprior=Lprior,
                  whiten: bool = True,
-                 n_samples: int = 1,
                  tied_samples=True):
         """
         __init__ method for Vanilla model
@@ -38,6 +38,8 @@ class SvgpLvm(nn.Module):
             number of neurons
         m : int
             number of conditions
+        n_samples: int
+            number of samples
         z : Inducing Points
             inducing points
         kernel : Kernel
@@ -53,6 +55,7 @@ class SvgpLvm(nn.Module):
         """
         super().__init__()
         self.n = n
+        self.n_samples = n_samples
         self.kernel = kernel
         self.z = z
         self.likelihood = likelihood
@@ -60,9 +63,9 @@ class SvgpLvm(nn.Module):
         self.svgp = svgp.Svgp(self.kernel,
                               n,
                               m,
+                              n_samples,
                               self.z,
                               likelihood,
-                              n_samples=n_samples,
                               whiten=whiten,
                               tied_samples=tied_samples)
         # latent distribution

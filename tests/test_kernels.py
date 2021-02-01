@@ -91,6 +91,7 @@ def test_kernels_run():
         z = manif.inducing_points(n, n_z)
         mod = models.SvgpLvm(n,
                              m,
+                             n_samples,
                              z,
                              kernel,
                              lik,

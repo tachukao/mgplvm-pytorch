@@ -48,6 +48,7 @@ def test_likelihood_runs():
         z = manif.inducing_points(n, n_z)
         mod = models.SvgpLvm(n,
                              m,
+                             n_samples,
                              z,
                              kernel,
                              lik,
