@@ -69,7 +69,13 @@ class SvgpLvm(nn.Module):
         self.lat_dist = lat_dist
         self.lprior = lprior
 
-    def elbo(self, data, n_mc, kmax=5, batch_idxs=None, neuron_idxs=None):
+    def elbo(self,
+             data,
+             n_mc,
+             kmax=5,
+             batch_idxs=None,
+             sample_idxs=None,
+             neuron_idxs=None):
         """
         Parameters
         ----------
@@ -80,9 +86,15 @@ class SvgpLvm(nn.Module):
         kmax : int
             parameter for estimating entropy for several manifolds
             (not used for some manifolds)
-        batch_idxs: Optional int list
+        batch_idxs : Optional int list
             if None then use all data and (batch_size == m)
             otherwise, (batch_size == len(batch_idxs))
+        sample_idxs : Optional int list
+            if None then use all data 
+            otherwise, compute elbo only for selected samples
+        neuron_idxs: Optional int list
+            if None then use all data 
+            otherwise, compute only elbo for selected neurons
 
         Returns
         -------
@@ -99,31 +111,41 @@ class SvgpLvm(nn.Module):
 
         n_samples, n, m = data.shape
 
-        g, lq = self.lat_dist.sample(torch.Size([n_mc]), data, batch_idxs)
+        g, lq = self.lat_dist.sample(torch.Size([n_mc]), data, batch_idxs,
+                                     sample_idxs)
         # g is shape (n_samples, n_mc, m, d)
         # lq is shape (n_mc x n_samples x m)
 
+        data = data if sample_idxs is None else data[..., sample_idxs, :, :]
         data = data if batch_idxs is None else data[..., batch_idxs]
 
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
-        #(n_mc x n_samples x n), (1 x n)
-        svgp_lik, svgp_kl = self.svgp.elbo(data, g.transpose(-1, -2))
+        #(n_mc x n), (1 x n)
+        svgp_lik, svgp_kl = self.svgp.elbo(data, g.transpose(-1, -2),
+                                           sample_idxs)
         if neuron_idxs is not None:
             svgp_lik = svgp_lik[..., neuron_idxs]
             svgp_kl = svgp_kl[..., neuron_idxs]
 
         batch_size = m if batch_idxs is None else len(batch_idxs)
+        sample_size = n_samples if sample_idxs is None else len(sample_idxs)
         lik = svgp_lik - svgp_kl
 
         # compute kl term for the latents (n_mc, n_samples) per batch
         prior = self.lprior(g, batch_idxs)  #(n_mc)
         kl = lq.sum(-1).sum(-1) - prior  #(n_mc) (sum q(g) over conditions)
         #rescale KL to entire dataset (basically structured conditions)
-        kl = (m / batch_size) * kl
+        kl = (m / batch_size) * (n_samples / sample_size) * kl
         return lik, kl
 
-    def forward(self, data, n_mc, kmax=5, batch_idxs=None, neuron_idxs=None):
+    def forward(self,
+                data,
+                n_mc,
+                kmax=5,
+                batch_idxs=None,
+                sample_idxs=None,
+                neuron_idxs=None):
         """
         Parameters
         ----------
@@ -137,6 +159,12 @@ class SvgpLvm(nn.Module):
         batch_idxs: Optional int list
             if None then use all data and (batch_size == m)
             otherwise, (batch_size == len(batch_idxs))
+        sample_idxs : Optional int list
+            if None then use all data 
+            otherwise, compute elbo only for selected samples
+        neuron_idxs: Optional int list
+            if None then use all data 
+            otherwise, compute only elbo for selected neurons
 
         Returns
         -------
@@ -144,13 +172,14 @@ class SvgpLvm(nn.Module):
             evidence lower bound of the GPLVM model averaged across MC samples and summed over n, m, n_samples (scalar)
         """
 
-        #(n_mc, n_samples, n), (n_mc, n_samples)
+        #(n_mc, n), (n_mc)
         lik, kl = self.elbo(data,
                             n_mc,
                             kmax=kmax,
                             batch_idxs=batch_idxs,
+                            sample_idxs=sample_idxs,
                             neuron_idxs=neuron_idxs)
-        #sum over neurons and number of samples, mean over  MC samples
+        #sum over neurons and mean over  MC samples
         lik = lik.sum(-1).mean()
         kl = kl.mean()
 
@@ -167,9 +196,6 @@ class SvgpLvm(nn.Module):
         kmax : int
             parameter for estimating entropy for several manifolds
             (not used for some manifolds)
-        batch_idxs: Optional int list
-            if None then use all data and (batch_size == m)
-            otherwise, (batch_size == len(batch_idxs))
 
         Returns
         -------
