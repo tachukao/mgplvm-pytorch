@@ -125,7 +125,7 @@ def load_model(params):
     #### construct model ####
     device = (mgplvm.utils.get_device()
               if params['device'] is None else params['device'])
-    mod = models.SvgpLvm(n, m, z, kernel, likelihood, lat_dist,
+    mod = models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
                          lprior).to(device)
 
     return mod
