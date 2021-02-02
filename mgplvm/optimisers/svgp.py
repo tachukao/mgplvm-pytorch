@@ -1,10 +1,12 @@
 from __future__ import print_function
 import numpy as np
 import torch
-from torch import optim
+from torch import Tensor, optim
 from torch.optim.lr_scheduler import LambdaLR
-from .data import NeuralDataLoader
+from .data import DataLoader
+from ..models import SvgpLvm
 import itertools
+from typing import Union, List, Optional
 
 
 def sort_params(model, hook):
@@ -64,22 +66,30 @@ def print_progress(model,
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
 
-def fit(dataset,
-        model,
+def fit(dataset: Union[Tensor, DataLoader],
+        model: SvgpLvm,
         optimizer=optim.Adam,
-        n_mc=128,
-        burnin=100,
-        lrate=1E-3,
-        max_steps=1000,
+        n_mc: int = 128,
+        burnin: int = 100,
+        lrate: float = 1E-3,
+        max_steps: int = 1000,
         stop=None,
-        print_every=50,
+        print_every: int = 50,
         mask_Ts=None,
-        neuron_idxs=None):
+        neuron_idxs: Optional[List[int]] = None):
     '''
     Parameters
     ----------
-    dataset : Union[Tensor,Iterable]
+    dataset : Union[Tensor,DataLoader]
         data matrix of dimensions (n_samples x n x m)
+    model : SvgpLvm
+        model to be trained
+    n_mc : int
+        number of MC samples for estimating the ELBO 
+    burnin : int
+        number of iterations to burn in during optimization
+    lrate : float
+        initial learning rate passed to the optimizer
     max_steps : Optional[int], default=1000
         maximum number of training iterations
     '''
@@ -99,13 +109,17 @@ def fit(dataset,
     scheduler = LambdaLR(opt, lr_lambda=[lambda x: 1, fburn])
 
     if isinstance(dataset, torch.Tensor):
-        dataloader = [(None, None, dataset)]
-        n_samples, n, m = dataset.shape
-    else:
+        dataloader = DataLoader(dataset)
+    elif isinstance(dataset, DataLoader):
         dataloader = dataset
-        n_samples = dataset.n_samples
-        n = dataset.n
-        m = dataset.m
+    else:
+        raise Exception(
+            "dataset passed to svgp.fit must be either a torch.Tensor or a mgplvm.optimisers.data.DataLoader"
+        )
+
+    n_samples = dataloader.n_samples
+    n = dataloader.n
+    m = dataloader.m
 
     n = n if neuron_idxs is None else len(neuron_idxs)
     for i in range(max_steps):
