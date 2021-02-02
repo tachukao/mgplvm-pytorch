@@ -64,38 +64,6 @@ def print_progress(model,
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
 
-def generate_batch_idxs(model, data_size, batch_pool=None, batch_size=None):
-    if (batch_size is None and batch_pool is None):
-        batch_idxs = None
-        return batch_idxs
-    elif batch_size is None:
-        batch_idxs = batch_pool
-        return batch_idxs
-    else:
-        if batch_pool is None:
-            idxs = np.arange(data_size)
-        else:
-            idxs = batch_pool
-        if model.lprior.name in ["Brownian", "ARP"]:
-            # if prior is Brownian or ARP, then batches have to be contiguous
-            i0 = np.random.randint(1, data_size - 1)
-            if i0 < batch_size / 2:
-                batch_idxs = idxs[:int(round(batch_size / 2 + i0))]
-            elif i0 > (data_size - batch_size / 2):
-                batch_idxs = idxs[int(round(i0 - batch_size / 2)):]
-            else:
-                batch_idxs = idxs[int(round(i0 - batch_size /
-                                            2)):int(round(i0 +
-                                                          batch_size / 2))]
-            #print(len(batch_idxs))
-            return batch_idxs
-        else:
-            if batch_size is None:
-                return idxs
-            else:
-                return np.random.choice(idxs, size=batch_size, replace=False)
-
-
 def fit(Y,
         model,
         device,
