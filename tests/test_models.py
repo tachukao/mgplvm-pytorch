@@ -114,7 +114,8 @@ def test_svgplvm_batching():
             sample_idxs = np.random.choice(n_samples,
                                            sample_size,
                                            replace=False)
-            svgp_elbo, svgp_kl = mod.forward(data,
+            batch = data[sample_idxs][:, :, batch_idxs]
+            svgp_elbo, svgp_kl = mod.forward(batch,
                                              n_mc=n_mc,
                                              batch_idxs=batch_idxs,
                                              sample_idxs=sample_idxs)

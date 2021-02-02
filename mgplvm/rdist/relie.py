@@ -119,14 +119,12 @@ class _F(Module):
 
         if sample_idxs is not None:
             gmu = gmu[sample_idxs]
-            gamma= gamma[sample_idxs]
+            gamma = gamma[sample_idxs]
 
         if batch_idxs is None:
             return gmu, gamma
         else:
             return gmu[:, batch_idxs, :], gamma[:, batch_idxs, :]
-
-
 
     @property
     def prms(self):

@@ -113,7 +113,8 @@ def test_cv(mod, split, device, n_mc=32, Print=False):
 
     ### compute crossvalidated log likelihood ###
     #(n_mc, n_samples, n), (n_mc, n_samples)
-    svgp_elbo, kl = mod.elbo(torch.tensor(Y).to(device),
+    data = torch.tensor(Y, device=device)
+    svgp_elbo, kl = mod.elbo(data[:, :, T2],
                              n_mc,
                              batch_idxs=T2,
                              neuron_idxs=N2)

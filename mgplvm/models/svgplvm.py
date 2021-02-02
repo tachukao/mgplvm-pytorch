@@ -55,6 +55,7 @@ class SvgpLvm(nn.Module):
         """
         super().__init__()
         self.n = n
+        self.m = m
         self.n_samples = n_samples
         self.kernel = kernel
         self.z = z
@@ -112,15 +113,17 @@ class SvgpLvm(nn.Module):
         ELBO of the model per batch is [ svgp_elbo - kl ]
         """
 
-        n_samples, n, m = data.shape
+        n_samples, n, m = self.n_samples, self.n, self.m
 
-        g, lq = self.lat_dist.sample(torch.Size([n_mc]), data, batch_idxs=batch_idxs,
+        g, lq = self.lat_dist.sample(torch.Size([n_mc]),
+                                     data,
+                                     batch_idxs=batch_idxs,
                                      sample_idxs=sample_idxs)
         # g is shape (n_samples, n_mc, m, d)
         # lq is shape (n_mc x n_samples x m)
 
-        data = data if sample_idxs is None else data[..., sample_idxs, :, :]
-        data = data if batch_idxs is None else data[..., batch_idxs]
+        #data = data if sample_idxs is None else data[..., sample_idxs, :, :]
+        #data = data if batch_idxs is None else data[..., batch_idxs]
 
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
