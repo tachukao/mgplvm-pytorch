@@ -11,7 +11,7 @@ def test_sampler():
     Y = np.arange(n_samples * m * n).reshape(n_samples, n, m)
     for shuffle_batch in [True, False]:
         for shuffle_sample in [True, False]:
-            dataloader = mgp.optimisers.data.NeuralDataLoader(
+            dataloader = mgp.optimisers.data.BatchDataLoader(
                 Y, sample_size=sample_size, batch_size=batch_size)
 
             k = int(np.ceil(m / batch_size)) * int(
@@ -39,7 +39,7 @@ def test_sampler_pool():
     Y = np.arange(n_samples * m * n).reshape(n_samples, n, m)
     for shuffle_batch in [True, False]:
         for shuffle_sample in [True, False]:
-            dataloader = mgp.optimisers.data.NeuralDataLoader(
+            dataloader = mgp.optimisers.data.BatchDataLoader(
                 Y,
                 batch_pool=batch_pool,
                 sample_pool=sample_pool,
