@@ -28,20 +28,24 @@ class Torus(Manifold):
     @staticmethod
     def initialize(initialization, n_samples, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
-        if initialization == 'pca':
+        if initialization in ['fa', 'FA']:
             #Y is N x m; reduce to d x m
             if Y is None:
-                print('user must provide data for PCA initialization')
+                print('user must provide data for FA initialization')
             else:
                 n = Y.shape[1]
-                pca = decomposition.PCA(n_components=d)
+                pca = decomposition.FactorAnalysis(n_components=d)
                 Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
                 mudata = pca.fit_transform(Y)  #m*n_samples x d
                 mudata *= 2 * np.pi / (np.amax(mudata) - np.amin(mudata))
                 mudata = mudata.reshape(n_samples, m, d)
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
-        mudata = torch.randn(n_samples, m, d) * 0.1
-        return mudata
+        elif initialization in ['random', 'Random']:
+            mudata = torch.randn(n_samples, m, d) * 0.1
+            return mudata
+        else:
+            print('initialization not recognized')
+        return
 
     def inducing_points(self, n, n_z, z=None):
         z = torch.rand(n, self.d, n_z) * 2 * np.pi if z is None else z

@@ -35,13 +35,13 @@ class So3(Manifold):
 
     def initialize(self, initialization, n_samples, m, d, Y):
         '''initializes latents - can add more exciting initializations as well'''
-        if initialization == 'pca':
+        if initialization in ['fa', 'FA']:
             #Y is N x m; reduce to d x m
             if Y is None:
-                print('user must provide data for PCA initialization')
+                print('user must provide data for FA initialization')
             else:
                 n = Y.shape[1]
-                pca = decomposition.PCA(n_components=d)
+                pca = decomposition.FactorAnalysis(n_components=d)
                 Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
                 mudata = pca.fit_transform(Y)  #m*n_samples x d
                 mudata *= 0.5 * np.pi / np.amax(
@@ -49,10 +49,14 @@ class So3(Manifold):
                 mudata = torch.tensor(mudata, dtype=torch.get_default_dtype())
                 mudata = self.expmap(mudata.reshape(n_samples, m, d))
                 return mudata
-        # initialize at identity
-        mudata = self.expmap(torch.randn(n_samples, m, 3) * 0.1)
-        #mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]), dtype=torch.get_default_dtype())
-        return mudata
+        elif initialization in ['random', 'Random']:
+            # initialize at identity
+            mudata = self.expmap(torch.randn(n_samples, m, 3) * 0.1)
+            #mudata = torch.tensor(np.array([[1, 0, 0, 0] for i in range(m)]), dtype=torch.get_default_dtype())
+            return mudata
+        else:
+            print('initialization not recognized')
+        return
 
     def parameterise_inducing(self, x):
         return self.expmap2(x, dim=-2)
