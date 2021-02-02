@@ -28,6 +28,7 @@ def test_so3_dimensions():
 def test_manifs_runs():
     m, d, n, n_z, n_samples = 10, 3, 5, 5, 2
     Y = np.random.normal(0, 1, (n_samples, n, m))
+    data = torch.tensor(Y, dtype=torch.get_default_dtype(), device=device)
     for i, manif_type in enumerate(
         [manifolds.Torus, manifolds.So3, manifolds.S3]):
         manif = manif_type(m, d)
@@ -53,9 +54,8 @@ def test_manifs_runs():
                                     whiten=True).to(device)
 
         # train model
-        trained_model = optimisers.svgp.fit(Y,
+        trained_model = optimisers.svgp.fit(data,
                                             mod,
-                                            device,
                                             max_steps=5,
                                             n_mc=64,
                                             optimizer=optim.Adam,

@@ -55,6 +55,7 @@ def train_cv(mod,
     """
 
     _, n, m = Y.shape
+    data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     nt_train = int(round(m / 2)) if nt_train is None else nt_train
     nn_train = int(round(n / 2)) if nn_train is None else nn_train
 
@@ -68,7 +69,7 @@ def train_cv(mod,
 
     #print(Y.shape, mod.lat_dist.prms[0].shape, mod.lat_dist.prms[1].shape)
 
-    train_model(mod, Y, device, train_ps1)
+    train_model(mod, data, train_ps1)
 
     ### construct a mask for some of the time points ####
     def mask_Ts(grad):
@@ -84,10 +85,10 @@ def train_cv(mod,
     ):  #only gradients for the latent distribution
         p.requires_grad = True
 
-    _ = train_model(mod, Y, device, train_ps2)
+    train_model(mod, data, train_ps2)
 
     if test:
-        _ = test_cv(mod, split, device, n_mc=train_ps['n_mc'], Print=True)
+        test_cv(mod, split, device, n_mc=train_ps['n_mc'], Print=True)
 
     return mod, split
 

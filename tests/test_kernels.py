@@ -72,7 +72,7 @@ def test_kernels_run():
                       n_samples=n_samples)
     sig0 = 1.5
     Y = gen.gen_data(ell=25, sig=1)
-
+    data = torch.tensor(Y, dtype=torch.get_default_dtype(), device=device)
     kernels = [
         QuadExp(n, Euclid.distance),
         Linear(n, Euclid.linear_distance, d),
@@ -100,9 +100,8 @@ def test_kernels_run():
                              whiten=True).to(device)
 
         ### test that training runs ###
-        trained_mod = optimisers.svgp.fit(Y,
+        trained_mod = optimisers.svgp.fit(data,
                                           mod,
-                                          device,
                                           optimizer=optim.Adam,
                                           max_steps=5,
                                           burnin=100,

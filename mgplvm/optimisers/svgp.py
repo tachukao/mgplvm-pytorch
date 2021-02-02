@@ -64,9 +64,8 @@ def print_progress(model,
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
 
-def fit(Y,
+def fit(data,
         model,
-        device,
         optimizer=optim.Adam,
         n_mc=128,
         burnin=100,
@@ -83,10 +82,8 @@ def fit(Y,
     '''
     Parameters
     ----------
-    Y : np.array
+    data : Tensor
         data matrix of dimensions (n_samples x n x m)
-    device : torch.device
-        torch device
     max_steps : Optional[int], default=1000
         maximum number of training iterations
     batch_pool : Optional[int list]
@@ -97,12 +94,7 @@ def fit(Y,
     def fburn(x):
         return 1 - np.exp(-x / (3 * burnin))
 
-    if len(Y.shape) > 2:
-        n_samples, n, m = Y.shape  # samples, neurons, conditions
-    else:
-        n, m = Y.shape  # neuron x conditions
-        n_samples = 1
-    data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
+    n_samples, n, m = data.shape  # samples, neurons, conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
     #optionally mask some time points
     mask_Ts = mask_Ts if mask_Ts is not None else lambda x: x

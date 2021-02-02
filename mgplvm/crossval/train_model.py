@@ -29,11 +29,10 @@ def training_params(**kwargs):
     return params
 
 
-def train_model(mod, Y, device, params):
+def train_model(mod, data, params):
 
-    trained_mod = optimisers.svgp.fit(Y,
+    trained_mod = optimisers.svgp.fit(data,
                                       mod,
-                                      device,
                                       optimizer=params['optimizer'],
                                       max_steps=int(round(
                                           params['max_steps'])),
