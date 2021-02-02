@@ -32,7 +32,7 @@ class BatchDataLoader(DataLoader):
                  sample_pool=None,
                  shuffle_batch=False,
                  shuffle_sample=False):
-        super(NeuralDataLoader, self).__init__(data)
+        super(BatchDataLoader, self).__init__(data)
         m = self.m
         n_samples = self.n_samples
         self.shuffle_batch = shuffle_batch
