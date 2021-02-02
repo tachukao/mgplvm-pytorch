@@ -19,13 +19,14 @@ def sort_params(model, hook):
             model.likelihood.parameters(),
             model.lprior.parameters(),
             model.lat_dist.gmu_parameters(),
-            model.kernel.parameters(),
+            #model.kernel.parameters(),
             [model.svgp.q_mu, model.svgp.q_sqrt],
         ]))
 
     params1 = list(
         itertools.chain.from_iterable(
-            [model.lat_dist.concentration_parameters()]))
+            [model.lat_dist.concentration_parameters(),#]))
+             model.kernel.parameters()]))
 
     params = [{'params': params0}, {'params': params1}]
     return params

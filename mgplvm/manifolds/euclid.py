@@ -32,7 +32,8 @@ class Euclid(Manifold):
                 print('user must provide data for PCA initialization')
             else:
                 n = Y.shape[1]
-                pca = decomposition.PCA(n_components=d)
+                #pca = decomposition.PCA(n_components=d)
+                pca = decomposition.FactorAnalysis(n_components=d)
                 Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
                 mudata = pca.fit_transform(Y)  #m*n_samples x d
                 mudata = mudata / np.std(mudata, axis=0,
