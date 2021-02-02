@@ -31,7 +31,10 @@ def training_params(**kwargs):
 
 def train_model(mod, data, params):
 
-    trained_mod = optimisers.svgp.fit(data,
+    dataloader = optimisers.data.NeuralDataLoader(
+        data, batch_size=params['batch_size'], batch_pool=params['batch_pool'])
+
+    trained_mod = optimisers.svgp.fit(dataloader,
                                       mod,
                                       optimizer=params['optimizer'],
                                       max_steps=int(round(
@@ -40,9 +43,7 @@ def train_model(mod, data, params):
                                       n_mc=params['n_mc'],
                                       lrate=params['lrate'],
                                       print_every=params['print_every'],
-                                      batch_size=params['batch_size'],
                                       stop=params['callback'],
-                                      batch_pool=params['batch_pool'],
                                       neuron_idxs=params['neuron_idxs'],
                                       mask_Ts=params['mask_Ts']),
 

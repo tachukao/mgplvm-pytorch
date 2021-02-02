@@ -12,7 +12,8 @@ class NeuralDataLoader:
                  sample_pool=None,
                  shuffle_batch=False,
                  shuffle_sample=False):
-        n_samples, _, m = data.shape
+        n_samples, n, m = data.shape
+        self.n = n
         self.shuffle_batch = shuffle_batch
         self.shuffle_sample = shuffle_sample
         self.n_samples = n_samples

@@ -64,7 +64,7 @@ def print_progress(model,
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
 
-def fit(data,
+def fit(dataset,
         model,
         optimizer=optim.Adam,
         n_mc=128,
@@ -74,28 +74,20 @@ def fit(data,
         stop=None,
         print_every=50,
         mask_Ts=None,
-        neuron_idxs=None,
-        batch_size=None,
-        batch_pool=None,
-        sample_size=None,
-        sample_pool=None):
+        neuron_idxs=None):
     '''
     Parameters
     ----------
-    data : Tensor
+    dataset : Union[Tensor,Iterable]
         data matrix of dimensions (n_samples x n x m)
     max_steps : Optional[int], default=1000
         maximum number of training iterations
-    batch_pool : Optional[int list]
-        pool of indices from which to batch (used to train a partial model)
     '''
 
     # set learning rate schedule so sigma updates have a burn-in period
     def fburn(x):
         return 1 - np.exp(-x / (3 * burnin))
 
-    n_samples, n, m = data.shape  # samples, neurons, conditions
-    n = n if neuron_idxs is None else len(neuron_idxs)
     #optionally mask some time points
     mask_Ts = mask_Ts if mask_Ts is not None else lambda x: x
 
@@ -106,14 +98,18 @@ def fit(data,
 
     scheduler = LambdaLR(opt, lr_lambda=[lambda x: 1, fburn])
 
-    data_loader = NeuralDataLoader(data,
-                                   sample_size=sample_size,
-                                   sample_pool=sample_pool,
-                                   batch_size=batch_size,
-                                   batch_pool=batch_pool)
+    if isinstance(dataset, torch.Tensor):
+        dataloader = [(None, None, dataset)]
+        n_samples, n, m = dataset.shape
+    else:
+        dataloader = dataset
+        n_samples = dataset.n_samples
+        n = dataset.n
+        m = dataset.m
 
+    n = n if neuron_idxs is None else len(neuron_idxs)
     for i in range(max_steps):
-        for sample_idxs, batch_idxs, batch in data_loader:
+        for sample_idxs, batch_idxs, batch in dataloader:
             opt.zero_grad()
             ramp = 1 - np.exp(-i / burnin)
 
