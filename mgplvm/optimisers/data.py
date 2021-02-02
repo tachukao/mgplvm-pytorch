@@ -44,6 +44,10 @@ class NeuralDataLoader:
         self.k = k1
         batch_idxs = list(range(k0, k1))
         sample_idxs = list(range(i0, i1))
+        if self.batch_pool is not None:
+            batch_idxs = [self.batch_pool[i] for i in batch_idxs]
+        if self.sample_pool is not None:
+            sample_idxs = [self.sample_pool[i] for i in sample_idxs]
         return sample_idxs, batch_idxs, batch
 
     def __iter__(self):

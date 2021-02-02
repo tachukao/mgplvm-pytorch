@@ -103,7 +103,6 @@ def fit(Y,
         n, m = Y.shape  # neuron x conditions
         n_samples = 1
     data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
-    data_size = m if batch_pool is None else len(batch_pool)  #total conditions
     n = n if neuron_idxs is None else len(neuron_idxs)
     #optionally mask some time points
     mask_Ts = mask_Ts if mask_Ts is not None else lambda x: x
