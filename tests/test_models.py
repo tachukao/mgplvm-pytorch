@@ -73,9 +73,9 @@ def test_svgplvm_batching():
     """
     d = 1  # dims of latent space
     n = 8  # number of neurons
-    m = 100  # number of conditions / time points
+    m = 30  # number of conditions / time points
     n_z = 5  # number of inducing points
-    n_samples = 100  # number of samples
+    n_samples = 30  # number of samples
     gen = mgp.syndata.Gen(mgp.syndata.Euclid(d),
                           n,
                           m,
@@ -102,7 +102,7 @@ def test_svgplvm_batching():
                                  tied_samples=tied_samples).to(device)
 
         data = torch.tensor(Y).to(device)
-        n_mc = 64
+        n_mc = 16
         svgp_elbo, kl = mod.forward(data, n_mc=n_mc)
         elbo = (svgp_elbo - kl).sum().item()
 
@@ -122,9 +122,9 @@ def test_svgplvm_batching():
             elbo = svgp_elbo - svgp_kl
             return elbo.sum().item()
 
-        est_elbos = [for_batch() for _ in range(1000)]
+        est_elbos = [for_batch() for _ in range(500)]
         err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
-        assert err < 1E-5
+        assert err < 1E-4
 
 
 def test_svgp_batching():
@@ -133,9 +133,9 @@ def test_svgp_batching():
     """
     d = 1  # dims of latent space
     n = 8  # number of neurons
-    m = 100  # number of conditions / time points
+    m = 30  # number of conditions / time points
     n_z = 10  # number of inducing points
-    n_samples = 100  # number of samples
+    n_samples = 30  # number of samples
     gen = mgp.syndata.Gen(mgp.syndata.Euclid(d),
                           n,
                           m,
@@ -181,9 +181,9 @@ def test_svgp_batching():
             elbo = svgp_lik - svgp_kl
             return elbo.sum().item()
 
-        est_elbos = [for_batch() for _ in range(1000)]
+        est_elbos = [for_batch() for _ in range(500)]
         err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
-        assert err < 1e-5
+        assert err < 1e-4
 
 
 if __name__ == '__main__':

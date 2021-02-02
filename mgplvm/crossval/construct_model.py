@@ -18,7 +18,7 @@ def model_params(n, m, d, n_z, n_samples, **kwargs):
         'kernel': 'RBF',
         'prior': 'Uniform',
         'likelihood': 'Gaussian',
-        'initialization': 'pca',
+        'initialization': 'fa',
         'Y': None,
         'latent_sigma': 1,
         'latent_mu': None,
