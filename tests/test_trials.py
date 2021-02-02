@@ -34,7 +34,7 @@ def test_trial_structure():
                                    m,
                                    n_samples,
                                    diagonal=False,
-                                   initialization='pca',
+                                   initialization='fa',
                                    Y=Y,
                                    sigma=sig0)
     kernel1 = kernels.QuadExp(n, manif1.distance, Y=Y)
@@ -59,7 +59,7 @@ def test_trial_structure():
                                    m2,
                                    n_samples2,
                                    diagonal=False,
-                                   initialization='pca',
+                                   initialization='fa',
                                    Y=Y2,
                                    sigma=sig0)
     kernel2 = kernels.QuadExp(n2, manif2.distance, Y=Y2)
