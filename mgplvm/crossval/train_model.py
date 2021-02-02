@@ -31,7 +31,7 @@ def training_params(**kwargs):
 
 def train_model(mod, data, params):
 
-    dataloader = optimisers.data.NeuralDataLoader(
+    dataloader = optimisers.data.BatchDataLoader(
         data, batch_size=params['batch_size'], batch_pool=params['batch_pool'])
 
     trained_mod = optimisers.svgp.fit(dataloader,

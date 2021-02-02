@@ -23,7 +23,7 @@ class DataLoader:
             raise StopIteration
 
 
-class NeuralDataLoader(DataLoader):
+class BatchDataLoader(DataLoader):
     def __init__(self,
                  data,
                  batch_size=None,
