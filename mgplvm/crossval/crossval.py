@@ -119,8 +119,8 @@ def test_cv(mod, split, device, n_mc=32, Print=False):
                              batch_idxs=T2,
                              neuron_idxs=N2)
 
-    svgp_elbo = svgp_elbo.sum(-1).sum(-1)  #(n_mc)
-    LLs = svgp_elbo - kl.sum(-1)  # LL for each batch (n_mc, )
+    svgp_elbo = svgp_elbo.sum(-1)  #(n_mc)
+    LLs = svgp_elbo - kl  # LL for each batch (n_mc, )
     LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)).detach().cpu().numpy()
     LL = LL / (len(T2) * len(N2) * n_samples)
 
