@@ -135,8 +135,7 @@ class Poisson(Likelihood):
 
     def sample(self, f_samps):
         c, d = self.prms
-        lambd = self.binsize * self.inv_link(c[None, ..., None] * f_samps +
-                                             d[None, ..., None])
+        lambd = self.binsize * self.inv_link(c[..., None] * f_samps +d[..., None])
         dist = torch.distributions.Poisson(lambd)
         y_samps = dist.sample()
         return y_samps
@@ -216,11 +215,11 @@ class NegativeBinomial(Likelihood):
         return total_count, self.c, self.d
 
     def sample(self, f_samps):
-        '''f_samps is n_b x n x m'''
+        '''f_samps is n_mc x n_samples x n x m'''
         total_count, c, d = self.prms
-        rate = c[None, ...] * f_samps + d[None, ...]  #shift+scale
+        rate = c[..., None] * f_samps + d[..., None]  #shift+scale
         rate = self.inv_link(rate) * self.binsize
-        dist = dists.NegativeBinomial(total_count[None, ...],
+        dist = dists.NegativeBinomial(total_count[None, ..., None, None],
                                       logits=rate)  #neg binom
         y_samps = dist.sample()  #sample observations
         return y_samps

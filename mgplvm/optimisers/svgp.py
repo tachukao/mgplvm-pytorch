@@ -123,6 +123,7 @@ def fit(dataset: Union[Tensor, DataLoader],
 
     n = n if neuron_idxs is None else len(neuron_idxs)
     for i in range(max_steps):
+        loss_vals, kl_vals, svgp_vals = [], [], []
         for sample_idxs, batch_idxs, batch in dataloader:
             opt.zero_grad()
             ramp = 1 - np.exp(-i / burnin)
@@ -134,15 +135,16 @@ def fit(dataset: Union[Tensor, DataLoader],
                                   neuron_idxs=neuron_idxs)
 
             loss = (-svgp_elbo) + (ramp * kl)  # -LL
-            loss_val = loss.item()
-            kl_val = kl.item()
-            svgp_elbo_val = svgp_elbo.item()
-            # terminate if stop is True
-            if stop is not None:
-                if stop(model, i, loss_val): break
+            loss_vals.append(loss.item())
+            kl_vals.append(kl.item())
+            svgp_vals.append(svgp_elbo.item())
             loss.backward()
             opt.step()
-            scheduler.step()
-            print_progress(model, n, m, n_samples, i, loss_val, kl_val,
-                           svgp_elbo_val, print_every, batch, batch_idxs,
-                           sample_idxs)
+            
+        scheduler.step()
+        # terminate if stop is True
+        print_progress(model, n, m, n_samples, i, np.mean(loss_vals), np.mean(kl_vals),
+                       np.mean(svgp_vals), print_every, batch, batch_idxs,
+                       sample_idxs)
+        if stop is not None:
+            if stop(model, i, np.mean(loss_vals)): break
