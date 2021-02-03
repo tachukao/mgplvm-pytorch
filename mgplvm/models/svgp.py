@@ -71,6 +71,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         else:
             q_sqrt = transform_to(constraints.lower_cholesky).inv(q_sqrt)
 
+        assert (q_mu is not None)
+        assert (q_sqrt is not None)
         if self.tied_samples:
             assert (q_mu.shape[0] == 1)
             assert (q_sqrt.shape[0] == 1)

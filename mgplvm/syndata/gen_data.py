@@ -92,7 +92,7 @@ class Torus(Manif):
 
         return gs
 
-    def gen_ginit(self, n):
+    def gen_ginit(self, n, n_samples):
         gs = np.ones((n_samples, n, self.d)) * np.pi
         return gs
 

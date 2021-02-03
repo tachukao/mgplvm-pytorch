@@ -515,5 +515,5 @@ class Linear(Kernel):
     @property
     def msg(self):
         W, alpha = self.prms
-        return (' W {:.3f} | alpha {:.3f} |').format((W**2).mean().sqrt(),
-                                                     (alpha**2).mean().sqrt())
+        return (' W {:.3f} | alpha {:.3f} |').format(
+            (W**2).mean().sqrt().item(), (alpha**2).mean().sqrt().item())

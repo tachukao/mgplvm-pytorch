@@ -112,6 +112,7 @@ class _F(Module):
             gamma = torch.diag_embed(gamma)
             gamma = transform_to(constraints.lower_cholesky).inv(gamma)
 
+        assert (gamma is not None)
         self.gamma = nn.Parameter(data=gamma, requires_grad=(not fixed_gamma))
 
     def forward(self, Y=None, batch_idxs=None, sample_idxs=None):

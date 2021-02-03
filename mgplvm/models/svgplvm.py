@@ -118,7 +118,8 @@ class SvgpLvm(nn.Module):
         g, lq = self.lat_dist.sample(torch.Size([n_mc]),
                                      data,
                                      batch_idxs=batch_idxs,
-                                     sample_idxs=sample_idxs)
+                                     sample_idxs=sample_idxs,
+                                     kmax=kmax)
         # g is shape (n_samples, n_mc, m, d)
         # lq is shape (n_mc x n_samples x m)
 
