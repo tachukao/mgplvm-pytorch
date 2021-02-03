@@ -1,29 +1,53 @@
 import torch
+import numpy as np
 from torch.utils.data import Dataset
 
 
-class NeuralDataLoader:
+class DataLoader:
+    def __init__(self, data):
+        n_samples, n, m = data.shape
+        self.n = n
+        self.n_samples = n_samples
+        self.m = m
+        self.data = data
+
+    def __iter__(self):
+        self.i = 0
+        return self
+
+    def __next__(self):
+        if self.i == 0:
+            self.i += 1
+            return (None, None, self.data)
+        else:
+            raise StopIteration
+
+
+class BatchDataLoader(DataLoader):
     def __init__(self,
                  data,
                  batch_size=None,
                  sample_size=None,
                  batch_pool=None,
-                 sample_pool=None):
-        n_samples, _, m = data.shape
-        self.n_samples = n_samples
-        self.m = m
-        self.batch_pool = batch_pool
-        self.sample_pool = sample_pool
-        self.batch_pool_size = m if batch_pool is None else len(batch_pool)
-        self.sample_pool_size = n_samples if sample_pool is None else len(
-            sample_pool)
+                 sample_pool=None,
+                 shuffle_batch=False,
+                 shuffle_sample=False):
+        super(BatchDataLoader, self).__init__(data)
+        m = self.m
+        n_samples = self.n_samples
+        self.shuffle_batch = shuffle_batch
+        self.shuffle_sample = shuffle_sample
+        self.batch_pool = list(range(m)) if batch_pool is None else batch_pool
+        self.sample_pool = list(
+            range(n_samples)) if sample_pool is None else sample_pool
+        self.batch_pool_size = len(self.batch_pool)
+        self.sample_pool_size = len(self.sample_pool)
         self.batch_size = self.batch_pool_size if batch_size is None else batch_size
         self.sample_size = self.sample_pool_size if sample_size is None else sample_size
         if sample_pool is not None:
-            data = data[sample_pool]
+            self.data = self.data[sample_pool]
         if batch_pool is not None:
-            data = data[:, :, batch_pool]
-        self.data = data
+            self.data = self.data[:, :, batch_pool]
         if self.batch_size > self.batch_pool_size:
             raise Exception(
                 "batch size greater than number of conditions in pool")
@@ -43,16 +67,26 @@ class NeuralDataLoader:
         batch = self.data[i0:i1][:, :, k0:k1]
         self.k = k1
         batch_idxs = list(range(k0, k1))
+        batch_idxs = [self.batch_pool[i] for i in batch_idxs]
         sample_idxs = list(range(i0, i1))
-        if self.batch_pool is not None:
-            batch_idxs = [self.batch_pool[i] for i in batch_idxs]
-        if self.sample_pool is not None:
-            sample_idxs = [self.sample_pool[i] for i in sample_idxs]
+        sample_idxs = [self.sample_pool[i] for i in sample_idxs]
         return sample_idxs, batch_idxs, batch
 
     def __iter__(self):
         self.i = 0
         self.k = 0
+        if self.shuffle_sample:
+            sample_shuffle_idxs = list(range(self.sample_pool_size))
+            np.random.shuffle(sample_shuffle_idxs)
+            self.sample_pool = [
+                self.sample_pool[i] for i in sample_shuffle_idxs
+            ]
+            self.data = self.data[sample_shuffle_idxs]
+        if self.shuffle_batch:
+            batch_shuffle_idxs = list(range(self.batch_pool_size))
+            np.random.shuffle(batch_shuffle_idxs)
+            self.batch_pool = [self.batch_pool[i] for i in batch_shuffle_idxs]
+            self.data = self.data[:, :, batch_shuffle_idxs]
         return self
 
     def __next__(self):

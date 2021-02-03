@@ -26,6 +26,7 @@ def test_GP_prior():
                           n_samples=n_samples)
     sig0 = 1.5
     Y = gen.gen_data(ell=25, sig=1)
+    data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)
     alpha = np.mean(np.std(Y, axis=-1), axis=0)
@@ -65,9 +66,8 @@ def test_GP_prior():
     ### test that training runs ###
     n_mc = 64
 
-    mgp.optimisers.svgp.fit(Y,
+    mgp.optimisers.svgp.fit(data,
                             mod,
-                            device,
                             optimizer=optim.Adam,
                             n_mc=n_mc,
                             max_steps=5,
@@ -80,7 +80,6 @@ def test_GP_prior():
                                 mod.lprior.svgp.q_mu[1].detach().data)))
 
     ### test that two ways of computing the prior agree ###
-    data = torch.tensor(Y).to(device)
     g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
     g = g.transpose(-1, -2)
 
@@ -109,6 +108,7 @@ def test_ARP_runs():
     m, d, n, n_z, p = 10, 3, 5, 5, 1
     n_samples = 2
     Y = np.random.normal(0, 1, (n_samples, n, m))
+    data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     for i, manif_type in enumerate(
         [mgp.manifolds.Euclid, mgp.manifolds.Torus, mgp.manifolds.So3]):
         manif = manif_type(m, d)
@@ -136,9 +136,8 @@ def test_ARP_runs():
                                  whiten=True).to(device)
 
         # train model
-        mgp.optimisers.svgp.fit(Y,
+        mgp.optimisers.svgp.fit(data,
                                 mod,
-                                device,
                                 max_steps=5,
                                 n_mc=64,
                                 optimizer=optim.Adam,

@@ -29,11 +29,13 @@ def training_params(**kwargs):
     return params
 
 
-def train_model(mod, Y, device, params):
+def train_model(mod, data, params):
 
-    trained_mod = optimisers.svgp.fit(Y,
+    dataloader = optimisers.data.BatchDataLoader(
+        data, batch_size=params['batch_size'], batch_pool=params['batch_pool'])
+
+    trained_mod = optimisers.svgp.fit(dataloader,
                                       mod,
-                                      device,
                                       optimizer=params['optimizer'],
                                       max_steps=int(round(
                                           params['max_steps'])),
@@ -41,9 +43,7 @@ def train_model(mod, Y, device, params):
                                       n_mc=params['n_mc'],
                                       lrate=params['lrate'],
                                       print_every=params['print_every'],
-                                      batch_size=params['batch_size'],
                                       stop=params['callback'],
-                                      batch_pool=params['batch_pool'],
                                       neuron_idxs=params['neuron_idxs'],
                                       mask_Ts=params['mask_Ts']),
 

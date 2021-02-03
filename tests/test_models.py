@@ -47,10 +47,10 @@ def test_svgplvm_LL():
                              lprior,
                              whiten=True).to(device)
 
+    data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     # train model
-    mgp.optimisers.svgp.fit(Y,
+    mgp.optimisers.svgp.fit(data,
                             mod,
-                            device,
                             optimizer=optim.Adam,
                             max_steps=5,
                             burnin=5 / 2E-2,
@@ -59,8 +59,8 @@ def test_svgplvm_LL():
                             print_every=1000)
 
     ### test burda log likelihood ###
-    LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
-    svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
+    LL = mod.calc_LL(data, 128)
+    svgp_elbo, kl = mod.forward(data, 128)
     elbo = (svgp_elbo - kl).data.cpu().numpy() / np.prod(Y.shape)
 
     assert elbo < LL

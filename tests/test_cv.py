@@ -35,7 +35,14 @@ def test_cv_runs():
     lik = likelihoods.Gaussian(n)
     lprior = mgplvm.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = models.SvgpLvm(n, m, n_samples, z, kernel, lik, lat_dist, lprior,
+    mod = models.SvgpLvm(n,
+                         m,
+                         n_samples,
+                         z,
+                         kernel,
+                         lik,
+                         lat_dist,
+                         lprior,
                          whiten=True).to(device)
 
     ### run cv ###
@@ -45,7 +52,7 @@ def test_cv_runs():
                                                max_steps=10,
                                                n_mc=32)
     mod, split = mgplvm.crossval.train_cv(mod, Y, device, train_ps, test=False)
-    _ = mgplvm.crossval.test_cv(mod, split, device, Print=True)
+    mgplvm.crossval.test_cv(mod, split, device, Print=True)
 
 
 if __name__ == '__main__':

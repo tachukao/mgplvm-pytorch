@@ -1,10 +1,12 @@
 from __future__ import print_function
 import numpy as np
 import torch
-from torch import optim
+from torch import Tensor, optim
 from torch.optim.lr_scheduler import LambdaLR
-from .data import NeuralDataLoader
+from .data import DataLoader
+from ..models import SvgpLvm
 import itertools
+from typing import Union, List, Optional
 
 
 def sort_params(model, hook):
@@ -64,46 +66,38 @@ def print_progress(model,
         print(msg + model.kernel.msg + model.lprior.msg, end="\r")
 
 
-def fit(Y,
-        model,
-        device,
+def fit(dataset: Union[Tensor, DataLoader],
+        model: SvgpLvm,
         optimizer=optim.Adam,
-        n_mc=128,
-        burnin=100,
-        lrate=1E-3,
-        max_steps=1000,
+        n_mc: int = 128,
+        burnin: int = 100,
+        lrate: float = 1E-3,
+        max_steps: int = 1000,
         stop=None,
-        print_every=50,
+        print_every: int = 50,
         mask_Ts=None,
-        neuron_idxs=None,
-        batch_size=None,
-        batch_pool=None,
-        sample_size=None,
-        sample_pool=None):
+        neuron_idxs: Optional[List[int]] = None):
     '''
     Parameters
     ----------
-    Y : np.array
+    dataset : Union[Tensor,DataLoader]
         data matrix of dimensions (n_samples x n x m)
-    device : torch.device
-        torch device
+    model : SvgpLvm
+        model to be trained
+    n_mc : int
+        number of MC samples for estimating the ELBO 
+    burnin : int
+        number of iterations to burn in during optimization
+    lrate : float
+        initial learning rate passed to the optimizer
     max_steps : Optional[int], default=1000
         maximum number of training iterations
-    batch_pool : Optional[int list]
-        pool of indices from which to batch (used to train a partial model)
     '''
 
     # set learning rate schedule so sigma updates have a burn-in period
     def fburn(x):
         return 1 - np.exp(-x / (3 * burnin))
 
-    if len(Y.shape) > 2:
-        n_samples, n, m = Y.shape  # samples, neurons, conditions
-    else:
-        n, m = Y.shape  # neuron x conditions
-        n_samples = 1
-    data = torch.tensor(Y, dtype=torch.get_default_dtype()).to(device)
-    n = n if neuron_idxs is None else len(neuron_idxs)
     #optionally mask some time points
     mask_Ts = mask_Ts if mask_Ts is not None else lambda x: x
 
@@ -114,14 +108,22 @@ def fit(Y,
 
     scheduler = LambdaLR(opt, lr_lambda=[lambda x: 1, fburn])
 
-    data_loader = NeuralDataLoader(data,
-                                   sample_size=sample_size,
-                                   sample_pool=sample_pool,
-                                   batch_size=batch_size,
-                                   batch_pool=batch_pool)
+    if isinstance(dataset, torch.Tensor):
+        dataloader = DataLoader(dataset)
+    elif isinstance(dataset, DataLoader):
+        dataloader = dataset
+    else:
+        raise Exception(
+            "dataset passed to svgp.fit must be either a torch.Tensor or a mgplvm.optimisers.data.DataLoader"
+        )
 
+    n_samples = dataloader.n_samples
+    n = dataloader.n
+    m = dataloader.m
+
+    n = n if neuron_idxs is None else len(neuron_idxs)
     for i in range(max_steps):
-        for sample_idxs, batch_idxs, batch in data_loader:
+        for sample_idxs, batch_idxs, batch in dataloader:
             opt.zero_grad()
             ramp = 1 - np.exp(-i / burnin)
 

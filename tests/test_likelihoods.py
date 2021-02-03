@@ -29,6 +29,7 @@ def test_likelihood_runs():
                       n_samples=n_samples)
     Y = gen.gen_data()
     Y = np.round(Y - np.amin(Y))
+    data = torch.tensor(Y, dtype=torch.get_default_dtype(), device=device)
     print(Y.shape)
 
     for lik in [
@@ -57,9 +58,8 @@ def test_likelihood_runs():
                              whiten=True).to(device)
 
         # train model
-        optimisers.svgp.fit(Y,
+        optimisers.svgp.fit(data,
                             mod,
-                            device,
                             optimizer=optim.Adam,
                             max_steps=5,
                             burnin=5 / 2E-2,
@@ -68,9 +68,9 @@ def test_likelihood_runs():
                             print_every=1000)
 
         ### test burda log likelihood ###
-        LL = mod.calc_LL(torch.tensor(Y).to(device), 128)
+        LL = mod.calc_LL(data, 128)
         print("once")
-        svgp_elbo, kl = mod.forward(torch.tensor(Y).to(device), 128)
+        svgp_elbo, kl = mod.forward(data, 128)
         elbo = (svgp_elbo - kl) / np.prod(Y.shape)
 
         assert elbo <= LL
