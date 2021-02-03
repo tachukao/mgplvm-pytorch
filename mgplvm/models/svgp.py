@@ -190,7 +190,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return y_samps
 
-    def predict(self, x: Tensor, full_cov: bool,
+    def predict(self,
+                x: Tensor,
+                full_cov: bool,
                 sample_idxs=None) -> Tuple[Tensor, Tensor]:
         """
         Parameters

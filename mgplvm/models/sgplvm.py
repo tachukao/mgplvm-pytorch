@@ -116,7 +116,9 @@ class SgpLvm(nn.Module):
         kl = lq.sum() - self.lprior(g).sum()
         return (sgp_elbo / n_b), (kl / n_b)
 
-    def predict(self, data: Tensor, query: Tensor,
+    def predict(self,
+                data: Tensor,
+                query: Tensor,
                 niter: int = 100) -> Tuple[Tensor, Tensor]:
         _, _, n_samples = data.shape
         q = self.rdist()

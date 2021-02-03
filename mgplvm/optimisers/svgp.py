@@ -26,9 +26,10 @@ def sort_params(model, hook):
         ]))
 
     params1 = list(
-        itertools.chain.from_iterable(
-            [model.lat_dist.concentration_parameters(),
-            model.kernel.parameters()]))
+        itertools.chain.from_iterable([
+            model.lat_dist.concentration_parameters(),
+            model.kernel.parameters()
+        ]))
 
     params = [{'params': params0}, {'params': params1}]
     return params
@@ -140,11 +141,11 @@ def fit(dataset: Union[Tensor, DataLoader],
             svgp_vals.append(svgp_elbo.item())
             loss.backward()
             opt.step()
-            
+
         scheduler.step()
         # terminate if stop is True
-        print_progress(model, n, m, n_samples, i, np.mean(loss_vals), np.mean(kl_vals),
-                       np.mean(svgp_vals), print_every, batch, batch_idxs,
-                       sample_idxs)
+        print_progress(model, n, m, n_samples, i, np.mean(loss_vals),
+                       np.mean(kl_vals), np.mean(svgp_vals), print_every,
+                       batch, batch_idxs, sample_idxs)
         if stop is not None:
             if stop(model, i, np.mean(loss_vals)): break

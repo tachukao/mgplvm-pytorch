@@ -406,7 +406,8 @@ class Linear(Kernel):
         if alpha is not None:
             alpha = torch.tensor(alpha)
         elif Y is not None:  # <Y^2> = alpha^2 * d * <x^2> + <eps^2> = alpha^2 * d + sig_noise^2
-            alpha = torch.tensor(np.sqrt(np.var(Y, axis=(0, 2)) / d))*0.5 #assume half signal half noise
+            alpha = torch.tensor(np.sqrt(np.var(
+                Y, axis=(0, 2)) / d)) * 0.5  #assume half signal half noise
         else:
             alpha = torch.ones(n, )  #one per neuron
         self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
