@@ -50,9 +50,7 @@ def print_progress(model,
     lat_dist = model.lat_dist
     if i % print_every == 0:
         Z = n * m * n_samples
-        mu = lat_dist.lat_gmu(Y,
-                              batch_idxs=batch_idxs,
-                              sample_idxs=sample_idxs)
+        mu = lat_dist.lat_gmu(Y, batch_idxs=batch_idxs, sample_idxs=sample_idxs)
         gamma = lat_dist.lat_gamma(Y,
                                    batch_idxs=batch_idxs,
                                    sample_idxs=sample_idxs).diagonal(dim1=-1,
@@ -145,7 +143,7 @@ def fit(dataset: Union[Tensor, DataLoader],
         scheduler.step()
         # terminate if stop is True
         print_progress(model, n, m, n_samples, i, np.mean(loss_vals),
-                       np.mean(kl_vals), np.mean(svgp_vals), print_every,
-                       batch, batch_idxs, sample_idxs)
+                       np.mean(kl_vals), np.mean(svgp_vals), print_every, batch,
+                       batch_idxs, sample_idxs)
         if stop is not None:
             if stop(model, i, np.mean(loss_vals)): break

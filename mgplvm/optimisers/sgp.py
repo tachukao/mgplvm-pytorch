@@ -29,9 +29,9 @@ def sort_params(model, hook):
             params[0].append(param)
         else:
             # add ell to group 2
-            if (('QuadExp' in model.kernel.name)
-                    and (param.shape == model.kernel.ell.shape)
-                    and torch.all(param == model.kernel.ell)):
+            if (('QuadExp' in model.kernel.name) and
+                (param.shape == model.kernel.ell.shape) and
+                    torch.all(param == model.kernel.ell)):
                 params[1].append(param)
             else:
                 params[0].append(param)
@@ -80,6 +80,7 @@ def fit(Y,
         nbatch=1,
         Tfix=slice(0),
         sigma_thresh=0.0001):
+
     def _Tlearn_hook(grad):
         ''' used to 'mask' some gradients for cv'''
         grad[Tfix, ...] *= 0

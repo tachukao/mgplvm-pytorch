@@ -11,6 +11,7 @@ class Kernel(Module, metaclass=abc.ABCMeta):
     """
     Base kernel class
     """
+
     def __init__(self):
         super().__init__()
 
@@ -24,6 +25,7 @@ class Kernel(Module, metaclass=abc.ABCMeta):
 
 
 class Combination(Kernel):
+
     def __init__(self, kernels: List[Kernel]):
         """
         Combination Kernels
@@ -53,6 +55,7 @@ class Combination(Kernel):
 
 
 class Sum(Combination):
+
     def _reduce(self, x: List[Tensor]) -> Tensor:
         return torch.sum(torch.stack(x, dim=0), dim=0)
 
@@ -68,6 +71,7 @@ class Sum(Combination):
 
 
 class Product(Combination):
+
     def _reduce(self, x: List[Tensor]):
         return torch.prod(torch.stack(x, dim=0), dim=0)
 
@@ -83,6 +87,7 @@ class Product(Combination):
 
 
 class QuadExpBase(Kernel):
+
     def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True, Y=None):
         super().__init__()
 
@@ -93,11 +98,11 @@ class QuadExpBase(Kernel):
             alpha = inv_softplus(
                 torch.tensor(np.mean(Y**2, axis=(0, -1))).sqrt())
         else:
-            alpha = inv_softplus(torch.ones(n, ))
+            alpha = inv_softplus(torch.ones(n,))
 
         self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
 
-        ell = inv_softplus(torch.ones(n, )) if ell is None else inv_softplus(
+        ell = inv_softplus(torch.ones(n,)) if ell is None else inv_softplus(
             torch.tensor(ell, dtype=torch.get_default_dtype()))
         self.ell = nn.Parameter(data=ell, requires_grad=True)
 
@@ -238,8 +243,7 @@ class Exp(QuadExpBase):
         expand_ell = ell[:, None, None]
 
         # NOTE: distance means squared distance ||x-y||^2 ?
-        stable_distance = torch.sqrt(distance +
-                                     1e-12)  # numerically stabilized
+        stable_distance = torch.sqrt(distance + 1e-12)  # numerically stabilized
         kxy = sqr_alpha * torch.exp(-stable_distance / expand_ell)
         return kxy
 
@@ -409,7 +413,7 @@ class Linear(Kernel):
             alpha = torch.tensor(np.sqrt(np.var(
                 Y, axis=(0, 2)) / d)) * 0.5  #assume half signal half noise
         else:
-            alpha = torch.ones(n, )  #one per neuron
+            alpha = torch.ones(n,)  #one per neuron
         self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
 
         self.learn_weights = learn_weights

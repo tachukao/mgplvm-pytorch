@@ -101,10 +101,10 @@ class S3(Manifold):
         theta = torch.norm(x, dim=dim, keepdim=True)  #vector magintudes
         v = x / theta  #unit vectors
         ks = np.arange(-kmax, kmax + 1)
-        zs = np.meshgrid(*(ks
-                           for _ in range(1)))  #construct equivalent elements
+        zs = np.meshgrid(
+            *(ks for _ in range(1)))  #construct equivalent elements
         zs = np.stack([z.flatten() for z in zs
-                       ]).T * 2 * np.pi  #need to add multiples of 2pi
+                      ]).T * 2 * np.pi  #need to add multiples of 2pi
         zs = torch.tensor(zs, dtype=torch.get_default_dtype()).to(theta.device)
         theta = theta + zs[:, None, None, None,
                            ...]  # (nk, n_b, n_samples, m, 1)

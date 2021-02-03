@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 
 
 class DataLoader:
+
     def __init__(self, data):
         n_samples, n, m = data.shape
         self.n = n
@@ -24,6 +25,7 @@ class DataLoader:
 
 
 class BatchDataLoader(DataLoader):
+
     def __init__(self,
                  data,
                  batch_size=None,

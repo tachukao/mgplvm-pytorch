@@ -76,6 +76,7 @@ class ReLieBase(Rdist):
 
 
 class _F(Module):
+
     def __init__(self,
                  manif: Manifold,
                  m: int,

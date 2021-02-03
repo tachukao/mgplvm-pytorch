@@ -153,8 +153,7 @@ class SgpLvm(nn.Module):
         x = q.rsample(torch.Size([n_b]))
 
         # compute entropy
-        lq = self.manif.log_q(q.log_prob, x, self.manif.d,
-                              kmax=kmax)  # n_b x m
+        lq = self.manif.log_q(q.log_prob, x, self.manif.d, kmax=kmax)  # n_b x m
         lq = lq.sum(dim=1)  # (n_b,)
 
         # transform x to group with dims (n_b x m x d)

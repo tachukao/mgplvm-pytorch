@@ -16,6 +16,7 @@ log2pi: float = np.log(2 * np.pi)
 
 
 class SvgpBase(Module, metaclass=abc.ABCMeta):
+
     def __init__(self,
                  kernel: Kernel,
                  n: int,
@@ -146,9 +147,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         # prior KL(q(u) || p(u)) (1 x n) if tied_samples otherwise (n_samples x n)
         prior_kl = self.prior_kl(sample_idxs)
         # predictive mean and var at x
-        f_mean, f_var = self.predict(x,
-                                     full_cov=False,
-                                     sample_idxs=sample_idxs)
+        f_mean, f_var = self.predict(x, full_cov=False, sample_idxs=sample_idxs)
         prior_kl = prior_kl.sum(-2)
         if not self.tied_samples:
             prior_kl = prior_kl * (self.n_samples / sample_size)
@@ -179,7 +178,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         #sample from p(f|u)
         dist = Normal(mu, torch.sqrt(v))
-        f_samps = dist.sample((n_b, ))  #n_mc x n_samples x n x m
+        f_samps = dist.sample((n_b,))  #n_mc x n_samples x n x m
 
         #sample from observation function p(y|f)
         y_samps = self.likelihood.sample(f_samps)
@@ -279,6 +278,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
 
 class Svgp(SvgpBase):
+
     def __init__(self,
                  kernel: Kernel,
                  n: int,

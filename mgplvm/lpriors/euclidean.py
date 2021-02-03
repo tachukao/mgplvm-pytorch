@@ -13,6 +13,7 @@ from typing import Optional
 
 
 class LpriorEuclid(Lprior):
+
     def __init__(self, manif):
         if not isinstance(manif, Euclid):
             raise Exception("GP prior only works with Euclidean manifolds")

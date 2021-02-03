@@ -22,6 +22,7 @@ def draw_GP(n, d, n_samples, sig, ell, jitter=1e-6):
 
 
 class Manif(metaclass=abc.ABCMeta):
+
     def __init__(self, d):
         self.d = d
 
@@ -42,6 +43,7 @@ class Manif(metaclass=abc.ABCMeta):
 
 
 class Euclid(Manif):
+
     def __init__(self, d):
         super().__init__(d)
 
@@ -71,6 +73,7 @@ class Euclid(Manif):
 
 
 class Torus(Manif):
+
     def __init__(self, d):
         super().__init__(d)
 
@@ -109,6 +112,7 @@ class Torus(Manif):
 
 
 class Sphere(Manif):
+
     def __init__(self, d):
         super().__init__(d)
 
@@ -143,6 +147,7 @@ class Sphere(Manif):
 
 
 class So3(Manif):
+
     def __init__(self):
         super().__init__(3)
 
@@ -181,6 +186,7 @@ class Product(Manif):
     """
     Does not support product of products at the moment
     """
+
     def __init__(self, manifs):
         self.ds = [m.d for m in manifs]
         self.d = sum(self.ds)
@@ -219,6 +225,7 @@ class Product(Manif):
 
 # %% generator class
 class Gen():
+
     def __init__(self,
                  manifold,
                  n,
@@ -257,7 +264,7 @@ class Gen():
         '''set the value of a parameter'''
         if param == "l":  # need separate lengthscale per neuron per manifold
             if type(value) in [int, float, np.float64
-                               ]:  # one length scale for each manifold
+                              ]:  # one length scale for each manifold
                 value = [value for i in range(self.nman)]
             value = [
                 np.ones((self.n, 1)) * val +

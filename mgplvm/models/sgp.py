@@ -14,6 +14,7 @@ log2pi: float = np.log(2 * np.pi)
 
 
 class SgpBase(Module, metaclass=abc.ABCMeta):
+
     def __init__(self,
                  kernel: Kernel,
                  n: int,
@@ -39,7 +40,7 @@ class SgpBase(Module, metaclass=abc.ABCMeta):
         self.n = n
         self.m = m
         self.n_inducing = n_inducing
-        sigma = torch.ones(n, ) * 0.2 if sigma is None else torch.tensor(
+        sigma = torch.ones(n,) * 0.2 if sigma is None else torch.tensor(
             sigma, dtype=torch.get_default_dtype())
         self.sigma = nn.Parameter(data=inv_softplus(sigma), requires_grad=True)
         self.kernel = kernel
@@ -220,6 +221,7 @@ class SgpBase(Module, metaclass=abc.ABCMeta):
 
 
 class Sgp(SgpBase):
+
     def __init__(self,
                  kernel: Kernel,
                  n: int,
@@ -259,6 +261,7 @@ class Sgp(SgpBase):
 
 
 class SgpComb(SgpBase):
+
     def __init__(self,
                  kernel: Combination,
                  n: int,

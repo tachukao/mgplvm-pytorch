@@ -24,6 +24,7 @@ def id_link(x):
 
 
 class Likelihood(Module, metaclass=abc.ABCMeta):
+
     def __init__(self, n: int, n_gh_locs: Optional[int] = n_gh_locs):
         super().__init__()
         self.n = n
@@ -43,13 +44,14 @@ class Likelihood(Module, metaclass=abc.ABCMeta):
 
 
 class Gaussian(Likelihood):
+
     def __init__(self,
                  n: int,
                  variance: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs,
                  learn_sigma=True):
         super().__init__(n, n_gh_locs)
-        sigma = 1 * torch.ones(n, ) if variance is None else torch.sqrt(
+        sigma = 1 * torch.ones(n,) if variance is None else torch.sqrt(
             torch.tensor(variance, dtype=torch.get_default_dtype()))
 
         if learn_sigma:
@@ -104,6 +106,7 @@ class Gaussian(Likelihood):
 
 
 class Poisson(Likelihood):
+
     def __init__(
             self,
             n: int,
@@ -117,8 +120,8 @@ class Poisson(Likelihood):
         super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize
-        c = torch.ones(n, ) if c is None else c
-        d = torch.zeros(n, ) if d is None else d
+        c = torch.ones(n,) if c is None else c
+        d = torch.zeros(n,) if d is None else d
         self.c = nn.Parameter(data=c, requires_grad=not fixed_c)
         self.d = nn.Parameter(data=d, requires_grad=not fixed_d)
         self.n_gh_locs = n_gh_locs
@@ -183,6 +186,7 @@ class Poisson(Likelihood):
 
 
 class NegativeBinomial(Likelihood):
+
     def __init__(self,
                  n: int,
                  inv_link=id_link,
@@ -197,13 +201,12 @@ class NegativeBinomial(Likelihood):
         super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize
-        total_count = 4 * torch.ones(
-            n, ) if total_count is None else total_count
+        total_count = 4 * torch.ones(n,) if total_count is None else total_count
         total_count = dists.transform_to(
             dists.constraints.greater_than_eq(0)).inv(total_count)
         assert (total_count is not None)
-        c = torch.ones(n, ) if c is None else c
-        d = torch.zeros(n, ) if d is None else d
+        c = torch.ones(n,) if c is None else c
+        d = torch.zeros(n,) if d is None else d
         self.total_count = nn.Parameter(data=total_count,
                                         requires_grad=not fixed_total_count)
         self.c = nn.Parameter(data=c, requires_grad=not fixed_c)
