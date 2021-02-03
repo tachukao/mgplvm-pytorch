@@ -1,7 +1,7 @@
 from __future__ import print_function
 import numpy as np
 from ..utils import softplus
-from . import sgp, svgp
+from . import svgp
 from .. import rdist, kernels, utils
 import torch
 from torch import nn, Tensor
