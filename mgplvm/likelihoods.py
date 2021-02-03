@@ -105,15 +105,15 @@ class Gaussian(Likelihood):
 
 class Poisson(Likelihood):
     def __init__(
-        self,
-        n: int,
-        inv_link=exp_link,  #torch.exp,
-        binsize=1,
-        c: Optional[Tensor] = None,
-        d: Optional[Tensor] = None,
-        fixed_c=True,
-        fixed_d=False,
-        n_gh_locs: Optional[int] = n_gh_locs):
+            self,
+            n: int,
+            inv_link=exp_link,  #torch.exp,
+            binsize=1,
+            c: Optional[Tensor] = None,
+            d: Optional[Tensor] = None,
+            fixed_c=True,
+            fixed_d=False,
+            n_gh_locs: Optional[int] = n_gh_locs):
         super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize
@@ -257,7 +257,7 @@ class NegativeBinomial(Likelihood):
         locs, ws = np.polynomial.hermite.hermgauss(
             self.n_gh_locs)  #sample points and weights for quadrature
         ws = torch.tensor(ws, device=fmu.device)
-        locs = torch.tensor(locs,device=fvar.device)
+        locs = torch.tensor(locs, device=fvar.device)
         fvar = fvar[..., None]  #add n_samples and locs
         fmu = fmu[..., None]  #add locs
         #print(locs.shape)
