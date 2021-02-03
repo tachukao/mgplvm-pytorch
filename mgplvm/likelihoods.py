@@ -105,15 +105,15 @@ class Gaussian(Likelihood):
 
 class Poisson(Likelihood):
     def __init__(
-        self,
-        n: int,
-        inv_link=exp_link,  #torch.exp,
-        binsize=1,
-        c: Optional[Tensor] = None,
-        d: Optional[Tensor] = None,
-        fixed_c=True,
-        fixed_d=False,
-        n_gh_locs: Optional[int] = n_gh_locs):
+            self,
+            n: int,
+            inv_link=exp_link,  #torch.exp,
+            binsize=1,
+            c: Optional[Tensor] = None,
+            d: Optional[Tensor] = None,
+            fixed_c=True,
+            fixed_d=False,
+            n_gh_locs: Optional[int] = n_gh_locs):
         super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize

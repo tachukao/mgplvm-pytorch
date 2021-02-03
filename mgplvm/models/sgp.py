@@ -48,11 +48,7 @@ class SgpBase(Module, metaclass=abc.ABCMeta):
     def _expand(self, z, x):
         pass
 
-    def elbo(self,
-             n_samples: int,
-             n_b: int,
-             y: Tensor,
-             x: Tensor,
+    def elbo(self, n_samples: int, n_b: int, y: Tensor, x: Tensor,
              tosum=True) -> Tensor:
         """
         Parameters
