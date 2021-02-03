@@ -5,6 +5,7 @@ from typing import Optional
 
 
 class InducingPoints(Module):
+
     def __init__(self,
                  n: int,
                  d: int,

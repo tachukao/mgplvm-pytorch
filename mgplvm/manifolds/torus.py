@@ -9,6 +9,7 @@ from sklearn import decomposition
 
 
 class Torus(Manifold):
+
     def __init__(self, m: int, d: int):
         """
         Parameters

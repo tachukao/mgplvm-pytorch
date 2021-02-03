@@ -2,6 +2,7 @@ import numpy as np
 
 
 class LossMarginStop():
+
     def __init__(self, loss_margin=0, stop_after=10):
         '''
         loss_margin [optional] : float, default=0

@@ -13,6 +13,7 @@ from typing import Optional
 
 
 class LpriorEuclid(Lprior):
+
     def __init__(self, manif):
         if not isinstance(manif, Euclid):
             raise Exception("GP prior only works with Euclidean manifolds")
@@ -60,8 +61,7 @@ class GP(LpriorEuclid):
         self.n_samples = n_samples
         self.d = d
         #1d latent and n_z inducing points
-        zinit = torch.linspace(0.,
-                               torch.max(ts).item(), n_z).reshape(1, 1, n_z)
+        zinit = torch.linspace(0., torch.max(ts).item(), n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
         z = InducingPoints(n, 1, n_z, z=zinit.repeat(n, 1, 1))
         self.ts = ts

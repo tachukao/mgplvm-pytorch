@@ -7,6 +7,7 @@ from .common import Lprior
 
 
 class LpriorTorus(Lprior):
+
     def __init__(self, manif):
         if not isinstance(manif, Torus):
             raise Exception("VonMises prior only works with Tori manifolds")
@@ -108,10 +109,9 @@ class IARP(LpriorTorus):
     @property
     def msg(self):
         mu, phi, concentration = self.prms
-        return (
-            'mu_avg {:.3f} | phi_avg {:.3f} | concentration {:.3f}').format(
-                torch.mean(mu).item(),
-                torch.mean(phi).item(), concentration.item())
+        return ('mu_avg {:.3f} | phi_avg {:.3f} | concentration {:.3f}').format(
+            torch.mean(mu).item(),
+            torch.mean(phi).item(), concentration.item())
 
 
 class LARP(LpriorTorus):

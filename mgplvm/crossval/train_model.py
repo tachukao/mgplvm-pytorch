@@ -37,8 +37,7 @@ def train_model(mod, data, params):
     trained_mod = optimisers.svgp.fit(dataloader,
                                       mod,
                                       optimizer=params['optimizer'],
-                                      max_steps=int(round(
-                                          params['max_steps'])),
+                                      max_steps=int(round(params['max_steps'])),
                                       burnin=params['burnin'],
                                       n_mc=params['n_mc'],
                                       lrate=params['lrate'],

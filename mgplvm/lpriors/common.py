@@ -14,6 +14,7 @@ class Lprior(Module, metaclass=abc.ABCMeta):
     """
     Base kernel class
     """
+
     def __init__(self, manif: Manifold):
         super().__init__()
         self.manif = manif
@@ -149,9 +150,8 @@ class Brownian(Lprior):
 
         brownian_eta = torch.ones(d) if brownian_eta is None else brownian_eta
         brownian_c = torch.zeros(d) if brownian_c is None else brownian_c
-        self.brownian_eta = nn.Parameter(
-            data=torch.sqrt(brownian_eta),
-            requires_grad=(not fixed_brownian_eta))
+        self.brownian_eta = nn.Parameter(data=torch.sqrt(brownian_eta),
+                                         requires_grad=(not fixed_brownian_eta))
         self.brownian_c = nn.Parameter(data=brownian_c,
                                        requires_grad=(not fixed_brownian_c))
 

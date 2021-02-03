@@ -7,6 +7,7 @@ from typing import Optional
 
 
 class Manifold(metaclass=abc.ABCMeta):
+
     def __init__(self, d: int):
         """
         :param d: dimensionality of the manifold

@@ -81,6 +81,7 @@ def bin_angs(times, angs, bins):
     '''
     can also do scipy.circvar if we want to check that the variability is reasonable
     '''
+
     def fmean(samples):
         return circmean(samples, nan_policy='propagate')
 

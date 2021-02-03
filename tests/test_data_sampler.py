@@ -24,8 +24,7 @@ def test_sampler():
                     assert (batch.shape[1] == n)
                     assert (batch.shape[0] <= sample_size)
                     assert (batch.shape[2] <= batch_size)
-                    assert np.alltrue(Y[sample_idxs][:, :,
-                                                     batch_idxs] == batch)
+                    assert np.alltrue(Y[sample_idxs][:, :, batch_idxs] == batch)
 
 
 def test_sampler_pool():
@@ -57,8 +56,7 @@ def test_sampler_pool():
                     assert (batch.shape[1] == n)
                     assert (batch.shape[0] <= sample_size)
                     assert (batch.shape[2] <= batch_size)
-                    assert np.alltrue(Y[sample_idxs][:, :,
-                                                     batch_idxs] == batch)
+                    assert np.alltrue(Y[sample_idxs][:, :, batch_idxs] == batch)
 
 
 if __name__ == "__main__":

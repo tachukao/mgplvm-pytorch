@@ -8,6 +8,7 @@ class Module(nn.Module, metaclass=abc.ABCMeta):
     """
     Base kernel class
     """
+
     def __init__(self):
         super().__init__()
 

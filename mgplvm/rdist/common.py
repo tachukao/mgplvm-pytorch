@@ -6,6 +6,7 @@ from typing import Tuple
 
 
 class Rdist(Module, metaclass=abc.ABCMeta):
+
     def __init__(self, manif: Manifold, kmax: int):
         super(Rdist, self).__init__()
         self.manif = manif
