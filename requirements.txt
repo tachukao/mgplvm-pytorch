@@ -2,6 +2,7 @@
 sphinx
 sphinx-rtd-theme
 pytest
+pytest-cov
 torch
 numpy 
 scipy
