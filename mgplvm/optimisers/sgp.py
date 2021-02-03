@@ -19,12 +19,12 @@ def sort_params(model, hook):
     lat_params = list(model.lat_dist.parameters())
     params: List[List[Tensor]] = [[], []]
     for param in model.parameters():
-        if (param.shape == lat_params[1].shape) and torch.all(
-                param == lat_params[1]):
+        if (param.shape
+                == lat_params[1].shape) and torch.all(param == lat_params[1]):
             param.register_hook(hook)  # option to mask gradients
             params[1].append(param)
-        elif (param.shape == lat_params[0].shape) and torch.all(
-                param == lat_params[0]):
+        elif (param.shape
+              == lat_params[0].shape) and torch.all(param == lat_params[0]):
             param.register_hook(hook)  # option to mask gradients
             params[0].append(param)
         else:
@@ -120,7 +120,8 @@ def fit(Y,
             loss_val = loss.item() + loss_val
 
         if stop is not None:
-            if stop(model, i_step, loss_val): break
+            if stop(model, i_step, loss_val):
+                break
         optimizer.step()
         scheduler.step()
         if i_step % print_every == 0:

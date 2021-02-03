@@ -146,4 +146,5 @@ def fit(dataset: Union[Tensor, DataLoader],
                        np.mean(kl_vals), np.mean(svgp_vals), print_every, batch,
                        batch_idxs, sample_idxs)
         if stop is not None:
-            if stop(model, i, np.mean(loss_vals)): break
+            if stop(model, i, np.mean(loss_vals)):
+                break
