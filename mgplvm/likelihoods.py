@@ -7,6 +7,7 @@ from .base import Module
 from typing import Optional
 import torch.distributions as dists
 import numpy as np
+from numpy.polynomial.hermite import hermgauss
 import warnings
 
 log2pi: float = np.log(2 * np.pi)
@@ -173,9 +174,9 @@ class Poisson(Likelihood):
 
         else:
             # use Gauss-Hermite quadrature to approximate integral
-            locs, ws = np.polynomial.hermite.hermgauss(self.n_gh_locs)
-            ws = torch.Tensor(ws).to(fmu.device)
-            locs = torch.Tensor(locs).to(fvar.device)
+            locs, ws = hermgauss(self.n_gh_locs)
+            ws = torch.tensor(ws, device=fmu.device)
+            locs = torch.tensor(locs, device=fvar.device)
             fvar = fvar[..., None]  #add n_gh
             fmu = fmu[..., None]  #add n_gh
             locs = self.inv_link(torch.sqrt(2. * fvar) * locs +
@@ -257,10 +258,10 @@ class NegativeBinomial(Likelihood):
         fvar = fvar * torch.square(c[..., None])
         #print(fmu.shape, fvar.shape)
         # use Gauss-Hermite quadrature to approximate integral
-        locs, ws = np.polynomial.hermite.hermgauss(
+        locs, ws = hermgauss(
             self.n_gh_locs)  #sample points and weights for quadrature
-        ws = torch.Tensor(ws).to(fmu.device)
-        locs = torch.Tensor(locs).to(fvar.device)
+        ws = torch.tensor(ws, device=fmu.device)
+        locs = torch.tensor(locs, device=fvar.device)
         fvar = fvar[..., None]  #add n_samples and locs
         fmu = fmu[..., None]  #add locs
         #print(locs.shape)

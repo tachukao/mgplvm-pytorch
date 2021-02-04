@@ -31,7 +31,7 @@ class GP(LpriorEuclid):
                  manif: Manifold,
                  kernel: Kernel,
                  ts: torch.Tensor,
-                 n_z: Optional[int] = 20,
+                 n_z: int = 20,
                  d=1):
         """
         __init__ method for GP prior class (only works for Euclidean manif)
@@ -61,7 +61,7 @@ class GP(LpriorEuclid):
         self.n_samples = n_samples
         self.d = d
         #1d latent and n_z inducing points
-        zinit = torch.linspace(0., torch.max(ts), n_z).reshape(1, 1, n_z)
+        zinit = torch.linspace(0., torch.max(ts).item(), n_z).reshape(1, 1, n_z)
         #separate inducing points for each latent dimension
         z = InducingPoints(n, 1, n_z, z=zinit.repeat(n, 1, 1))
         self.ts = ts

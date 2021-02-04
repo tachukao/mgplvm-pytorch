@@ -202,9 +202,7 @@ class QuadExp(QuadExpBase):
 
     @property
     def msg(self):
-        alpha_mag, ell_mag = [
-            np.mean(val.data.cpu().numpy()) for val in self.prms
-        ]
+        alpha_mag, ell_mag = [val.mean().item() for val in self.prms]
         return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
             alpha_mag**2, ell_mag)
 
@@ -252,9 +250,7 @@ class Exp(QuadExpBase):
 
     @property
     def msg(self):
-        alpha_mag, ell_mag = [
-            np.mean(val.data.cpu().numpy()) for val in self.prms
-        ]
+        alpha_mag, ell_mag = [val.mean().item() for val in self.prms]
         return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
             alpha_mag**2, ell_mag)
 
@@ -333,9 +329,7 @@ class Matern(QuadExpBase):
 
     @property
     def msg(self):
-        alpha_mag, ell_mag = [
-            np.mean(val.data.cpu().numpy()) for val in self.prms
-        ]
+        alpha_mag, ell_mag = [val.mean().item() for val in self.prms]
         return (' nu {:.1f} | alpha_sqr {:.3f} | ell {:.3f} |').format(
             self.nu, alpha_mag**2, ell_mag)
 
@@ -376,9 +370,7 @@ class QuadExpARD(QuadExpBase):
 
     @property
     def msg(self):
-        alpha_mag, ell_mag = [
-            np.mean(val.data.cpu().numpy()) for val in self.prms
-        ]
+        alpha_mag, ell_mag = [val.mean().item() for val in self.prms]
         return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
             alpha_mag**2, ell_mag)
 
@@ -519,5 +511,5 @@ class Linear(Kernel):
     @property
     def msg(self):
         W, alpha = self.prms
-        return (' W {:.3f} | alpha {:.3f} |').format((W**2).mean().sqrt(),
-                                                     (alpha**2).mean().sqrt())
+        return (' W {:.3f} | alpha {:.3f} |').format(
+            (W**2).mean().sqrt().item(), (alpha**2).mean().sqrt().item())

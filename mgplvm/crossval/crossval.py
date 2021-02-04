@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 import torch
-from . import train_model
+from .train_model import train_model
 torch.set_default_dtype(torch.float64)
 
 

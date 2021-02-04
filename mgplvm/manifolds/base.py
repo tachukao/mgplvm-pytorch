@@ -16,6 +16,11 @@ class Manifold(metaclass=abc.ABCMeta):
         self.d = d
         self.d2 = d  # d2 = d by default
 
+    @staticmethod
+    @abc.abstractmethod
+    def initialize(initialization, n_samples, m, d, Y):
+        pass
+
     @abc.abstractmethod
     def lprior(self, g: Tensor) -> Tensor:
         pass
@@ -53,6 +58,15 @@ class Manifold(metaclass=abc.ABCMeta):
     def distance(x: Tensor, y: Tensor) -> Tensor:
         pass
 
+    @staticmethod
+    @abc.abstractmethod
+    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
+        pass
+
     @abc.abstractmethod
     def inducing_points(self, n: int, n_z: int, z=Optional[Tensor]):
+        pass
+
+    @abc.abstractproperty
+    def name(self):
         pass

@@ -25,4 +25,4 @@ jobs:
         pip install --no-cache-dir -U -r requirements.txt | cat
     - name: Mypy
       run: |
-        mypy mgplvm/*
+        mypy --config-file=mypy.ini mgplvm
