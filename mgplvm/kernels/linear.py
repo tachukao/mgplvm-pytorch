@@ -94,19 +94,17 @@ class Linear(Kernel):
         K(X, Y) (n x mx x my)
 
         """
-        scale = self.prms
-        scale_ = scale[:, None, None]
 
         distance = x.transpose(-1, -2).matmul(y)
 
-        kxy = scale_ * distance
+        kxy = self.scale[:, None, None] * distance
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
 
     @property
-    def prms(self) -> Tuple[Tensor, Tensor]:
+    def prms(self) -> Tensor:
         return self.scale
 
     @property

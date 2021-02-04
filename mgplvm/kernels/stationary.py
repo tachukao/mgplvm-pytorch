@@ -205,9 +205,8 @@ class Exp(QuadExp):
 
     @property
     def msg(self):
-        return (' scale {:.3f} | ell {:.3f} |').format(
-            self.scale.mean().item(),
-            self.ell.mean().item())
+        return (' scale {:.3f} | ell {:.3f} |').format(self.scale.mean().item(),
+                                                       self.ell.mean().item())
 
 
 class Matern(QuadExp):
@@ -284,5 +283,6 @@ class Matern(QuadExp):
     @property
     def msg(self):
         return (' nu {:.1f} | scale {:.3f} | ell {:.3f} |').format(
-            self.nu, self.scale.mean.item(),
+            self.nu,
+            self.scale.mean().item(),
             self.ell.mean().item())
