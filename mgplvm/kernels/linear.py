@@ -100,9 +100,6 @@ class Linear(Kernel):
         kxy = self.scale[:, None, None] * distance
         return kxy
 
-    def forward(self, x: Tensor, y: Tensor) -> Tensor:
-        return self.K(x, y)
-
     @property
     def prms(self) -> Tensor:
         return self.scale

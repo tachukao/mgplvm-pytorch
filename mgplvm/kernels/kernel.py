@@ -23,6 +23,10 @@ class Kernel(Module, metaclass=abc.ABCMeta):
     def diagK(self, x: Tensor) -> Tensor:
         pass
 
+    def forward(self, x: Tensor, y: Tensor) -> Tensor:
+        return self.K(x, y)
+
+
 
 #class Combination(Kernel):
 #
