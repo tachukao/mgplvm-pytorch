@@ -4,7 +4,7 @@ from torch import optim
 import mgplvm as mgp
 import matplotlib.pyplot as plt
 
-torch.manual_seed(0)
+torch.manual_seed(1)
 np.random.seed(0)
 
 torch.set_default_dtype(torch.float64)
