@@ -263,7 +263,7 @@ class Matern(Stationary):
         super().__init__(n, distance, d, ell, scale, learn_scale)
 
         if nu not in (0.5, 1.5, 2.5):
-            raise NotImplemented("only nu=0.5, 1.5, 2.5 implemented")
+            raise Exception("only nu=0.5, 1.5, 2.5 implemented")
 
         self.nu = nu
 
