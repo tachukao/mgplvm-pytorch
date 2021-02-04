@@ -105,7 +105,6 @@ def test_kernels_run():
 
 if __name__ == '__main__':
     test_quad_exp_hyp_prms_dims()
-    test_quad_expard_hyp_prms_dims()
     test_quad_exp_trK()
     test_kernels_diagK()
     test_kernels_run()

@@ -131,11 +131,11 @@ class QuadExp(Kernel):
 
         """
         alpha, ell = self.prms
-        distance = self.distance(x, y)  # dims (... n x mx x my)
+        ell = ell[:, None, None]
+        distance = self.distance(x / ell, y / ell)  # dims (... n x mx x my)
         sqr_alpha = torch.square(alpha)[:, None, None]
-        sqr_ell = torch.square(ell)[:, None, None]
         #print(sqr_alpha.device, distance.device, sqr_ell.device)
-        kxy = sqr_alpha * torch.exp(-0.5 * distance / sqr_ell)
+        kxy = sqr_alpha * torch.exp(-0.5 * distance)
         return kxy
 
     def diagK(self, x: Tensor) -> Tensor:
@@ -227,13 +227,14 @@ class Exp(QuadExp):
 
         """
         alpha, ell = self.prms
-        distance = self.distance(x, y)  # dims (... n x mx x my)
         sqr_alpha = torch.square(alpha)[:, None, None]
         expand_ell = ell[:, None, None]
+        distance = self.distance(x / expand_ell,
+                                 y / expand_ell)  # dims (... n x mx x my)
 
         # NOTE: distance means squared distance ||x-y||^2 ?
         stable_distance = torch.sqrt(distance + 1e-12)  # numerically stabilized
-        kxy = sqr_alpha * torch.exp(-stable_distance / expand_ell)
+        kxy = sqr_alpha * torch.exp(-stable_distance)
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
