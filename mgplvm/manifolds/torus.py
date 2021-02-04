@@ -101,14 +101,33 @@ class Torus(Manifold):
 
     @staticmethod
     def distance(x: Tensor, y: Tensor) -> Tensor:
-        diff = 2 - (2 * torch.cos(x[..., None] - y[..., None, :]))
-        dist_sqr = torch.sum(diff, dim=-3)
-        return dist_sqr
+        # distance = 2 - 2 cos(x-y)
+        # here we use the identity: cox(x-y) = cos(x)cos(y) + sin(x)sin(y)
+        d = x.shape[-2]
+        cx = torch.cos(x)
+        cy = torch.cos(y)
+        sx = torch.sin(x)
+        sy = torch.sin(y)
+        z1_ = torch.cat([cx, sx], dim=-2)
+        z2_ = torch.cat([cy, sy], dim=-2)
+        res = 2 * (d - z1_.transpose(-1, -2).matmul(z2_))
+        res.clamp_min_(0)
+        return res
 
     @staticmethod
     def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        dist = torch.cos(x[..., None] - y[..., None, :]).sum(dim=-3)
-        return dist
+        # distance = cos(x - y)
+        # here we use the identity: cox(x-y) = cos(x)cos(y) + sin(x)sin(y)
+        d = x.shape[-2]
+        cx = torch.cos(x)
+        cy = torch.cos(y)
+        sx = torch.sin(x)
+        sy = torch.sin(y)
+        z1_ = torch.cat([cx, sx], dim=-2)
+        z2_ = torch.cat([cy, sy], dim=-2)
+        res = z1_.transpose(-1, -2).matmul(z2_)
+        res.clamp_min_(0)
+        return res
 
     @staticmethod
     def distance_ard(x: Tensor, y: Tensor) -> Tensor:
