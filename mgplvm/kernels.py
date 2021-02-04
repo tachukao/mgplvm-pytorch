@@ -86,9 +86,16 @@ class Product(Combination):
             sqr_alpha.device) * sqr_alpha * x[0].shape[-1]
 
 
-class QuadExpBase(Kernel):
+class QuadExp(Kernel):
+    name = "QuadExp"
 
-    def __init__(self, n: int, ell=None, alpha=None, learn_alpha=True, Y=None):
+    def __init__(self,
+                 n: int,
+                 distance,
+                 ell=None,
+                 alpha=None,
+                 learn_alpha=True,
+                 Y: np.ndarray = None):
         super().__init__()
 
         if alpha is not None:
@@ -105,6 +112,31 @@ class QuadExpBase(Kernel):
         ell = inv_softplus(torch.ones(n,)) if ell is None else inv_softplus(
             torch.tensor(ell, dtype=torch.get_default_dtype()))
         self.ell = nn.Parameter(data=ell, requires_grad=True)
+
+        self.distance = distance
+
+    def K(self, x: Tensor, y: Tensor) -> Tensor:
+        """
+        Parameters
+        ----------
+        x : Tensor
+            input tensor of dims (... n x d x mx)
+        y : Tensor
+            input tensor of dims (... n x d x my)
+
+        Returns
+        -------
+        kxy : Tensor
+            quadratic exponential kernel with dims (... n x mx x my)
+
+        """
+        alpha, ell = self.prms
+        distance = self.distance(x, y)  # dims (... n x mx x my)
+        sqr_alpha = torch.square(alpha)[:, None, None]
+        sqr_ell = torch.square(ell)[:, None, None]
+        #print(sqr_alpha.device, distance.device, sqr_ell.device)
+        kxy = sqr_alpha * torch.exp(-0.5 * distance / sqr_ell)
+        return kxy
 
     def diagK(self, x: Tensor) -> Tensor:
         """
@@ -150,52 +182,11 @@ class QuadExpBase(Kernel):
         return torch.ones(x.shape[:-2]).to(
             sqr_alpha.device) * sqr_alpha * x.shape[-1]
 
-    @abc.abstractmethod
-    def K(self, x: Tensor, y: Tensor) -> Tensor:
-        pass
-
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
         alpha = softplus(self.alpha)
         ell = softplus(self.ell)
         return alpha, ell
-
-
-class QuadExp(QuadExpBase):
-    name = "QuadExp"
-
-    def __init__(self,
-                 n: int,
-                 distance,
-                 ell=None,
-                 alpha=None,
-                 learn_alpha=True,
-                 Y: np.ndarray = None):
-        super().__init__(n, ell, alpha, learn_alpha, Y=Y)
-        self.distance = distance
-
-    def K(self, x: Tensor, y: Tensor) -> Tensor:
-        """
-        Parameters
-        ----------
-        x : Tensor
-            input tensor of dims (... n x d x mx)
-        y : Tensor
-            input tensor of dims (... n x d x my)
-
-        Returns
-        -------
-        kxy : Tensor
-            quadratic exponential kernel with dims (... n x mx x my)
-
-        """
-        alpha, ell = self.prms
-        distance = self.distance(x, y)  # dims (... n x mx x my)
-        sqr_alpha = torch.square(alpha)[:, None, None]
-        sqr_ell = torch.square(ell)[:, None, None]
-        #print(sqr_alpha.device, distance.device, sqr_ell.device)
-        kxy = sqr_alpha * torch.exp(-0.5 * distance / sqr_ell)
-        return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
@@ -207,7 +198,7 @@ class QuadExp(QuadExpBase):
             alpha_mag**2, ell_mag)
 
 
-class Exp(QuadExpBase):
+class Exp(QuadExp):
     name = "Exp"
 
     def __init__(self,
@@ -217,7 +208,7 @@ class Exp(QuadExpBase):
                  alpha=None,
                  learn_alpha=True,
                  Y: np.ndarray = None):
-        super().__init__(n, ell, alpha, learn_alpha, Y=Y)
+        super().__init__(n, distance, ell, alpha, learn_alpha, Y=Y)
         self.distance = distance
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -255,7 +246,7 @@ class Exp(QuadExpBase):
             alpha_mag**2, ell_mag)
 
 
-class Matern(QuadExpBase):
+class Matern(QuadExp):
     name = "Matern"
 
     def __init__(self,
@@ -269,7 +260,7 @@ class Matern(QuadExpBase):
         n is number of neurons/readouts
         distance is a squared distance function
         '''
-        super().__init__(n, ell, alpha, learn_alpha)
+        super().__init__(n, distance, ell, alpha, learn_alpha)
 
         assert nu in [3 / 2, 5 / 2], "only nu=3/2 and nu=5/2 implemented"
         if nu == 3 / 2:

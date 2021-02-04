@@ -1,5 +1,5 @@
 import torch
-from mgplvm.kernels import QuadExp, QuadExpARD, Linear, Matern
+from mgplvm.kernels import QuadExp, Linear, Matern
 import numpy as np
 from torch import optim
 import mgplvm
@@ -14,15 +14,6 @@ def test_quad_exp_hyp_prms_dims():
     alpha, ell = kernel.prms
     assert (alpha.shape == (n,))
     assert (ell.shape == (n,))
-
-
-def test_quad_expard_hyp_prms_dims():
-    n = 10
-    d = 3
-    kernel = QuadExpARD(n, d, Euclid.distance_ard)
-    alpha, ell = kernel.prms
-    assert (alpha.shape == (n,))
-    assert (ell.shape == (n, d))
 
 
 def test_quad_exp_trK():
