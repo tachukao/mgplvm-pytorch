@@ -11,8 +11,8 @@ torch.set_default_dtype(torch.float64)
 def test_quad_exp_hyp_prms_dims():
     n = 10
     kernel = QuadExp(n, Euclid.distance)
-    alpha, ell = kernel.prms
-    assert (alpha.shape == (n,))
+    scale, ell = kernel.prms
+    assert (scale.shape == (n,))
     assert (ell.shape == (n,))
 
 

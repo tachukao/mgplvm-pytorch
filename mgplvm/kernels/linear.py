@@ -8,26 +8,25 @@ import numpy as np
 class Linear(Kernel):
     name = "Linear"
 
-    def __init__(self, n: int, d: int, alpha=None, learn_alpha=False, Y=None):
+    def __init__(self, n: int, d: int, scale=None, learn_scale=False, Y=None):
         '''
         n is number of neurons/readouts
         distance is the distance function used
         d is the dimensionality of the group parameterization
         scaling determines wheter an output scale parameter is learned for each neuron
         
-        learn_weights: learn PCA/FA style weights
-        learn_alpha: learn an output scaling parameter (similar to the RBF signal variance)
+        learn_scale : learn an output scaling parameter (similar to the RBF signal variance)
         '''
         super().__init__()
 
-        if alpha is not None:
-            _alpha = torch.tensor(alpha)
-        elif Y is not None:  # <Y^2> = alpha^2 * d * <x^2> + <eps^2> = alpha^2 * d + sig_noise^2
-            _alpha = torch.tensor(np.sqrt(np.var(
+        if scale is not None:
+            _scale = torch.tensor(scale).sqrt()
+        elif Y is not None:  # <Y^2> = scale * d * <x^2> + <eps^2> = scale * d + sig_noise^2
+            _scale = torch.tensor(np.sqrt(np.var(
                 Y, axis=(0, 2)) / d)) * 0.5  #assume half signal half noise
         else:
-            _alpha = torch.ones(n,)  #one per neuron
-        self._alpha = nn.Parameter(data=_alpha, requires_grad=learn_alpha)
+            _scale = torch.ones(n,)  #one per neuron
+        self._scale = nn.Parameter(data=_scale, requires_grad=learn_scale)
 
     def diagK(self, x: Tensor) -> Tensor:
         """
@@ -46,10 +45,8 @@ class Linear(Kernel):
         For a linear kernel, the diagonal is a mx-dimensional 
         vector (||x_1||^2, ||x_2||^2, ..., ||x_mx||^2)
         """
-        alpha = self.prms
 
-        sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
-        diag = (sqr_alpha * torch.square(x)).sum(dim=-2)
+        diag = (self.scale[:, None, None] * torch.square(x)).sum(dim=-2)
 
         return diag
 
@@ -67,7 +64,7 @@ class Linear(Kernel):
 
         Note
         ----
-        For a stationary quad exp kernel, the trace is alpha^2 * mx
+        For a stationary quad exp kernel, the trace is scale * mx
         """
         return self.diagK(x).sum(dim=-1)
 
@@ -97,12 +94,12 @@ class Linear(Kernel):
         K(X, Y) (n x mx x my)
 
         """
-        alpha = self.prms
+        scale = self.prms
+        scale_ = scale[:, None, None]
 
-        sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
         distance = x.transpose(-1, -2).matmul(y)
 
-        kxy = sqr_alpha * distance
+        kxy = scale_ * distance
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
@@ -110,15 +107,12 @@ class Linear(Kernel):
 
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
-        return self._alpha
+        return self.scale
 
     @property
-    def alpha(self) -> Tensor:
-        return torch.abs(self._alpha)
+    def scale(self) -> Tensor:
+        return self._scale.square()
 
     @property
     def msg(self):
-        alpha = self.prms
-        return ('alpha {:.3f} |').format((alpha**2).mean().sqrt().item())
-
-
+        return ('scale {:.3f} |').format(self.scale.mean().item())

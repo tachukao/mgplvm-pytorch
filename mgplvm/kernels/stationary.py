@@ -14,8 +14,8 @@ class QuadExp(Kernel):
                  distance,
                  d=None,
                  ell=None,
-                 alpha=None,
-                 learn_alpha=True,
+                 scale=None,
+                 learn_scale=True,
                  Y: np.ndarray = None):
         """
         Quadratic exponential kernel
@@ -32,10 +32,10 @@ class QuadExp(Kernel):
         ell: Optional[np.ndarray]
             lengthscale hyperparameter
             it should have dimensions n x d if d is not None and n if d is None
-        alpha : Optional[np.ndarray]
+        scale : Optional[np.ndarray]
             scale hyperparameter
             it should have dimension n 
-        learn_alpha : bool
+        learn_scale : bool
             optimises the scale hyperparameter if true
         Y : Optional[np.ndarray]
             data matrix used for initializing the scale hyperparameter
@@ -43,16 +43,14 @@ class QuadExp(Kernel):
 
         super(QuadExp, self).__init__()
 
-        if alpha is not None:
-            _alpha = inv_softplus(
-                torch.tensor(alpha, dtype=torch.get_default_dtype()))
+        if scale is not None:
+            _scale = torch.tensor(scale, dtype=torch.get_default_dtype()).sqrt()
         elif Y is not None:
-            _alpha = inv_softplus(
-                torch.tensor(np.mean(Y**2, axis=(0, -1))).sqrt())
+            _scale = torch.tensor(np.mean(Y**2, axis=(0, -1))).sqrt()
         else:
-            _alpha = inv_softplus(torch.ones(n,))
+            _scale = torch.ones(n,)
 
-        self._alpha = nn.Parameter(data=_alpha, requires_grad=learn_alpha)
+        self._scale = nn.Parameter(data=_scale, requires_grad=learn_scale)
 
         self.ard = d is not None
         if ell is None:
@@ -86,14 +84,14 @@ class QuadExp(Kernel):
             quadratic exponential kernel with dims (... n x mx x my)
 
         """
-        alpha, ell = self.prms
+        scale, ell = self.prms
         if self.ard:
             ell = ell[:, None, :]
         else:
             ell = ell[:, None, None]
         distance = self.distance(x / ell, y / ell)  # dims (... n x mx x my)
-        sqr_alpha = torch.square(alpha)[:, None, None]
-        kxy = sqr_alpha * torch.exp(-0.5 * distance)
+        scale = scale[:, None, None]
+        kxy = scale * torch.exp(-0.5 * distance)
         return kxy
 
     def diagK(self, x: Tensor) -> Tensor:
@@ -111,12 +109,12 @@ class QuadExp(Kernel):
         Note
         ----
         For a stationary quad exp kernel, the diagonal is a mx-dimensional 
-        vector (alpha^2, alpha^2, ..., alpha^2)
+        vector (scale, scale, ..., scale)
         """
-        sqr_alpha = torch.square(self.alpha)[:, None]
+        scale = self.scale[:, None]
         shp = list(x.shape)
         del shp[-2]
-        return torch.ones(shp).to(sqr_alpha.device) * sqr_alpha
+        return torch.ones(shp).to(scale.device) * scale
 
     def trK(self, x: Tensor) -> Tensor:
         """
@@ -134,20 +132,16 @@ class QuadExp(Kernel):
         ----
         For a stationary quad exp kernel, the trace is alpha^2 * mx
         """
-        alpha = self.alpha
-        sqr_alpha = torch.square(alpha)
-        return torch.ones(x.shape[:-2]).to(
-            sqr_alpha.device) * sqr_alpha * x.shape[-1]
+        scale = self.scale
+        return torch.ones(x.shape[:-2]).to(scale.device) * scale * x.shape[-1]
 
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
-        alpha = softplus(self._alpha)
-        ell = softplus(self._ell)
-        return alpha, ell
+        return self.scale, self.ell
 
     @property
-    def alpha(self) -> Tensor:
-        return softplus(self._alpha)
+    def scale(self) -> Tensor:
+        return self._scale.square()
 
     @property
     def ell(self) -> Tensor:
@@ -171,10 +165,10 @@ class Exp(QuadExp):
                  distance,
                  d=None,
                  ell=None,
-                 alpha=None,
-                 learn_alpha=True,
+                 scale=None,
+                 learn_scale=True,
                  Y: np.ndarray = None):
-        super().__init__(n, distance, d, ell, alpha, learn_alpha, Y=Y)
+        super().__init__(n, distance, d, ell, scale, learn_scale, Y=Y)
         self.distance = distance
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -192,8 +186,8 @@ class Exp(QuadExp):
             exponential kernel with dims (... n x mx x my)
 
         """
-        alpha, ell = self.prms
-        sqr_alpha = torch.square(alpha)[:, None, None]
+        scale, ell = self.prms
+        expand_scale = scale[:, None, None]
         if self.ard:
             expand_ell = ell[:, None, :]
         else:
@@ -203,7 +197,7 @@ class Exp(QuadExp):
 
         # NOTE: distance means squared distance ||x-y||^2 ?
         stable_distance = torch.sqrt(distance + 1e-12)  # numerically stabilized
-        kxy = sqr_alpha * torch.exp(-stable_distance)
+        kxy = expand_scale * torch.exp(-stable_distance)
         return kxy
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
@@ -211,9 +205,9 @@ class Exp(QuadExp):
 
     @property
     def msg(self):
-        alpha_mag, ell_mag = [val.mean().item() for val in self.prms]
-        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
-            alpha_mag**2, ell_mag)
+        return (' scale {:.3f} | ell {:.3f} |').format(
+            self.scale.mean().item(),
+            self.ell.mean().item())
 
 
 class Matern(QuadExp):
@@ -225,13 +219,13 @@ class Matern(QuadExp):
                  d=None,
                  nu=3 / 2,
                  ell=None,
-                 alpha=None,
-                 learn_alpha=True):
+                 scale=None,
+                 learn_scale=True):
         '''
         n is number of neurons/readouts
         distance is a squared distance function
         '''
-        super().__init__(n, distance, d, ell, alpha, learn_alpha)
+        super().__init__(n, distance, d, ell, scale, learn_scale)
 
         assert nu in [3 / 2, 5 / 2], "only nu=3/2 and nu=5/2 implemented"
         if nu == 3 / 2:
@@ -248,16 +242,16 @@ class Matern(QuadExp):
         return torch.sqrt(d_sqr)
 
     @staticmethod
-    def k_r_3_2(sqr_alpha, r, ell):
+    def k_r_3_2(scale, r, ell):
         sqrt3_r_l = np.sqrt(3) * r / ell
-        kxy = sqr_alpha * (1 + sqrt3_r_l) * torch.exp(-sqrt3_r_l)
+        kxy = scale * (1 + sqrt3_r_l) * torch.exp(-sqrt3_r_l)
         return kxy
 
     @staticmethod
-    def k_r_5_2(sqr_alpha, r, ell):
+    def k_r_5_2(scale, r, ell):
         sqrt5_r_l = np.sqrt(5) * r / ell
         sqr_term = 5 / 3 * torch.square(r) / torch.square(ell)
-        kxy = sqr_alpha * (1 + sqrt5_r_l + sqr_term) * torch.exp(-sqrt5_r_l)
+        kxy = scale * (1 + sqrt5_r_l + sqr_term) * torch.exp(-sqrt5_r_l)
         return kxy
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -276,23 +270,19 @@ class Matern(QuadExp):
 
         """
 
-        alpha, ell = self.prms
-        sqr_alpha = torch.square(alpha)[:, None, None]
+        scale, ell = self.prms
+        scale = scale[:, None, None]
         ell = ell[:, None, None]
-        #print(torch.min(ell), torch.max(ell))
-        #print(torch.min(sqr_alpha), torch.max(sqr_alpha))
         r = self.distance(x, y)  # dims (... n x mx x my)
         print(torch.min(r), torch.max(r))
 
-        return self.k_r(sqr_alpha, r, ell)
+        return self.k_r(scale, r, ell)
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
 
     @property
     def msg(self):
-        alpha_mag, ell_mag = [val.mean().item() for val in self.prms]
-        return (' nu {:.1f} | alpha_sqr {:.3f} | ell {:.3f} |').format(
-            self.nu, alpha_mag**2, ell_mag)
-
-
+        return (' nu {:.1f} | scale {:.3f} | ell {:.3f} |').format(
+            self.nu, self.scale.mean.item(),
+            self.ell.mean().item())
