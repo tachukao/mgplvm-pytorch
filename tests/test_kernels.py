@@ -33,10 +33,10 @@ def test_kernels_diagK():
     n = 10
     m = 20
     d = 3
-    dists = [Euclid.distance, Euclid.distance, Euclid.linear_distance]
+    dists = [Euclid.distance, Euclid.distance]
     for i, kerneltype in enumerate([QuadExp, Matern, Linear]):
         if kerneltype is Linear:
-            kernel = kerneltype(n, dists[i], d)
+            kernel = kerneltype(n, d)
         else:
             kernel = kerneltype(n, dists[i])
         x = torch.randn(n_b, n, d, m)
@@ -66,7 +66,7 @@ def test_kernels_run():
     data = torch.tensor(Y, dtype=torch.get_default_dtype(), device=device)
     kernels = [
         QuadExp(n, Euclid.distance),
-        Linear(n, Euclid.linear_distance, d),
+        Linear(n, d),
         # Matern(n, Euclid.distance)
     ]
     for kernel in kernels:

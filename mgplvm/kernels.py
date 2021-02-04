@@ -358,7 +358,6 @@ class Linear(Kernel):
 
     def __init__(self,
                  n: int,
-                 distance,
                  d: int,
                  alpha=None,
                  learn_weights=False,
@@ -375,16 +374,14 @@ class Linear(Kernel):
         '''
         super().__init__()
 
-        self.distance = distance
-
         if alpha is not None:
-            alpha = torch.tensor(alpha)
+            _alpha = torch.tensor(alpha)
         elif Y is not None:  # <Y^2> = alpha^2 * d * <x^2> + <eps^2> = alpha^2 * d + sig_noise^2
-            alpha = torch.tensor(np.sqrt(np.var(
+            _alpha = torch.tensor(np.sqrt(np.var(
                 Y, axis=(0, 2)) / d)) * 0.5  #assume half signal half noise
         else:
-            alpha = torch.ones(n,)  #one per neuron
-        self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
+            _alpha = torch.ones(n,)  #one per neuron
+        self._alpha = nn.Parameter(data=_alpha, requires_grad=learn_alpha)
 
         self.learn_weights = learn_weights
         #W = torch.ones(n, d ) #full weight matrix
@@ -412,7 +409,6 @@ class Linear(Kernel):
 
         if self.learn_weights:
             x = (W[:, :, None] * x).sum(dim=-2, keepdim=True)  # n x 1 x mx
-        #x = W[:, :, None] * x
 
         sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
         diag = (sqr_alpha * torch.square(x)).sum(dim=-2)
@@ -469,11 +465,8 @@ class Linear(Kernel):
             x = (W[:, :, None] * x).sum(dim=-2, keepdim=True)  # n x 1 x mx
             y = (W[:, :, None] * y).sum(dim=-2, keepdim=True)  # n x 1 x my
 
-        #x = W[:, :, None] * x
-        #y = W[:, :, None] * y
-
         sqr_alpha = torch.square(alpha)[:, None, None].to(x.device)
-        distance = self.distance(x, y)  # dims (... n x mx x my)
+        distance = x.transpose(-1, -2).matmul(y)
 
         kxy = sqr_alpha * distance
         return kxy
@@ -483,8 +476,11 @@ class Linear(Kernel):
 
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
-        #return softplus(self.input_scale), softplus(self.output_scale)
-        return self.W, self.alpha
+        return self.W, self._alpha
+
+    @property
+    def alpha(self) -> Tensor:
+        return torch.abs(self._alpha)
 
     @property
     def msg(self):
