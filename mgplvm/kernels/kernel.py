@@ -27,7 +27,6 @@ class Kernel(Module, metaclass=abc.ABCMeta):
         return self.K(x, y)
 
 
-
 #class Combination(Kernel):
 #
 #    def __init__(self, kernels: List[Kernel]):
