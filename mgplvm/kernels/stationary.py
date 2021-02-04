@@ -301,7 +301,7 @@ class Matern(Stationary):
             z2 = (math.sqrt(3) * distance).add(1)
         elif self.nu == 2.5:
             z2 = (math.sqrt(5) * distance).add(1).add(5.0 / 3.0 * distance**2)
-        return z1 * z2
+        return expand_scale * z1 * z2
 
     @property
     def msg(self):
