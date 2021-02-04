@@ -46,7 +46,9 @@ def test_GP_prior():
     lprior_kernel = mgp.kernels.QuadExp(d,
                                         lprior_manif.distance,
                                         learn_alpha=False)
-    ts = torch.arange(m).to(device)[None, None, ...].repeat(n_samples, d2, 1)
+    ts = torch.arange(m, device=device,
+                      dtype=torch.get_default_dtype())[None, None, :].repeat(
+                          n_samples, d2, 1)
     lprior = mgp.lpriors.GP(d,
                             m,
                             n_samples,
