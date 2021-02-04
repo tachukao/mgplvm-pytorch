@@ -92,11 +92,13 @@ class QuadExp(Kernel):
     def __init__(self,
                  n: int,
                  distance,
+                 d=None,
                  ell=None,
                  alpha=None,
                  learn_alpha=True,
                  Y: np.ndarray = None):
-        super().__init__()
+
+        super(QuadExp, self).__init__()
 
         if alpha is not None:
             alpha = inv_softplus(
@@ -109,8 +111,19 @@ class QuadExp(Kernel):
 
         self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
 
-        ell = inv_softplus(torch.ones(n,)) if ell is None else inv_softplus(
-            torch.tensor(ell, dtype=torch.get_default_dtype()))
+        self.ard = d is not None
+        if ell is None:
+            if d is None:
+                ell = inv_softplus(torch.ones(n,))
+            else:
+                assert (d is not None)
+                ell = inv_softplus(torch.ones(n, d))
+        else:
+            if d is not None:
+                assert ell.shape[-1] == d
+            ell = inv_softplus(
+                torch.tensor(ell, dtype=torch.get_default_dtype()))
+
         self.ell = nn.Parameter(data=ell, requires_grad=True)
 
         self.distance = distance
@@ -131,7 +144,10 @@ class QuadExp(Kernel):
 
         """
         alpha, ell = self.prms
-        ell = ell[:, None, None]
+        if self.ard:
+            ell = ell[:, None, :]
+        else:
+            ell = ell[:, None, None]
         distance = self.distance(x / ell, y / ell)  # dims (... n x mx x my)
         sqr_alpha = torch.square(alpha)[:, None, None]
         #print(sqr_alpha.device, distance.device, sqr_ell.device)
@@ -204,11 +220,12 @@ class Exp(QuadExp):
     def __init__(self,
                  n: int,
                  distance,
+                 d=None,
                  ell=None,
                  alpha=None,
                  learn_alpha=True,
                  Y: np.ndarray = None):
-        super().__init__(n, distance, ell, alpha, learn_alpha, Y=Y)
+        super().__init__(n, distance, d, ell, alpha, learn_alpha, Y=Y)
         self.distance = distance
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
@@ -228,7 +245,10 @@ class Exp(QuadExp):
         """
         alpha, ell = self.prms
         sqr_alpha = torch.square(alpha)[:, None, None]
-        expand_ell = ell[:, None, None]
+        if self.ard:
+            expand_ell = ell[:, None, :]
+        else:
+            expand_ell = ell[:, None, None]
         distance = self.distance(x / expand_ell,
                                  y / expand_ell)  # dims (... n x mx x my)
 
@@ -253,6 +273,7 @@ class Matern(QuadExp):
     def __init__(self,
                  n: int,
                  distance,
+                 d=None,
                  nu=3 / 2,
                  ell=None,
                  alpha=None,
@@ -261,7 +282,7 @@ class Matern(QuadExp):
         n is number of neurons/readouts
         distance is a squared distance function
         '''
-        super().__init__(n, distance, ell, alpha, learn_alpha)
+        super().__init__(n, distance, d, ell, alpha, learn_alpha)
 
         assert nu in [3 / 2, 5 / 2], "only nu=3/2 and nu=5/2 implemented"
         if nu == 3 / 2:
