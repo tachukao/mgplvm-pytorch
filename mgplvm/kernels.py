@@ -35,6 +35,29 @@ class QuadExp(Kernel):
                  alpha=None,
                  learn_alpha=True,
                  Y: np.ndarray = None):
+        """
+        Quadratic exponential kernel
+
+        Parameters
+        ----------
+        n : int 
+            number of batches (neurons)
+        distance : 
+            distance function
+        d : Optional[int]
+            dimension of the input variables
+            if provided, there is a separate length scale for each input dimension
+        ell: Optional[np.ndarray]
+            lengthscale hyperparameter
+            it should have dimensions n x d if d is not None and n if d is None
+        alpha : Optional[np.ndarray]
+            scale hyperparameter
+            it should have dimension n 
+        learn_alpha : bool
+            optimises the scale hyperparameter if true
+        Y : Optional[np.ndarray]
+            data matrix used for initializing the scale hyperparameter
+        """
 
         super(QuadExp, self).__init__()
 
