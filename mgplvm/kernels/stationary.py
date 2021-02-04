@@ -61,8 +61,8 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
         else:
             if d is not None:
                 assert ell.shape[-1] == d
-            ell = inv_softplus(
-                torch.tensor(_ell, dtype=torch.get_default_dtype()))
+            _ell = inv_softplus(
+                torch.tensor(ell, dtype=torch.get_default_dtype()))
 
         self._ell = nn.Parameter(data=_ell, requires_grad=True)
 
@@ -289,7 +289,9 @@ class Matern(Stationary):
             expand_ell = ell[:, None, :]
         else:
             expand_ell = ell[:, None, None]
-        distance = self.distance(x / expand_ell, y / expand_ell)
+        x_ = x / expand_ell
+        y_ = y / expand_ell
+        distance = (self.distance(x_, y_) + 1E-20).sqrt()
 
         # NOTE: distance means squared distance ||x-y||^2 ?
         z1 = torch.exp(-math.sqrt(self.nu * 2) * distance)

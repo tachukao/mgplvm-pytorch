@@ -5,6 +5,7 @@ from torch import optim
 import mgplvm
 from mgplvm import rdist, models, optimisers, syndata, likelihoods, lpriors
 from mgplvm.manifolds import Torus, Euclid
+import sklearn.gaussian_process.kernels as sklkernels
 torch.set_default_dtype(torch.float64)
 
 
@@ -103,7 +104,78 @@ def test_kernels_run():
     return
 
 
+def test_quad_exp_kernel():
+    n = 1
+    d = 3
+    mx = 5
+    my = 4
+    x = np.random.randn(mx, d)
+    y = np.random.randn(my, d)
+    K = sklkernels.RBF(1.0)(x, y)
+    scale = np.ones((n))
+    ell = np.ones((n))
+    kernel = QuadExp(n, Euclid.distance, scale=scale, ell=ell)
+    x_ = torch.tensor(x).transpose(-1, -2)
+    y_ = torch.tensor(y).transpose(-1, -2)
+    K_ = kernel(x_, y_)[0]
+    assert np.allclose(K_.data.cpu().numpy(), K)
+
+
+def test_quad_exp_kernel():
+    n = 1
+    d = 3
+    mx = 5
+    my = 4
+    x = np.random.randn(mx, d)
+    y = np.random.randn(my, d)
+    K = sklkernels.RBF(1.0)(x, y)
+    scale = np.ones((n))
+    ell = np.ones((n))
+    kernel = QuadExp(n, Euclid.distance, scale=scale, ell=ell)
+    x_ = torch.tensor(x).transpose(-1, -2)
+    y_ = torch.tensor(y).transpose(-1, -2)
+    K_ = kernel(x_, y_)[0]
+    assert np.allclose(K_.data.cpu().numpy(), K)
+
+
+def test_matern_kernel():
+    n = 1
+    d = 3
+    mx = 5
+    my = 4
+    x = np.random.randn(mx, d)
+    y = np.random.randn(my, d)
+    x_ = torch.tensor(x).transpose(-1, -2)
+    y_ = torch.tensor(y).transpose(-1, -2)
+    scale = np.ones((n))
+    ell = np.ones((n))
+    for nu in [0.5, 1.5, 2.5]:
+        K = sklkernels.Matern(length_scale=1.0, nu=nu)(x, y)
+        kernel = Matern(n, Euclid.distance, scale=scale, ell=ell, nu=nu)
+        K_ = kernel(x_, y_)[0].data.cpu().numpy()
+        assert np.allclose(K_, K)
+
+
+def test_linear_kernel():
+    n = 1
+    d = 3
+    mx = 5
+    my = 4
+    x = np.random.randn(mx, d)
+    y = np.random.randn(my, d)
+    x_ = torch.tensor(x).transpose(-1, -2)
+    y_ = torch.tensor(y).transpose(-1, -2)
+    scale = np.ones((n))
+    K = sklkernels.DotProduct(sigma_0=0)(x, y)
+    kernel = Linear(n, Euclid.distance, scale=scale)
+    K_ = kernel(x_, y_)[0].data.cpu().numpy()
+    assert np.allclose(K_, K)
+
+
 if __name__ == '__main__':
+    test_quad_exp_kernel()
+    test_matern_kernel()
+    test_linear_kernel()
     test_quad_exp_hyp_prms_dims()
     test_quad_exp_trK()
     test_kernels_diagK()
