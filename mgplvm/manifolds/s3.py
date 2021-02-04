@@ -122,11 +122,15 @@ class S3(Manifold):
 
     @staticmethod
     def distance(x: Tensor, y: Tensor) -> Tensor:
-        cosdist = (x[..., None] * y[..., None, :])
-        cosdist = cosdist.sum(-3)
-        return 2 * (1 - cosdist)
+        # distance: 2 - 2 (x dot y)
+        z = x.transpose(-1, -2).matmul(y)
+        res = 2 * (1 - z)
+        res.clamp_min_(0)
+        return res
 
     @staticmethod
     def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        dist = (x[..., None] * y[..., None, :]).sum(dim=-3)
-        return dist
+        # distance: (x dot y)
+        res = x.transpose(-1, -2).matmul(y)
+        res.clamp_min_(0)
+        return res
