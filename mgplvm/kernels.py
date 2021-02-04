@@ -101,30 +101,30 @@ class QuadExp(Kernel):
         super(QuadExp, self).__init__()
 
         if alpha is not None:
-            alpha = inv_softplus(
+            _alpha = inv_softplus(
                 torch.tensor(alpha, dtype=torch.get_default_dtype()))
         elif Y is not None:
-            alpha = inv_softplus(
+            _alpha = inv_softplus(
                 torch.tensor(np.mean(Y**2, axis=(0, -1))).sqrt())
         else:
-            alpha = inv_softplus(torch.ones(n,))
+            _alpha = inv_softplus(torch.ones(n,))
 
-        self.alpha = nn.Parameter(data=alpha, requires_grad=learn_alpha)
+        self._alpha = nn.Parameter(data=_alpha, requires_grad=learn_alpha)
 
         self.ard = d is not None
         if ell is None:
             if d is None:
-                ell = inv_softplus(torch.ones(n,))
+                _ell = inv_softplus(torch.ones(n,))
             else:
                 assert (d is not None)
-                ell = inv_softplus(torch.ones(n, d))
+                _ell = inv_softplus(torch.ones(n, d))
         else:
             if d is not None:
                 assert ell.shape[-1] == d
             ell = inv_softplus(
-                torch.tensor(ell, dtype=torch.get_default_dtype()))
+                torch.tensor(_ell, dtype=torch.get_default_dtype()))
 
-        self.ell = nn.Parameter(data=ell, requires_grad=True)
+        self._ell = nn.Parameter(data=_ell, requires_grad=True)
 
         self.distance = distance
 
@@ -150,7 +150,6 @@ class QuadExp(Kernel):
             ell = ell[:, None, None]
         distance = self.distance(x / ell, y / ell)  # dims (... n x mx x my)
         sqr_alpha = torch.square(alpha)[:, None, None]
-        #print(sqr_alpha.device, distance.device, sqr_ell.device)
         kxy = sqr_alpha * torch.exp(-0.5 * distance)
         return kxy
 
@@ -171,8 +170,7 @@ class QuadExp(Kernel):
         For a stationary quad exp kernel, the diagonal is a mx-dimensional 
         vector (alpha^2, alpha^2, ..., alpha^2)
         """
-        alpha, _ = self.prms
-        sqr_alpha = torch.square(alpha)[:, None]
+        sqr_alpha = torch.square(self.alpha)[:, None]
         shp = list(x.shape)
         del shp[-2]
         return torch.ones(shp).to(sqr_alpha.device) * sqr_alpha
@@ -193,16 +191,24 @@ class QuadExp(Kernel):
         ----
         For a stationary quad exp kernel, the trace is alpha^2 * mx
         """
-        alpha, _ = self.prms
+        alpha = self.alpha
         sqr_alpha = torch.square(alpha)
         return torch.ones(x.shape[:-2]).to(
             sqr_alpha.device) * sqr_alpha * x.shape[-1]
 
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
-        alpha = softplus(self.alpha)
-        ell = softplus(self.ell)
+        alpha = softplus(self._alpha)
+        ell = softplus(self._ell)
         return alpha, ell
+
+    @property
+    def alpha(self) -> Tensor:
+        return softplus(self._alpha)
+
+    @property
+    def ell(self) -> Tensor:
+        return softplus(self._ell)
 
     def forward(self, x: Tensor, y: Tensor) -> Tensor:
         return self.K(x, y)
