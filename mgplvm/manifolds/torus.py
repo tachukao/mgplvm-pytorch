@@ -128,7 +128,3 @@ class Torus(Manifold):
         res = z1_.transpose(-1, -2).matmul(z2_)
         res.clamp_min_(0)
         return res
-
-    @staticmethod
-    def distance_ard(x: Tensor, y: Tensor) -> Tensor:
-        return 2 - (2 * torch.cos(x[..., None] - y[..., None, :]))

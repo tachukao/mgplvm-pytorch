@@ -334,47 +334,6 @@ class Matern(QuadExpBase):
             self.nu, alpha_mag**2, ell_mag)
 
 
-class QuadExpARD(QuadExpBase):
-    name = "QuadExpARD"
-
-    def __init__(self, n: int, d: int, ard_distance):
-        super().__init__(n)
-        self.ell = nn.Parameter(data=softplus(1 * torch.randn(n, d)),
-                                requires_grad=True)
-        self.ard_distance = ard_distance
-
-    def K(self, x: Tensor, y: Tensor) -> Tensor:
-        """
-        Parameters
-        ----------
-        x : Tensor
-            input tensor of dims (... n x d x mx)
-        y : Tensor
-            input tensor of dims (... n x d x my)
-
-        Returns
-        -------
-        kxy : Tensor
-            quadratic exponential ARD kernel with dims (... n x mx x my)
-
-        """
-        alpha, ell = self.prms
-        ard_distance = self.ard_distance(x, y)
-        sqr_alpha = torch.square(alpha)[:, None, None]
-        sqr_ell = torch.square(ell)[..., None, None]
-        kxy = sqr_alpha * torch.exp(-0.5 * (ard_distance / sqr_ell).sum(-3))
-        return kxy
-
-    def forward(self, x: Tensor, y: Tensor) -> Tensor:
-        return self.K(x, y)
-
-    @property
-    def msg(self):
-        alpha_mag, ell_mag = [val.mean().item() for val in self.prms]
-        return (' alpha_sqr {:.3f} | ell {:.3f} |').format(
-            alpha_mag**2, ell_mag)
-
-
 class Linear(Kernel):
     name = "Linear"
 

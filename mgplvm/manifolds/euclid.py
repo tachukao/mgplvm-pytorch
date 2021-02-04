@@ -105,12 +105,6 @@ class Euclid(Manifold):
         dist.clamp_min_(0)
         return dist
 
-    @staticmethod
-    def distance_ard(x: Tensor, y: Tensor) -> Tensor:
-        diff = x[..., None] - y[..., None, :]
-        dist_sqr = torch.square(diff)
-        return dist_sqr
-
     @property
     def name(self):
         return 'Euclid(' + str(self.d) + ')'
