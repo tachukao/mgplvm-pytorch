@@ -32,7 +32,7 @@ class Linear(Kernel):
 
         if scale is not None:
             _scale = torch.tensor(scale)
-        elif Y is not None:  # <Y^2> = scale * d * <x^2> + <eps^2> = scale * d + sig_noise^2
+        elif (Y is not None) and learn_scale:  # <Y^2> = scale * d * <x^2> + <eps^2> = scale * d + sig_noise^2
             _scale = torch.tensor(np.sqrt(np.var(
                 Y, axis=(0, 2)) / d)) * 0.5  #assume half signal half noise
         else:
@@ -91,7 +91,7 @@ class Linear(Kernel):
 
     @property
     def msg(self):
-        return ('scale {:.3f} |').format(self.scale.mean().item())
+        return ('scale {:.3f} | ell {:.3f} |').format(self.scale.mean().item(), self.ell.mean().item())
     
     @staticmethod
     def dot(x: Tensor, y: Tensor) -> Tensor:
