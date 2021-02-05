@@ -100,12 +100,14 @@ class Torus(Manifold):
         return x + y
 
     @staticmethod
-    def distance(
-        x: Tensor, y: Tensor, ell: Optional[Tensor] = torch.ones(1, 1,
-                                                                 1)) -> Tensor:
+    def distance(x: Tensor, y: Tensor, ell: Optional[Tensor] = None) -> Tensor:
         # distance = 2 - 2 cos(x-y)
         # here we use the identity: cox(x-y) = cos(x)cos(y) + sin(x)sin(y)
         d = x.shape[-2]
+
+        if ell is None:
+            ell = torch.ones(1, 1, 1)
+
         cx = torch.cos(x) / ell  #(... n x d x mx)
         cy = torch.cos(y) / ell
         sx = torch.sin(x) / ell

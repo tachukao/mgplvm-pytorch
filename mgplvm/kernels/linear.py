@@ -37,15 +37,16 @@ class Linear(Kernel):
         super().__init__()
 
         if scale is not None:
-            _scale = torch.tensor(scale)
+            _scale_sqr = torch.tensor(scale).square()
         elif (
                 Y is not None
         ) and learn_scale:  # <Y^2> = scale * d * <x^2> + <eps^2> = scale * d + sig_noise^2
-            _scale = torch.tensor(np.sqrt(np.var(
-                Y, axis=(0, 2)) / d)) * 0.5  #assume half signal half noise
+            _scale_sqr = torch.tensor(np.var(Y, axis=(0, 2)) / d) * (
+                0.5**2)  #assume half signal half noise
         else:
-            _scale = torch.ones(n,)  #one per neuron
-        self._scale = nn.Parameter(data=_scale, requires_grad=learn_scale)
+            _scale_sqr = torch.ones(n,)  #one per neuron
+        self._scale_sqr = nn.Parameter(data=inv_softplus(_scale_sqr),
+                                       requires_grad=learn_scale)
 
         _input_scale = inv_softplus(torch.ones(d))
         self._input_scale = nn.Parameter(data=_input_scale, requires_grad=ard)
@@ -86,15 +87,15 @@ class Linear(Kernel):
 
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
-        return self.scale, self.input_scale
+        return self.scale_sqr, self.input_scale
 
     @property
     def scale_sqr(self) -> Tensor:
-        return self._scale.square()
+        return softplus(self._scale_sqr)
 
     @property
     def scale(self) -> Tensor:
-        return self._scale.abs()
+        return (self.scale_sqr + 1e-20).sqrt()
 
     @property
     def input_scale(self) -> Tensor:
