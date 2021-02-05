@@ -153,10 +153,3 @@ class So3(Manifold):
         res = 4 * (1 - z.square())
         res.clamp_min_(0)
         return res
-
-    @staticmethod
-    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        # distance: 2 (x dot y)^2
-        res = 2 * x.transpose(-1, -2).matmul(y).square()
-        res.clamp_min_(0)
-        return res

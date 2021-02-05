@@ -99,12 +99,6 @@ class Euclid(Manifold):
         res.clamp_min_(0)
         return res
 
-    @staticmethod
-    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        dist = x.transpose(-1, -2).matmul(y)
-        dist.clamp_min_(0)
-        return dist
-
     @property
     def name(self):
         return 'Euclid(' + str(self.d) + ')'

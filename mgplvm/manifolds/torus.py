@@ -113,18 +113,3 @@ class Torus(Manifold):
         res = 2 * (d - z1_.transpose(-1, -2).matmul(z2_))
         res.clamp_min_(0)
         return res
-
-    @staticmethod
-    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        # distance = cos(x - y)
-        # here we use the identity: cox(x-y) = cos(x)cos(y) + sin(x)sin(y)
-        d = x.shape[-2]
-        cx = torch.cos(x)
-        cy = torch.cos(y)
-        sx = torch.sin(x)
-        sy = torch.sin(y)
-        z1_ = torch.cat([cx, sx], dim=-2)
-        z2_ = torch.cat([cy, sy], dim=-2)
-        res = z1_.transpose(-1, -2).matmul(z2_)
-        res.clamp_min_(0)
-        return res

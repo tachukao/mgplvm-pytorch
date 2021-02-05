@@ -3,21 +3,20 @@ from torch import nn, Tensor
 from .kernel import Kernel
 from typing import Tuple, List
 import numpy as np
+from ..utils import softplus, inv_softplus
 
 
 class Linear(Kernel):
     name = "Linear"
 
-    def __init__(self, n: int, d: int, scale=None, learn_scale=False, Y=None):
+    def __init__(self, n: int, d: int, scale=None, learn_scale=False, Y=None, ard = False):
         '''
         n is number of neurons/readouts
-        distance is the distance function used
         d is the dimensionality of the group parameterization
         scaling determines wheter an output scale parameter is learned for each neuron
         
         learn_scale : learn an output scaling parameter (similar to the RBF signal variance)
 
-        """
         Note
         ----
         W: nxd
@@ -39,22 +38,44 @@ class Linear(Kernel):
         else:
             _scale = torch.ones(n,)  #one per neuron
         self._scale = nn.Parameter(data=_scale, requires_grad=learn_scale)
+        
+        _ell = inv_softplus(torch.ones(d))
+        self._ell = nn.Parameter(data=_ell, requires_grad=ard)
+        
 
     def diagK(self, x: Tensor) -> Tensor:
-        diag = (self.scale_sqr[:, None, None] * (x**2)).sum(dim=-2)
+        diag = (self.scale_sqr[:, None, None] * (self.prmtize(x)**2)).sum(dim=-2)
         return diag
 
     def trK(self, x: Tensor) -> Tensor:
-        return self.diagK(x).sum(dim=-1)
+        return self.diagK(self.prmtize(x)).sum(dim=-1)
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
-        distance = x.transpose(-1, -2).matmul(y)
+        """
+        Parameters
+        ----------
+        x : Tensor
+            input tensor of dims (... n_samples x n x d x mx)
+        y : Tensor
+            input tensor of dims (... n_samples x n x d x mx)
+
+        Returns
+        -------
+        trK : Tensor
+            trace of kernel K(x,x) with dims (... n)
+        """
+        dot = self.dot(self.prmtize(x), self.prmtize(y))
         kxy = self.scale_sqr[:, None, None] * distance
         return kxy
+    
+    def prmtize(self, x: Tensor) --> Tensor:
+        """re-weight the latent dimensions"""
+        x = self.ell[:, None] * x
+        return x
 
     @property
     def prms(self) -> Tensor:
-        return self.scale
+        return self.scale, self.ell
 
     @property
     def scale_sqr(self) -> Tensor:
@@ -63,7 +84,16 @@ class Linear(Kernel):
     @property
     def scale(self) -> Tensor:
         return self._scale.abs()
+    
+    @property
+    def ell(self) -> Tensor:
+        return softplus(self._ell())
 
     @property
     def msg(self):
         return ('scale {:.3f} |').format(self.scale.mean().item())
+    
+    @staticmethod
+    def dot(x: Tensor, y: Tensor) -> Tensor:
+        dist = x.transpose(-1, -2).matmul(y)
+        return dist
