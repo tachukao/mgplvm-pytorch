@@ -47,16 +47,16 @@ class Linear(Kernel):
             _scale = torch.ones(n,)  #one per neuron
         self._scale = nn.Parameter(data=_scale, requires_grad=learn_scale)
 
-        _ell = inv_softplus(torch.ones(d))
-        self._ell = nn.Parameter(data=_ell, requires_grad=ard)
+        _input_scale = inv_softplus(torch.ones(d))
+        self._input_scale = nn.Parameter(data=_input_scale, requires_grad=ard)
 
     def diagK(self, x: Tensor) -> Tensor:
         diag = (self.scale_sqr[:, None, None] *
-                (self.prmtize(x)**2)).sum(dim=-2)
+                (self.reweight(x)**2)).sum(dim=-2)
         return diag
 
     def trK(self, x: Tensor) -> Tensor:
-        return self.diagK(self.prmtize(x)).sum(dim=-1)
+        return self.diagK(self.reweight(x)).sum(dim=-1)
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
         """
@@ -72,18 +72,21 @@ class Linear(Kernel):
         trK : Tensor
             trace of kernel K(x,x) with dims (... n)
         """
-        dot = self.dot(self.prmtize(x), self.prmtize(y))
+        
+        # compute x dot y with latent reweighting
+        dot = self.reweight(x).transpose(-1, -2).matmul(self.reweight(y))
+        # multiply by scale factor
         kxy = self.scale_sqr[:, None, None] * dot
         return kxy
 
-    def prmtize(self, x: Tensor) -> Tensor:
+    def reweight(self, x: Tensor) -> Tensor:
         """re-weight the latent dimensions"""
-        x = self.ell[:, None] * x
+        x = self.input_scale[:, None] * x
         return x
 
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
-        return self.scale, self.ell
+        return self.scale, self.input_scale
 
     @property
     def scale_sqr(self) -> Tensor:
@@ -94,15 +97,10 @@ class Linear(Kernel):
         return self._scale.abs()
 
     @property
-    def ell(self) -> Tensor:
-        return softplus(self._ell)
+    def input_scale(self) -> Tensor:
+        return softplus(self._input_scale)
 
     @property
     def msg(self):
-        return ('scale {:.3f} | ell {:.3f} |').format(self.scale.mean().item(),
-                                                      self.ell.mean().item())
-
-    @staticmethod
-    def dot(x: Tensor, y: Tensor) -> Tensor:
-        dist = x.transpose(-1, -2).matmul(y)
-        return dist
+        return ('scale {:.3f} | input_scale {:.3f} |').format(self.scale.mean().item(),
+                                                      self.input_scale.mean().item())
