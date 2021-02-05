@@ -50,7 +50,7 @@ def test_linear_ard():
                                initialization='fa',
                                Y=Y)
     kernel = mgp.kernels.Linear(n, d, ard=True, learn_scale=False)
-    lik = mgp.likelihoods.Gaussian(n, sigma=np.ones(n) * 0.5)
+    lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.5)
     lprior = mgp.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
@@ -103,7 +103,7 @@ def test_rbf_ard():
                                  d=d,
                                  ell_byneuron=False)
     print(d, kernel.ell.shape)
-    lik = mgp.likelihoods.Gaussian(n, sigma=np.ones(n) * 0.25)
+    lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.25)
     lprior = mgp.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
