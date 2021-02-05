@@ -56,12 +56,12 @@ class Gaussian(Likelihood):
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
 
     @property
-    def prms(self):
+    def prms(self) -> Tensor:
         variance = torch.square(self._sigma)
         return variance
 
     @property
-    def sigma(self):
+    def sigma(self) -> Tensor:
         return (1e-20 + self.prms).sqrt()
 
     def log_prob(self, y):
