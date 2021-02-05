@@ -14,13 +14,19 @@ else:
     device = torch.device("cpu")
 
 
-def gen_ard_data(d0=2, d=4, n=15, m=30, n_z=5, n_samples=1):
+def gen_ard_data(d0=2, d=4, n=25, m=50, n_z=15, n_samples=1, lin = True):
     x = np.random.normal(0, 1, size=(n_samples, m, d0))  #generate latents
     C = np.random.normal(0, 1, size=(n, d0))  #actoor matrix
-    Y = C @ x.transpose(0, 2, 1)
+    
+    if lin:
+        Y = C @ x.transpose(0, 2, 1)
+        sigs = np.random.uniform(0, 0.25, size=n)
+    else:
+        Y = np.sin(1 * C @ x.transpose(0, 2, 1))
+        sigs = np.random.uniform(0, 0.25, size=n)
+        
     assert Y.shape == (n_samples, n, m)
 
-    sigs = np.random.uniform(0, 0.5, size=n)
     Y = Y + np.random.normal(0, np.tile(sigs[None, ..., None],
                                         (n_samples, 1, m)))  #add noise
 
@@ -40,11 +46,11 @@ def test_linear_ard():
                                m,
                                n_samples,
                                diagonal=True,
-                               sigma=0.2,
+                               sigma=0.3,
                                initialization='fa',
                                Y=Y)
     kernel = mgp.kernels.Linear(n, d, ard=True, learn_scale=False)
-    lik = mgp.likelihoods.Gaussian(n)
+    lik = mgp.likelihoods.Gaussian(n, sigma = np.ones(n)*0.5)
     lprior = mgp.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
@@ -60,19 +66,19 @@ def test_linear_ard():
     trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),
                                           mod,
                                           optimizer=optim.Adam,
-                                          max_steps=300,
-                                          burnin=30,
+                                          max_steps=700,
+                                          burnin=50,
                                           n_mc=5,
-                                          lrate=7.5E-2,
+                                          lrate=20E-2,
                                           print_every=50)
 
     ells = (mod.kernel.input_scale)**(-1)
     ells = np.sort(ells.detach().cpu().numpy())
     print('\n', ells)
 
-    for i in range(
-            d - d0):  #more than a standard deviation away from the other ells
-        assert ells[d0 + i] > (ells[d0 - 1] + np.std(ells[:d0]))
+    for i in range(d - d0):  
+        #more than three standard deviations away from the other ells
+        assert ells[d0 + i] > (ells[d0 - 1] + 3*np.std(ells[:d0]))
 
 
 def test_rbf_ard():
@@ -80,15 +86,15 @@ def test_rbf_ard():
     test that the RBF ARD functionality correctly discards the unwanted dimensions
     """
 
-    d0, d, n, m, n_z, n_samples, Y = gen_ard_data()
+    d0, d, n, m, n_z, n_samples, Y = gen_ard_data(lin = False)
 
     # specify manifold, kernel and rdist
-    manif = mgp.manifolds.Euclid(m, d)  #over-parameterize
+    manif = mgp.manifolds.Euclid(m, d)
     lat_dist = mgp.rdist.ReLie(manif,
                                m,
                                n_samples,
                                diagonal=True,
-                               sigma=0.2,
+                               sigma=0.5,
                                initialization='fa',
                                Y=Y)
     kernel = mgp.kernels.QuadExp(n,
@@ -96,7 +102,8 @@ def test_rbf_ard():
                                  Y=Y,
                                  d=d,
                                  ell_byneuron=False)
-    lik = mgp.likelihoods.Gaussian(n)
+    print(d, kernel.ell.shape)
+    lik = mgp.likelihoods.Gaussian(n, sigma = np.ones(n)*0.25)
     lprior = mgp.lpriors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
@@ -112,21 +119,20 @@ def test_rbf_ard():
     trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),
                                           mod,
                                           optimizer=optim.Adam,
-                                          max_steps=300,
-                                          burnin=30,
-                                          n_mc=5,
-                                          lrate=7.5E-2,
+                                          max_steps=700,
+                                          burnin=50,
+                                          n_mc=12,
+                                          lrate=15E-2,
                                           print_every=50)
 
-    ells = np.sort(mod.kernel.ell.detach().cpu().numpy()[:, 0])
+    ells = np.sort(mod.kernel.ell.detach().cpu().numpy()[0, :])
     print('\n', ells)
 
-    for i in range(
-            d -
-            d0):  #more than a standaard deeviaation away from the other ells
-        assert ells[d0 + i] > (ells[d0 - 1] + np.std(ells[:d0]))
+    for i in range(d - d0):  
+        #more than three standard deviations away from the other ells
+        assert ells[d0 + i] > (ells[d0 - 1] + 2*np.std(ells[:d0]))
 
 
 if __name__ == '__main__':
-    #test_linear_ard()
+    test_linear_ard()
     test_rbf_ard()

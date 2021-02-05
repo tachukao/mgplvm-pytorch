@@ -48,17 +48,12 @@ class Gaussian(Likelihood):
 
     def __init__(self,
                  n: int,
-                 variance: Optional[Tensor] = None,
+                 sigma: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs,
                  learn_sigma=True):
         super().__init__(n, n_gh_locs)
-        sigma = 1 * torch.ones(n,) if variance is None else torch.sqrt(
-            torch.tensor(variance, dtype=torch.get_default_dtype()))
-
-        if learn_sigma:
-            self.sigma = nn.Parameter(data=sigma, requires_grad=True)
-        else:
-            self.sigma = nn.Parameter(data=sigma, requires_grad=False)
+        sigma = 1 * torch.ones(n,) if sigma is None else torch.tensor(sigma, dtype=torch.get_default_dtype())
+        self.sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
 
     @property
     def prms(self):

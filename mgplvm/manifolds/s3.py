@@ -121,7 +121,7 @@ class S3(Manifold):
         return lp
 
     @staticmethod
-    def distance(x: Tensor, y: Tensor) -> Tensor:
+    def distance(x: Tensor, y: Tensor, ell: None = None) -> Tensor:
         # distance: 2 - 2 (x dot y)
         z = x.transpose(-1, -2).matmul(y)
         res = 2 * (1 - z)

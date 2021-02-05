@@ -66,7 +66,7 @@ class GP(LpriorEuclid):
         z = InducingPoints(n, d, n_z, z=zinit.repeat(n, d, 1))
         self.ts = ts
         #consider fixing this to a small value as in GPFA
-        lik = Gaussian(n, variance=np.square(0.2), learn_sigma=False)
+        lik = Gaussian(n, sigma=0.2, learn_sigma=False)
         self.svgp = Svgp(kernel,
                          n,
                          m,

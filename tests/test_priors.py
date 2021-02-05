@@ -60,7 +60,7 @@ def test_GP_prior():
     #lprior = lpriors.Gaussian(manif)
 
     # generate model
-    likelihood = mgp.likelihoods.Gaussian(n, variance=np.square(sigma))
+    likelihood = mgp.likelihoods.Gaussian(n, sigma=sigma)
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
                              lprior).to(device)
