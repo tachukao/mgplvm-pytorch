@@ -167,7 +167,7 @@ def test_linear_kernel():
     y_ = torch.tensor(y).transpose(-1, -2)
     scale = np.ones((n))
     K = sklkernels.DotProduct(sigma_0=0)(x, y)
-    kernel = Linear(n, Euclid.distance, scale=scale)
+    kernel = Linear(n, d, scale=scale)
     K_ = kernel(x_, y_)[0].data.cpu().numpy()
     assert np.allclose(K_, K)
 

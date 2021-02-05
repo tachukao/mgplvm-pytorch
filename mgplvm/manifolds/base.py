@@ -58,11 +58,6 @@ class Manifold(metaclass=abc.ABCMeta):
     def distance(x: Tensor, y: Tensor) -> Tensor:
         pass
 
-    @staticmethod
-    @abc.abstractmethod
-    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        pass
-
     @abc.abstractmethod
     def inducing_points(self, n: int, n_z: int, z=Optional[Tensor]):
         pass

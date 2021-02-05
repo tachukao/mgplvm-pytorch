@@ -41,7 +41,11 @@ def model_params(n, m, d, n_z, n_samples, **kwargs):
     }
 
     for key, value in kwargs.items():
-        params[key] = value
+        if key in params.keys():
+            params[key] = value
+        else:
+            print('key not found; adding', key)
+            params[key] = value
 
     return params
 
@@ -112,9 +116,8 @@ def load_model(params):
 
     #### specify likelihood ####
     if params['likelihood'] == 'Gaussian':
-        var = None if params['lik_gauss_std'] is None else np.square(
-            params['lik_gauss_std'])
-        likelihood: Likelihood = likelihoods.Gaussian(n, variance=var)
+        likelihood: Likelihood = likelihoods.Gaussian(
+            n, sigma=params['lik_gauss_std'])
     elif params['likelihood'] == 'Poisson':
         likelihood = likelihoods.Poisson(n)
     elif params['likelihood'] == 'NegBinom':

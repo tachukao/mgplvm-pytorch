@@ -100,31 +100,24 @@ class Torus(Manifold):
         return x + y
 
     @staticmethod
-    def distance(x: Tensor, y: Tensor) -> Tensor:
+    def distance(x: Tensor, y: Tensor, ell: Optional[Tensor] = None) -> Tensor:
         # distance = 2 - 2 cos(x-y)
         # here we use the identity: cox(x-y) = cos(x)cos(y) + sin(x)sin(y)
         d = x.shape[-2]
-        cx = torch.cos(x)
-        cy = torch.cos(y)
-        sx = torch.sin(x)
-        sy = torch.sin(y)
-        z1_ = torch.cat([cx, sx], dim=-2)
-        z2_ = torch.cat([cy, sy], dim=-2)
-        res = 2 * (d - z1_.transpose(-1, -2).matmul(z2_))
-        res.clamp_min_(0)
-        return res
 
-    @staticmethod
-    def linear_distance(x: Tensor, y: Tensor) -> Tensor:
-        # distance = cos(x - y)
-        # here we use the identity: cox(x-y) = cos(x)cos(y) + sin(x)sin(y)
-        d = x.shape[-2]
-        cx = torch.cos(x)
-        cy = torch.cos(y)
-        sx = torch.sin(x)
-        sy = torch.sin(y)
-        z1_ = torch.cat([cx, sx], dim=-2)
-        z2_ = torch.cat([cy, sy], dim=-2)
-        res = z1_.transpose(-1, -2).matmul(z2_)
+        if ell is None:
+            ell = torch.ones(1, 1, 1)
+
+        cx = torch.cos(x) / ell  #(... n x d x mx)
+        cy = torch.cos(y) / ell
+        sx = torch.sin(x) / ell
+        sy = torch.sin(y) / ell
+        z1_ = torch.cat([cx, sx], dim=-2)  #(... n x 2d x mx)
+        z2_ = torch.cat([cy, sy], dim=-2)  #(... n x 2d x mx)
+
+        const = d * ell.square().reciprocal().mean(
+            -2)  # (1/n x 1/d x 1) -> (1/n x 1)
+
+        res = 2 * (const[..., None] - z1_.transpose(-1, -2).matmul(z2_))
         res.clamp_min_(0)
         return res
