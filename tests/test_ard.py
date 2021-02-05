@@ -57,10 +57,10 @@ def test_linear_ard():
     trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),
                                           mod,
                                           optimizer=optim.Adam,
-                                          max_steps=500,
-                                          burnin=50,
+                                          max_steps=300,
+                                          burnin=30,
                                           n_mc=5,
-                                          lrate=5E-2,
+                                          lrate=7.5E-2,
                                           print_every=50)
 
     
