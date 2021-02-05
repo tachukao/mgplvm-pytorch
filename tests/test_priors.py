@@ -29,9 +29,9 @@ def test_GP_prior():
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)
-    alpha = np.mean(np.std(Y, axis=-1), axis=0)
+    scale = np.mean(np.std(Y, axis=-1), axis=0)
     sigma = np.mean(np.std(Y, axis=-1), axis=0)  # initialize noise
-    kernel = mgp.kernels.QuadExp(n, manif.distance, alpha=alpha)
+    kernel = mgp.kernels.QuadExp(n, manif.distance, scale=scale)
 
     #lat_dist = mgp.rdist.MVN(m, d, sigma=sig0)
     lat_dist = mgp.rdist.ReLie(manif,
@@ -45,7 +45,7 @@ def test_GP_prior():
     lprior_manif = mgp.manifolds.Euclid(m, d2)
     lprior_kernel = mgp.kernels.QuadExp(d,
                                         lprior_manif.distance,
-                                        learn_alpha=False)
+                                        learn_scale=False)
     ts = torch.arange(m, device=device,
                       dtype=torch.get_default_dtype())[None, None, :].repeat(
                           n_samples, d2, 1)

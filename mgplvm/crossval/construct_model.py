@@ -26,10 +26,9 @@ def model_params(n, m, d, n_z, n_samples, **kwargs):
         'latent_sigma': 1,
         'latent_mu': None,
         'diagonal': True,
-        'learn_linear_weights': False,
-        'learn_linear_alpha': True,
-        'linear_alpha': None,
-        'RBF_alpha': None,
+        'learn_linear_scale': True,
+        'linear_scale': None,
+        'RBF_scale': None,
         'RBF_ell': None,
         'arp_p': 1,
         'arp_eta': np.ones(d) * 0.3,
@@ -75,26 +74,24 @@ def load_model(params):
     if params['kernel'] == 'linear':
         kernel: Kernel = kernels.Linear(
             n,
-            manif.linear_distance,
             d,
-            learn_weights=params['learn_linear_weights'],
-            learn_alpha=params['learn_linear_alpha'],
+            learn_scale=params['learn_linear_scale'],
             Y=params['Y'],
-            alpha=params['linear_alpha'])
+            scale=params['linear_scale'])
     elif params['kernel'] == 'RBF':
         ell = None if params['RBF_ell'] is None else np.ones(
             n) * params['RBF_ell']
         kernel = kernels.QuadExp(n,
                                  manif.distance,
                                  Y=params['Y'],
-                                 alpha=params['RBF_alpha'],
+                                 scale=params['RBF_scale'],
                                  ell=ell)
 
     #### speciy prior ####
     if params['prior'] == 'GP':
         lprior_kernel = kernels.QuadExp(d,
                                         manif.distance,
-                                        learn_alpha=False,
+                                        learn_scale=False,
                                         ell=np.ones(d) * m / 10)
         lprior: Lprior = lpriors.GP(d,
                                     m,
