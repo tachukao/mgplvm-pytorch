@@ -48,12 +48,11 @@ class Gaussian(Likelihood):
 
     def __init__(self,
                  n: int,
-                 sigma: Optional[np.ndarray] = None,
+                 sigma: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs,
                  learn_sigma=True):
         super().__init__(n, n_gh_locs)
-        sigma = 1 * torch.ones(n,) if sigma is None else torch.tensor(
-            sigma, dtype=torch.get_default_dtype())
+        sigma = 1 * torch.ones(n,) if sigma is None else sigma
         self.sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
 
     @property
