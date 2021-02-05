@@ -104,11 +104,11 @@ class GP(LpriorEuclid):
 
         # as the inducing points are shared across the full batch
         return elbo.sum(-1)  #sum over dimensions
-
+    
     @property
     def msg(self):
         ell = self.svgp.kernel.prms[1].mean()
-        noise = self.svgp.likelihood.prms.sqrt().mean()
+        noise = self.svgp.likelihood.sigma.mean()
 
         return (' prior ell {:.3f} | prior noise {:.3f} |').format(
             ell.item(), noise.item())
