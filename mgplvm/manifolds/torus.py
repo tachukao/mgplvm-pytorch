@@ -112,7 +112,8 @@ class Torus(Manifold):
         sy = torch.sin(y) / ell
         z1_ = torch.cat([cx, sx], dim=-2)  #(... n x 2d x mx)
         z2_ = torch.cat([cy, sy], dim=-2)  #(... n x 2d x mx)
-        const = d * (torch.square(ell**(-1))).mean(
+
+        const = d * ell.square().reciprocal().mean(
             -2)  # (1/n x 1/d x 1) -> (1/n x 1)
 
         res = 2 * (const[..., None] - z1_.transpose(-1, -2).matmul(z2_))
