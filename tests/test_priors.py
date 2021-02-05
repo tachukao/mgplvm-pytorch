@@ -29,7 +29,7 @@ def test_GP_prior():
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)
-    scale = np.mean(np.var(Y, axis=-1), axis=0)
+    scale = np.mean(np.std(Y, axis=-1), axis=0)
     sigma = np.mean(np.std(Y, axis=-1), axis=0)  # initialize noise
     kernel = mgp.kernels.QuadExp(n, manif.distance, scale=scale)
 

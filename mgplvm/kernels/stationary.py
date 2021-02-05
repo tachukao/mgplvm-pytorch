@@ -17,7 +17,8 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
                  ell=None,
                  scale=None,
                  learn_scale=True,
-                 Y: np.ndarray = None):
+                 Y: np.ndarray = None,
+                 eps: float = 1e-6):
         """
         Parameters
         ----------
@@ -38,9 +39,13 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
             optimises the scale hyperparameter if true
         Y : Optional[np.ndarray]
             data matrix used for initializing the scale hyperparameter
+        eps: float
+            minimum ell
         """
 
         super(Stationary, self).__init__()
+
+        self.eps = eps
 
         if scale is not None:
             _scale = torch.tensor(scale, dtype=torch.get_default_dtype()).sqrt()
@@ -64,7 +69,7 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
             _ell = inv_softplus(
                 torch.tensor(ell, dtype=torch.get_default_dtype()))
 
-        self._ell = nn.Parameter(data=_ell, requires_grad=True)
+        self._ell = nn.Parameter(data=_ell - self.eps, requires_grad=True)
 
         self.distance = distance
 
@@ -85,10 +90,10 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
         For a stationary quad exp kernel, the diagonal is a mx-dimensional 
         vector (scale, scale, ..., scale)
         """
-        scale = self.scale[:, None]
         shp = list(x.shape)
         del shp[-2]
-        return torch.ones(shp).to(scale.device) * scale
+        scale_sqr = self.scale_sqr[:, None]
+        return torch.ones(shp).to(scale_sqr.device) * scale_sqr
 
     def trK(self, x: Tensor) -> Tensor:
         """
@@ -106,20 +111,25 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
         ----
         For a stationary quad exp kernel, the trace is scale * mx
         """
-        scale = self.scale
-        return torch.ones(x.shape[:-2]).to(scale.device) * scale * x.shape[-1]
+        scale_sqr = self.scale_sqr
+        return torch.ones(x.shape[:-2]).to(
+            scale_sqr.device) * scale_sqr * x.shape[-1]
 
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
-        return self.scale, self.ell
+        return self.scale_sqr, self.ell
 
     @property
-    def scale(self) -> Tensor:
+    def scale_sqr(self) -> Tensor:
         return self._scale.square()
 
     @property
+    def scale(self) -> Tensor:
+        return self._scale.abs()
+
+    @property
     def ell(self) -> Tensor:
-        return softplus(self._ell)
+        return softplus(self._ell) + self.eps
 
     @property
     def msg(self):
@@ -136,7 +146,8 @@ class QuadExp(Stationary):
                  ell=None,
                  scale=None,
                  learn_scale=True,
-                 Y: np.ndarray = None):
+                 Y: np.ndarray = None,
+                 eps: float = 1e-6):
         """
         Quadratic exponential kernel
 
@@ -159,6 +170,8 @@ class QuadExp(Stationary):
             optimises the scale hyperparameter if true
         Y : Optional[np.ndarray]
             data matrix used for initializing the scale hyperparameter
+        eps : float
+            minimum ell
         """
 
         super(QuadExp, self).__init__(n, distance, d, ell, scale, learn_scale,
@@ -179,14 +192,13 @@ class QuadExp(Stationary):
             quadratic exponential kernel with dims (... n x mx x my)
 
         """
-        scale, ell = self.prms
+        scale_sqr, ell = self.prms
         if self.ard:
             ell = ell[:, None, :]
         else:
             ell = ell[:, None, None]
         distance = self.distance(x / ell, y / ell)  # dims (... n x mx x my)
-        scale = scale[:, None, None]
-        kxy = scale * torch.exp(-0.5 * distance)
+        kxy = scale_sqr[:, None, None] * torch.exp(-0.5 * distance)
         return kxy
 
 
@@ -199,8 +211,9 @@ class Exp(QuadExp):
                  ell=None,
                  scale=None,
                  learn_scale=True,
-                 Y: np.ndarray = None):
-        super().__init__(n, distance, d, ell, scale, learn_scale, Y=Y)
+                 Y: np.ndarray = None,
+                 eps: float = 1E-6):
+        super().__init__(n, distance, d, ell, scale, learn_scale, Y=Y, eps=eps)
 
     def K(self, x: Tensor, y: Tensor) -> Tensor:
         """
@@ -217,8 +230,7 @@ class Exp(QuadExp):
             exponential kernel with dims (... n x mx x my)
 
         """
-        scale, ell = self.prms
-        expand_scale = scale[:, None, None]
+        scale_sqr, ell = self.prms
         if self.ard:
             expand_ell = ell[:, None, :]
         else:
@@ -228,13 +240,8 @@ class Exp(QuadExp):
 
         # NOTE: distance means squared distance ||x-y||^2 ?
         stable_distance = torch.sqrt(distance + 1e-20)  # numerically stabilized
-        kxy = expand_scale * torch.exp(-stable_distance)
+        kxy = scale_sqr[:, None, None] * torch.exp(-stable_distance)
         return kxy
-
-    @property
-    def msg(self):
-        return (' scale {:.3f} | ell {:.3f} |').format(self.scale.mean().item(),
-                                                       self.ell.mean().item())
 
 
 class Matern(Stationary):
@@ -246,7 +253,9 @@ class Matern(Stationary):
                  nu=1.5,
                  ell=None,
                  scale=None,
-                 learn_scale=True):
+                 learn_scale=True,
+                 Y=None,
+                 eps: float = 1E-6):
         '''
         Parameters
         ----------
@@ -260,7 +269,7 @@ class Matern(Stationary):
         based on the gpytorch implementation:
         https://github.com/cornellius-gp/gpytorch/blob/master/gpytorch/kernels/matern_kernel.py
         '''
-        super().__init__(n, distance, d, ell, scale, learn_scale)
+        super().__init__(n, distance, d, ell, scale, learn_scale, Y=Y, eps=eps)
 
         if nu not in (0.5, 1.5, 2.5):
             raise Exception("only nu=0.5, 1.5, 2.5 implemented")
@@ -283,8 +292,7 @@ class Matern(Stationary):
 
         """
 
-        scale, ell = self.prms
-        expand_scale = scale[:, None, None]
+        scale_sqr, ell = self.prms
         if self.ard:
             expand_ell = ell[:, None, :]
         else:
@@ -301,7 +309,7 @@ class Matern(Stationary):
             z2 = (math.sqrt(3) * distance).add(1)
         elif self.nu == 2.5:
             z2 = (math.sqrt(5) * distance).add(1).add(5.0 / 3.0 * distance**2)
-        return expand_scale * z1 * z2
+        return scale_sqr[:, None, None] * z1 * z2
 
     @property
     def msg(self):
