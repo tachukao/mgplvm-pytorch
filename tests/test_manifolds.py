@@ -89,63 +89,6 @@ def test_s3_distance():
     assert torch.allclose(slow_dist, dist)
 
 
-def test_euclid_linear_distance():
-    mx = 8
-    my = 6
-    d = 3
-    x = torch.randn(2, 5, 1, d, mx)
-    y = torch.randn(2, 1, 4, d, my)
-    manif = manifolds.Euclid(10, d)
-    slow_dist = (x[..., None] * y[..., None, :]).sum(-3)
-    slow_dist.clamp_min_(0)
-    dist = manif.linear_distance(x, y)
-    assert torch.allclose(slow_dist, dist)
-
-
-def test_torus_linear_distance():
-    mx = 8
-    my = 6
-    d = 3
-    x = torch.randn(2, 5, 1, d, mx)
-    y = torch.randn(2, 1, 4, d, my)
-    manif = manifolds.Torus(10, d)
-    slow_dist = torch.cos(x[..., None] - y[..., None, :]).sum(-3)
-    slow_dist.clamp_min_(0)
-    dist = manif.linear_distance(x, y)
-    assert torch.allclose(slow_dist, dist)
-
-
-def test_so3_linear_distance():
-    mx = 8
-    my = 6
-    d = 4
-    x = torch.randn(2, 5, 1, d, mx)
-    x = x / (1e-20 + x.square().sum(-2, keepdim=True).sqrt())
-    y = torch.randn(2, 1, 4, d, my)
-    y = y / (1e-20 + y.square().sum(-2, keepdim=True).sqrt())
-    manif = manifolds.So3(10)
-    z = (x[..., None] * y[..., None, :]).sum(-3)
-    slow_dist = 2 * z.square()
-    slow_dist.clamp_min_(0)
-    dist = manif.linear_distance(x, y)
-    assert torch.allclose(slow_dist, dist)
-
-
-def test_s3_linear_distance():
-    mx = 8
-    my = 6
-    d = 4
-    x = torch.randn(2, 5, 1, d, mx)
-    x = x / (1e-20 + x.square().sum(-2, keepdim=True).sqrt())
-    y = torch.randn(2, 1, 4, d, my)
-    y = y / (1e-20 + y.square().sum(-2, keepdim=True).sqrt())
-    manif = manifolds.S3(10)
-    z = (x[..., None] * y[..., None, :]).sum(-3)
-    z.clamp_min_(0)
-    dist = manif.linear_distance(x, y)
-    assert torch.allclose(z, dist)
-
-
 def test_manifs_runs():
     m, d, n, n_z, n_samples = 10, 3, 5, 5, 2
     Y = np.random.normal(0, 1, (n_samples, n, m))
@@ -191,8 +134,4 @@ if __name__ == '__main__':
     test_torus_distance()
     test_so3_distance()
     test_s3_distance()
-    test_euclid_linear_distance()
-    test_torus_linear_distance()
-    test_so3_linear_distance()
-    test_s3_linear_distance()
     test_manifs_runs()
