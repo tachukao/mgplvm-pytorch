@@ -59,10 +59,10 @@ class Gaussian(Likelihood):
     def prms(self):
         variance = torch.square(self.sigma)
         return variance
-    
+
     @property
     def sigma(self):
-          return (1e-20 + self.prms).sqrt()
+        return (1e-20 + self.prms).sqrt()
 
     def log_prob(self, y):
         raise Exception("Gaussian likelihood not implemented")

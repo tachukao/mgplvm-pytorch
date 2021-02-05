@@ -83,8 +83,9 @@ class Euclid(Manifold):
         return x + y
 
     @staticmethod
-    def distance(x: Tensor, y: Tensor, ell: Tensor = torch.ones(1, 1,
-                                                                1)) -> Tensor:
+    def distance(
+        x: Tensor, y: Tensor, ell: Optional[Tensor] = torch.ones(1, 1,
+                                                                 1)) -> Tensor:
         # Based on implementation here: https://github.com/cornellius-gp/gpytorch/blob/master/gpytorch/kernels/kernel.py
 
         #scale lengths by ell

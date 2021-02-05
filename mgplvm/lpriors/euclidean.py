@@ -104,7 +104,7 @@ class GP(LpriorEuclid):
 
         # as the inducing points are shared across the full batch
         return elbo.sum(-1)  #sum over dimensions
-    
+
     @property
     def msg(self):
         ell = self.svgp.kernel.prms[1].mean()
