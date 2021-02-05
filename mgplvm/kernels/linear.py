@@ -65,10 +65,10 @@ class Linear(Kernel):
             trace of kernel K(x,x) with dims (... n)
         """
         dot = self.dot(self.prmtize(x), self.prmtize(y))
-        kxy = self.scale_sqr[:, None, None] * distance
+        kxy = self.scale_sqr[:, None, None] * dot
         return kxy
     
-    def prmtize(self, x: Tensor) --> Tensor:
+    def prmtize(self, x: Tensor) -> Tensor:
         """re-weight the latent dimensions"""
         x = self.ell[:, None] * x
         return x
@@ -87,7 +87,7 @@ class Linear(Kernel):
     
     @property
     def ell(self) -> Tensor:
-        return softplus(self._ell())
+        return softplus(self._ell)
 
     @property
     def msg(self):
