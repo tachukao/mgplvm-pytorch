@@ -124,7 +124,7 @@ def test_svgplvm_batching():
 
         est_elbos = [for_batch() for _ in range(500)]
         err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
-        assert err < 1E-4
+        assert err < 1E-3
 
 
 def test_svgp_batching():
@@ -183,7 +183,7 @@ def test_svgp_batching():
 
         est_elbos = [for_batch() for _ in range(500)]
         err = np.abs(elbo - np.mean(est_elbos)) / np.linalg.norm(est_elbos)
-        assert err < 1e-4
+        assert err < 1e-3
 
 
 if __name__ == '__main__':
