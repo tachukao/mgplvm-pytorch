@@ -54,12 +54,16 @@ class Gaussian(Likelihood):
                  learn_sigma=True):
         super().__init__(n, n_gh_locs)
         sigma = 1 * torch.ones(n,) if sigma is None else sigma
-        self.sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
+        self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
 
     @property
-    def prms(self):
-        variance = torch.square(self.sigma)
+    def prms(self) -> Tensor:
+        variance = torch.square(self._sigma)
         return variance
+
+    @property
+    def sigma(self) -> Tensor:
+        return (1e-20 + self.prms).sqrt()
 
     def log_prob(self, y):
         raise Exception("Gaussian likelihood not implemented")

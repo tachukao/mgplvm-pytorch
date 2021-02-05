@@ -34,7 +34,7 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
             lengthscale hyperparameter
             it should have dimensions n x d if d is not None and n if d is None
         scale : Optional[np.ndarray]
-            scale hyperparameter
+            scale hyperparameter (std)
             it should have dimension n 
         learn_scale : bool
             optimises the scale hyperparameter if true
@@ -49,14 +49,15 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
         self.eps = eps
 
         if scale is not None:
-            _scale = torch.tensor(scale, dtype=torch.get_default_dtype()).sqrt()
+            _scale_sqr = torch.tensor(scale,
+                                      dtype=torch.get_default_dtype()).square()
         elif Y is not None:
-            _scale = torch.tensor(np.mean(Y**2, axis=(0, -1))).sqrt()
+            _scale_sqr = torch.tensor(np.mean(Y**2, axis=(0, -1)))
         else:
-            _scale = torch.ones(n,)
+            _scale_sqr = torch.ones(n,)
 
-        self._scale = nn.Parameter(data=inv_softplus(_scale),
-                                   requires_grad=learn_scale)
+        self._scale_sqr = nn.Parameter(data=inv_softplus(_scale_sqr),
+                                       requires_grad=learn_scale)
 
         self.ard = (d is not None)
         if ell is None:
@@ -125,11 +126,11 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
 
     @property
     def scale_sqr(self) -> Tensor:
-        return self.scale.square()
+        return softplus(self._scale_sqr)
 
     @property
     def scale(self) -> Tensor:
-        return softplus(self._scale)
+        return (self.scale_sqr + 1e-20).sqrt()
 
     @property
     def ell(self) -> Tensor:
