@@ -116,7 +116,8 @@ def load_model(params):
 
     #### specify likelihood ####
     if params['likelihood'] == 'Gaussian':
-        likelihood: Likelihood = likelihoods.Gaussian(n, sigma = params['lik_gauss_std'])
+        likelihood: Likelihood = likelihoods.Gaussian(
+            n, sigma=params['lik_gauss_std'])
     elif params['likelihood'] == 'Poisson':
         likelihood = likelihoods.Poisson(n)
     elif params['likelihood'] == 'NegBinom':

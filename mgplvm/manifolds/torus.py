@@ -100,18 +100,20 @@ class Torus(Manifold):
         return x + y
 
     @staticmethod
-    def distance(x: Tensor, y: Tensor, ell : Tensor = torch.ones(1,1,1)) -> Tensor:
+    def distance(x: Tensor, y: Tensor, ell: Tensor = torch.ones(1, 1,
+                                                                1)) -> Tensor:
         # distance = 2 - 2 cos(x-y)
         # here we use the identity: cox(x-y) = cos(x)cos(y) + sin(x)sin(y)
         d = x.shape[-2]
-        cx = torch.cos(x)/ell #(... n x d x mx)
-        cy = torch.cos(y)/ell
-        sx = torch.sin(x)/ell
-        sy = torch.sin(y)/ell
-        z1_ = torch.cat([cx, sx], dim=-2) #(... n x 2d x mx)
-        z2_ = torch.cat([cy, sy], dim=-2) #(... n x 2d x mx)
-        const = d*(torch.square(ell**(-1))).mean(-2) # (1/n x 1/d x 1) -> (1/n x 1)
-        
+        cx = torch.cos(x) / ell  #(... n x d x mx)
+        cy = torch.cos(y) / ell
+        sx = torch.sin(x) / ell
+        sy = torch.sin(y) / ell
+        z1_ = torch.cat([cx, sx], dim=-2)  #(... n x 2d x mx)
+        z2_ = torch.cat([cy, sy], dim=-2)  #(... n x 2d x mx)
+        const = d * (torch.square(ell**(-1))).mean(
+            -2)  # (1/n x 1/d x 1) -> (1/n x 1)
+
         res = 2 * (const[..., None] - z1_.transpose(-1, -2).matmul(z2_))
         res.clamp_min_(0)
         return res

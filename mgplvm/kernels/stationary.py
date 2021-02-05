@@ -55,7 +55,8 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
         else:
             _scale = torch.ones(n,)
 
-        self._scale = nn.Parameter(data=inv_softplus(_scale), requires_grad=learn_scale)
+        self._scale = nn.Parameter(data=inv_softplus(_scale),
+                                   requires_grad=learn_scale)
 
         self.ard = (d is not None)
         if ell is None:
@@ -65,7 +66,7 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
                 assert (d is not None)
                 _ell = inv_softplus(torch.ones(n, d))
             else:
-                _ell = inv_softplus(torch.ones(1,d))
+                _ell = inv_softplus(torch.ones(1, d))
         else:
             if d is not None:
                 assert ell.shape[-1] == d
@@ -198,10 +199,10 @@ class QuadExp(Stationary):
         """
         scale_sqr, ell = self.prms
         if self.ard:
-            ell = ell[:, :, None] #(n x d x 1)
+            ell = ell[:, :, None]  #(n x d x 1)
         else:
-            ell = ell[:, None, None] #(n x 1 x 1)
-        distance = self.distance(x, y, ell = ell)  # dims (... n x mx x my)
+            ell = ell[:, None, None]  #(n x 1 x 1)
+        distance = self.distance(x, y, ell=ell)  # dims (... n x mx x my)
         kxy = scale_sqr[:, None, None] * torch.exp(-0.5 * distance)
         return kxy
 
@@ -239,7 +240,7 @@ class Exp(QuadExp):
             ell = ell[:, :, None]
         else:
             ell = ell[:, None, None]
-        distance = self.distance(x, y, ell = ell)  # dims (... n x mx x my)
+        distance = self.distance(x, y, ell=ell)  # dims (... n x mx x my)
 
         # NOTE: distance means squared distance ||x-y||^2 ?
         stable_distance = torch.sqrt(distance + 1e-20)  # numerically stabilized
@@ -300,7 +301,7 @@ class Matern(Stationary):
             ell = ell[:, :, None]
         else:
             ell = ell[:, None, None]
-        distance = (self.distance(x, y, ell = ell) + 1E-20).sqrt()
+        distance = (self.distance(x, y, ell=ell) + 1E-20).sqrt()
 
         # NOTE: distance means squared distance ||x-y||^2 ?
         z1 = torch.exp(-math.sqrt(self.nu * 2) * distance)

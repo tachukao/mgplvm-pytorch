@@ -72,7 +72,7 @@ class Linear(Kernel):
         trK : Tensor
             trace of kernel K(x,x) with dims (... n)
         """
-        
+
         # compute x dot y with latent reweighting
         dot = self.reweight(x).transpose(-1, -2).matmul(self.reweight(y))
         # multiply by scale factor
@@ -102,5 +102,6 @@ class Linear(Kernel):
 
     @property
     def msg(self):
-        return ('scale {:.3f} | input_scale {:.3f} |').format(self.scale.mean().item(),
-                                                      self.input_scale.mean().item())
+        return ('scale {:.3f} | input_scale {:.3f} |').format(
+            self.scale.mean().item(),
+            self.input_scale.mean().item())

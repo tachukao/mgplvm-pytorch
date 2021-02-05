@@ -147,7 +147,7 @@ class So3(Manifold):
         return lp
 
     @staticmethod
-    def distance(x: Tensor, y: Tensor, ell : None = None) -> Tensor:
+    def distance(x: Tensor, y: Tensor, ell: None = None) -> Tensor:
         # distance: 4 - 4 (x dot y)^2
         z = x.transpose(-1, -2).matmul(y)
         res = 4 * (1 - z.square())

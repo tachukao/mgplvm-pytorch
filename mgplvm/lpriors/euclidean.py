@@ -66,7 +66,7 @@ class GP(LpriorEuclid):
         z = InducingPoints(n, d, n_z, z=zinit.repeat(n, d, 1))
         self.ts = ts
         #consider fixing this to a small value as in GPFA
-        lik = Gaussian(n, sigma=0.2, learn_sigma=False)
+        lik = Gaussian(n, sigma=np.ones(n) * 0.2, learn_sigma=False)
         self.svgp = Svgp(kernel,
                          n,
                          m,
@@ -108,7 +108,7 @@ class GP(LpriorEuclid):
     @property
     def msg(self):
         ell = self.svgp.kernel.prms[1].mean()
-        noise = self.svgp.likelihood.prms.sqrt()
+        noise = self.svgp.likelihood.prms.sqrt().mean()
 
         return (' prior ell {:.3f} | prior noise {:.3f} |').format(
             ell.item(), noise.item())
