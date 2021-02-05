@@ -108,7 +108,7 @@ class GP(LpriorEuclid):
     @property
     def msg(self):
         ell = self.svgp.kernel.prms[1].mean()
-        noise = self.svgp.likelihood.sigma.mean()
+        noise = torch.mean(self.svgp.likelihood.sigma)
 
         return (' prior ell {:.3f} | prior noise {:.3f} |').format(
             ell.item(), noise.item())
