@@ -164,27 +164,36 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return lik, prior_kl
 
-    def tuning(self, query, n_b=1000, square=False):
-        '''
-        query is mxd
-        return n_b samples from the full model (n_b x n_samples x n x m)
-        if square, the outputs are squared (useful e.g. when fitting sqrt spike counts with a Gaussian likelihood)
-        '''
+    def sample(self, query: Tensor, n_mc: int = 1000, square: bool = False):
+        """
+        Parameters
+        ----------
+        query : Tensor (single kernel)
+            test input tensor with dimensions (n_samples x d x m)
+        n_mc : int
+            numper of samples to return
+        square : bool
+            determines whether to square the output
 
-        query = torch.unsqueeze(query.T, 0)  #add batch dimension
+        Returns
+        -------
+        y_samps : Tensor
+            samples from the model (n_mc x n_samples x d x m)
+        """
+
+        query = query[None, ...]  #add batch dimension (1 x n_samples x d x m)
 
         mu, v = self.predict(query, False)  #1xn_samplesxnxm, 1xn_samplesxnxm
         # remove batch dimension
-        mu = mu[0]  #n x m,
-        v = v[0]  # nxm
+        mu = mu[0]  #n_samples x n x m,
+        v = v[0]  # n_samples x n x m
 
         #sample from p(f|u)
         dist = Normal(mu, torch.sqrt(v))
-        f_samps = dist.sample((n_b,))  #n_mc x n_samples x n x m
+        f_samps = dist.sample((n_mc,))  #n_mc x n_samples x n x m
 
         #sample from observation function p(y|f)
-        y_samps = self.likelihood.sample(f_samps)
-        #mu, std = y_samps.mean(dim = 0), y_samps.std(dim = 0)
+        y_samps = self.likelihood.sample(f_samps)  #n_mc x n_samples x n x m
 
         if square:
             y_samps = y_samps**2

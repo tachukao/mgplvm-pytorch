@@ -45,6 +45,7 @@ class Likelihood(Module, metaclass=abc.ABCMeta):
 
 
 class Gaussian(Likelihood):
+    name = "Gaussian"
 
     def __init__(self,
                  n: int,
@@ -68,11 +69,11 @@ class Gaussian(Likelihood):
         raise Exception("Gaussian likelihood not implemented")
 
     def sample(self, f_samps: Tensor) -> Tensor:
-        '''f is n_b x n x m'''
+        '''f is n_mc x n_samples x n x m'''
         prms = self.prms
         #sample from p(y|f)
         dist = torch.distributions.Normal(f_samps,
-                                          torch.sqrt(prms).reshape(1, -1, 1))
+                                          torch.sqrt(prms)[None, None, :, None])
         y_samps = dist.sample()
         return y_samps
 
@@ -106,6 +107,7 @@ class Gaussian(Likelihood):
 
 
 class Poisson(Likelihood):
+    name = "Poisson"
 
     def __init__(
             self,
@@ -186,6 +188,7 @@ class Poisson(Likelihood):
 
 
 class NegativeBinomial(Likelihood):
+    name = "Negative binomial"
 
     def __init__(self,
                  n: int,
@@ -223,7 +226,7 @@ class NegativeBinomial(Likelihood):
         total_count, c, d = self.prms
         rate = c[..., None] * f_samps + d[..., None]  #shift+scale
         rate = self.inv_link(rate) * self.binsize
-        dist = dists.NegativeBinomial(total_count[None, ..., None, None],
+        dist = dists.NegativeBinomial(total_count[None, None, ..., None],
                                       logits=rate)  #neg binom
         y_samps = dist.sample()  #sample observations
         return y_samps
