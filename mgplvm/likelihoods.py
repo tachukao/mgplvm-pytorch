@@ -9,6 +9,7 @@ import torch.distributions as dists
 import numpy as np
 from numpy.polynomial.hermite import hermgauss
 import warnings
+from sklearn import decomposition
 
 log2pi: float = np.log(2 * np.pi)
 n_gh_locs: int = 20  # default number of Gauss-Hermite points
@@ -22,6 +23,14 @@ def exp_link(x):
 def id_link(x):
     '''identity link function used for neg binomial data'''
     return x
+
+def FA_init(Y):
+    n = Y.shape[1]
+    pca = decomposition.FactorAnalysis(n_components=d)
+    Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
+    mudata = pca.fit_transform(Y)  #m*n_samples x d
+    sigmas = pca.noise_variance_
+    return torch.tensor(sigmas, dtype=torch.get_default_dtype())
 
 
 class Likelihood(Module, metaclass=abc.ABCMeta):
@@ -51,9 +60,15 @@ class Gaussian(Likelihood):
                  n: int,
                  sigma: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs,
-                 learn_sigma=True):
+                 learn_sigma=True,
+                Y: Optional[np.ndarray] = None):
         super().__init__(n, n_gh_locs)
-        sigma = 1 * torch.ones(n,) if sigma is None else sigma
+        
+        if sigma is None:
+            if Y is None:
+                sigma = 1 * torch.ones(n,)
+            else:
+                sigma = FA_init(Y)
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
 
     @property
