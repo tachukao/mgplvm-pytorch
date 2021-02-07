@@ -32,15 +32,23 @@ def test_s3_dimensions():
 
 
 def test_euclid_distance():
+    n_mc = 7
+    n_samples = 2
+    n = 5
     mx = 8
     my = 6
     d = 3
     x = torch.randn(2, 5, 1, d, mx)
     y = torch.randn(2, 1, 4, d, my)
+    
+    x = torch.randn(n_mc, n_samples, n, d, mx)
+    y = torch.randn(n_mc, n_samples, n, d, my)
+    ell = torch.ones(n, d, 1) + torch.randn(n, d, 1)*0.1
+    
     manif = manifolds.Euclid(10, d)
-    slow_dist = torch.square(x[..., None] - y[..., None, :]).sum(-3)
+    slow_dist = (torch.square(x[..., None] - y[..., None, :])/ell[..., None]**2).sum(-3)
     slow_dist.clamp_min(0)
-    dist = manif.distance(x, y)
+    dist = manif.distance(x, y, ell = ell)
     assert torch.allclose(slow_dist, dist)
 
 
