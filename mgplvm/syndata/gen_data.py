@@ -342,6 +342,7 @@ class Gen():
         K = np.prod(Ks, axis=0)  # n_samples x n x m
         n_samples, n, m = K.shape
         fs = self.params['alpha'] * K + self.params['beta']
+        self.fs = fs #store denoised activities
 
         ### Generating according to p(Y | F)
         if mode == 'Gaussian':

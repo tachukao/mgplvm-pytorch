@@ -24,12 +24,13 @@ def id_link(x):
     '''identity link function used for neg binomial data'''
     return x
 
-def FA_init(Y):
-    n = Y.shape[1]
+def FA_init(Y, d):
+    n_samples, n, m = Y.shape
+    d = int(np.round(d/4)) if d is None else d
     pca = decomposition.FactorAnalysis(n_components=d)
     Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
     mudata = pca.fit_transform(Y)  #m*n_samples x d
-    sigmas = pca.noise_variance_
+    sigmas = 1.5*np.sqrt(pca.noise_variance_)
     return torch.tensor(sigmas, dtype=torch.get_default_dtype())
 
 
@@ -61,14 +62,15 @@ class Gaussian(Likelihood):
                  sigma: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs,
                  learn_sigma=True,
-                Y: Optional[np.ndarray] = None):
+                Y: Optional[np.ndarray] = None,
+                d: Optional[int] = None):
         super().__init__(n, n_gh_locs)
         
         if sigma is None:
             if Y is None:
                 sigma = 1 * torch.ones(n,)
             else:
-                sigma = FA_init(Y)
+                sigma = FA_init(Y, d)
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
 
     @property

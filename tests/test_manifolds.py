@@ -38,31 +38,53 @@ def test_euclid_distance():
     mx = 8
     my = 6
     d = 3
-    x = torch.randn(2, 5, 1, d, mx)
-    y = torch.randn(2, 1, 4, d, my)
-    
+    #x = torch.randn(2, 5, 1, d, mx)
+    #y = torch.randn(2, 1, 4, d, my)
     x = torch.randn(n_mc, n_samples, n, d, mx)
     y = torch.randn(n_mc, n_samples, n, d, my)
-    ell = torch.ones(n, d, 1) + torch.randn(n, d, 1)*0.1
+    
+    ell0 = torch.ones(n, d, 1) + torch.randn(n, d, 1)*0.1
+    ell1 = torch.ones(1, d, 1) + torch.randn(1, d, 1)*0.1
+    ell2 = torch.ones(n, 1, 1) + torch.randn(n, 1, 1)*0.1
+    ell3 = None
     
     manif = manifolds.Euclid(10, d)
-    slow_dist = (torch.square(x[..., None] - y[..., None, :])/ell[..., None]**2).sum(-3)
-    slow_dist.clamp_min(0)
-    dist = manif.distance(x, y, ell = ell)
-    assert torch.allclose(slow_dist, dist)
+    for ell in [ell0, ell1, ell2, ell3]:
+        if ell is None:
+            slow_dist = torch.square(x[..., None] - y[..., None, :]).sum(-3)
+        else:
+            slow_dist = (torch.square(x[..., None] - y[..., None, :])/ell[..., None]**2).sum(-3)
+        slow_dist.clamp_min(0)
+        dist = manif.distance(x, y, ell = ell)
+        assert torch.allclose(slow_dist, dist)
 
 
 def test_torus_distance():
+    n_mc = 7
+    n_samples = 2
+    n = 5
     mx = 8
     my = 6
     d = 3
-    x = torch.randn(2, 5, 1, d, mx)
-    y = torch.randn(2, 1, 4, d, my)
+    #x = torch.randn(2, 5, 1, d, mx)
+    #y = torch.randn(2, 1, 4, d, my)
+    x = torch.randn(n_mc, n_samples, n, d, mx)
+    y = torch.randn(n_mc, n_samples, n, d, my)
+    
+    ell0 = torch.ones(n, d, 1) + torch.randn(n, d, 1)*0.1
+    ell1 = torch.ones(1, d, 1) + torch.randn(1, d, 1)*0.1
+    ell2 = torch.ones(n, 1, 1) + torch.randn(n, 1, 1)*0.1
+    ell3 = None
+    
     manif = manifolds.Torus(10, d)
-    slow_dist = (2 - 2 * torch.cos(x[..., None] - y[..., None, :])).sum(-3)
-    slow_dist.clamp_min(0)
-    dist = manif.distance(x, y)
-    assert torch.allclose(slow_dist, dist)
+    for ell in [ell0, ell1, ell2, ell3]:
+        if ell is None:
+            slow_dist = (2 - 2 * torch.cos(x[..., None] - y[..., None, :])).sum(-3)
+        else:
+            slow_dist = ((2 - 2 * torch.cos(x[..., None] - y[..., None, :]))/ell[..., None]**2).sum(-3)
+        slow_dist.clamp_min(0)
+        dist = manif.distance(x, y, ell = ell)
+        assert torch.allclose(slow_dist, dist)
 
 
 def test_so3_distance():
