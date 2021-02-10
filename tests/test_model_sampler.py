@@ -31,6 +31,7 @@ def test_sampling():
                           variability=0.25,
                           n_samples=n_samples)
     Y = gen.gen_data()
+    Y = Y+np.amin(Y)
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
 
     for i, lik in enumerate([
@@ -59,7 +60,7 @@ def test_sampling():
         mgp.optimisers.svgp.fit(data,
                                 mod,
                                 optimizer=optim.Adam,
-                                max_steps=5,
+                                max_steps=50,
                                 burnin=5 / 2E-2,
                                 n_mc=n_mc,
                                 lrate=5E-2,
@@ -86,7 +87,7 @@ def test_sampling():
         frac = leqs.sum() / (leqs.shape[0] * leqs.shape[1] * leqs.shape[2])
         print(frac)
 
-        assert frac > 0.5
+        assert frac > 0.9 #this should be true for a trained model but might not be robust for an untrained model
 
 
 if __name__ == '__main__':

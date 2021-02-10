@@ -168,7 +168,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                query: Tensor,
                n_mc: int = 1000,
                square: bool = False,
-               noise: bool = False):
+               noise: bool = True):
         """
         Parameters
         ----------
