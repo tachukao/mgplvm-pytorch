@@ -24,13 +24,15 @@ def id_link(x):
     '''identity link function used for neg binomial data'''
     return x
 
+
 def FA_init(Y, d):
     n_samples, n, m = Y.shape
-    d = int(np.round(d/4)) if d is None else d
+    if d is None:
+        d = int(np.round(d / 4))
     pca = decomposition.FactorAnalysis(n_components=d)
     Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
     mudata = pca.fit_transform(Y)  #m*n_samples x d
-    sigmas = 1.5*np.sqrt(pca.noise_variance_)
+    sigmas = 1.5 * np.sqrt(pca.noise_variance_)
     return torch.tensor(sigmas, dtype=torch.get_default_dtype())
 
 
@@ -62,10 +64,10 @@ class Gaussian(Likelihood):
                  sigma: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs,
                  learn_sigma=True,
-                Y: Optional[np.ndarray] = None,
-                d: Optional[int] = None):
+                 Y: Optional[np.ndarray] = None,
+                 d: Optional[int] = None):
         super().__init__(n, n_gh_locs)
-        
+
         if sigma is None:
             if Y is None:
                 sigma = 1 * torch.ones(n,)
@@ -103,7 +105,7 @@ class Gaussian(Likelihood):
                                           torch.sqrt(prms)[None, None, :, None])
         y_samps = dist.sample()
         return y_samps
-    
+
     def dist_mean(self, fs):
         """
         Parameters
@@ -179,7 +181,7 @@ class Poisson(Likelihood):
         #y: (n, n_samples x m)
         p = dists.Poisson(lamb)
         return p.log_prob(y[None, ..., None])
-    
+
     def dist(self, fs):
         """
         Parameters
@@ -193,8 +195,7 @@ class Poisson(Likelihood):
             resulting Poisson distributions
         """
         c, d = self.prms
-        lambd = self.binsize * self.inv_link(c[..., None] * fs +
-                                             d[..., None])
+        lambd = self.binsize * self.inv_link(c[..., None] * fs + d[..., None])
         dist = torch.distributions.Poisson(lambd)
         return dist
 
@@ -213,7 +214,7 @@ class Poisson(Likelihood):
         dist = self.dist(f_samps)
         y_samps = dist.sample()
         return y_samps
-    
+
     def dist_mean(self, fs):
         """
         Parameters
@@ -285,25 +286,24 @@ class NegativeBinomial(Likelihood):
                  fixed_c=True,
                  fixed_d=False,
                  n_gh_locs: Optional[int] = n_gh_locs,
-                Y: Optional[np.ndarray] = None):
+                 Y: Optional[np.ndarray] = None):
         super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize
-        
+
         ###initialize total_counts
         if total_count is None:
             if Y is None:
                 total_count = 4 * torch.ones(n,)
-            else:#assume p = 0.5; mean = total_count
-                total_count = torch.tensor(np.mean(Y, axis = (0, -1)))
-                
+            else:  #assume p = 0.5; mean = total_count
+                total_count = torch.tensor(np.mean(Y, axis=(0, -1)))
+
         total_count = dists.transform_to(
             dists.constraints.greater_than_eq(0)).inv(total_count)
         assert (total_count is not None)
         self.total_count = nn.Parameter(data=total_count,
                                         requires_grad=not fixed_total_count)
-        
-        
+
         c = torch.ones(n,) if c is None else c
         d = torch.zeros(n,) if d is None else d
         self.c = nn.Parameter(data=c, requires_grad=not fixed_c)
@@ -314,7 +314,7 @@ class NegativeBinomial(Likelihood):
         total_count = dists.transform_to(dists.constraints.greater_than_eq(0))(
             self.total_count)
         return total_count, self.c, self.d
-    
+
     def dist(self, fs):
         """
         Parameters
@@ -349,7 +349,7 @@ class NegativeBinomial(Likelihood):
         dist = self.dist(f_samps)
         y_samps = dist.sample()  #sample observations
         return y_samps
-    
+
     def dist_mean(self, fs):
         """
         Parameters

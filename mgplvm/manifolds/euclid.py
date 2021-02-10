@@ -38,7 +38,7 @@ class Euclid(Manifold):
                 Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
                 mudata = pca.fit_transform(Y)  #m*n_samples x d
                 mudata = 0.5 * mudata / np.std(mudata, axis=0,
-                                         keepdims=True)  #normalize
+                                               keepdims=True)  #normalize
                 mudata = mudata.reshape(n_samples, m, d)
                 return torch.tensor(mudata, dtype=torch.get_default_dtype())
         elif initialization in ['random', 'Random']:

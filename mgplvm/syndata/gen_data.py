@@ -342,13 +342,17 @@ class Gen():
         K = np.prod(Ks, axis=0)  # n_samples x n x m
         n_samples, n, m = K.shape
         fs = self.params['alpha'] * K + self.params['beta']
-        self.fs = fs #store denoised activities
+        self.fs = fs  #store denoised activities
 
         ### Generating according to p(Y | F)
         if mode == 'Gaussian':
             # add Gaussian noise
             sigma = self.params['sigma'] if sigma is None else sigma
-            noise = np.random.normal(0, np.repeat(np.repeat(sigma[None, ...], m, axis=-1), n_samples, axis = 0))
+            noise = np.random.normal(
+                0,
+                np.repeat(np.repeat(sigma[None, ...], m, axis=-1),
+                          n_samples,
+                          axis=0))
             self.Y = fs + noise
         elif mode == 'Poisson':  # Poisson spiking
             max_activity = np.mean(np.amax(fs, axis=1))

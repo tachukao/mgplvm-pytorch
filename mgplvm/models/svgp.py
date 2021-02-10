@@ -164,7 +164,11 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         return lik, prior_kl
 
-    def sample(self, query: Tensor, n_mc: int = 1000, square: bool = False, noise: bool = False):
+    def sample(self,
+               query: Tensor,
+               n_mc: int = 1000,
+               square: bool = False,
+               noise: bool = False):
         """
         Parameters
         ----------
@@ -192,7 +196,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
 
         #sample from p(f|u)
         dist = Normal(mu, torch.sqrt(v))
-        
+
         f_samps = dist.sample((n_mc,))  #n_mc x n_samples x n x m
 
         if noise:
@@ -200,8 +204,9 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             y_samps = self.likelihood.sample(f_samps)  #n_mc x n_samples x n x m
         else:
             #compute mean observations mu(f) for each f
-            y_samps = self.likelihood.dist_mean(f_samps)  #n_mc x n_samples x n x m
-            
+            y_samps = self.likelihood.dist_mean(
+                f_samps)  #n_mc x n_samples x n x m
+
         if square:
             y_samps = y_samps**2
 
