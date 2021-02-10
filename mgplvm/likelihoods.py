@@ -28,7 +28,7 @@ def id_link(x):
 def FA_init(Y, d: Optional[int] = None):
     n_samples, n, m = Y.shape
     if d is None:
-        d = int(np.round(d / 4))
+        d = int(np.round(n / 4))
     pca = decomposition.FactorAnalysis(n_components=d)
     Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
     mudata = pca.fit_transform(Y)  #m*n_samples x d
@@ -53,6 +53,14 @@ class Likelihood(Module, metaclass=abc.ABCMeta):
 
     @abc.abstractstaticmethod
     def sample(self, x: Tensor):
+        pass
+
+    @abc.abstractstaticmethod
+    def dist(self, x: Tensor):
+        pass
+
+    @abc.abstractstaticmethod
+    def dist_mean(self, x: Tensor):
         pass
 
 
