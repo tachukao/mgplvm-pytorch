@@ -121,7 +121,7 @@ def load_model(params):
     elif params['likelihood'] == 'Poisson':
         likelihood = likelihoods.Poisson(n)
     elif params['likelihood'] == 'NegBinom':
-        likelihood = likelihoods.NegativeBinomial(n)
+        likelihood = likelihoods.NegativeBinomial(n, Y = params['Y'])
 
     #### specify inducing points ####
     z = manif.inducing_points(n, n_z)
