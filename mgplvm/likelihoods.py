@@ -95,6 +95,23 @@ class Gaussian(Likelihood):
     def log_prob(self, y):
         raise Exception("Gaussian likelihood not implemented")
 
+    def dist(self, fs: Tensor):
+        """
+        Parameters
+        ----------
+        fs : Tensor
+            GP mean function values (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        dist : distribution
+            resulting Gaussian distributions
+        """
+        prms = self.prms
+        dist = torch.distributions.Normal(fs,
+                                          torch.sqrt(prms)[None, None, :, None])
+        return dist
+
     def sample(self, f_samps: Tensor) -> Tensor:
         """
         Parameters
@@ -107,10 +124,8 @@ class Gaussian(Likelihood):
         y_samps : Tensor
             samples from the resulting Gaussian distributions (n_mc x n_samples x n x m)
         """
-        prms = self.prms
+        dist = self.dist(f_samps)
         #sample from p(y|f)
-        dist = torch.distributions.Normal(f_samps,
-                                          torch.sqrt(prms)[None, None, :, None])
         y_samps = dist.sample()
         return y_samps
 
