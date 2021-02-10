@@ -9,6 +9,7 @@ import torch.distributions as dists
 import numpy as np
 from numpy.polynomial.hermite import hermgauss
 import warnings
+from sklearn import decomposition
 
 log2pi: float = np.log(2 * np.pi)
 n_gh_locs: int = 20  # default number of Gauss-Hermite points
@@ -22,6 +23,17 @@ def exp_link(x):
 def id_link(x):
     '''identity link function used for neg binomial data'''
     return x
+
+
+def FA_init(Y, d: Optional[int] = None):
+    n_samples, n, m = Y.shape
+    if d is None:
+        d = int(np.round(n / 4))
+    pca = decomposition.FactorAnalysis(n_components=d)
+    Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
+    mudata = pca.fit_transform(Y)  #m*n_samples x d
+    sigmas = 1.5 * np.sqrt(pca.noise_variance_)
+    return torch.tensor(sigmas, dtype=torch.get_default_dtype())
 
 
 class Likelihood(Module, metaclass=abc.ABCMeta):
@@ -43,6 +55,14 @@ class Likelihood(Module, metaclass=abc.ABCMeta):
     def sample(self, x: Tensor):
         pass
 
+    @abc.abstractstaticmethod
+    def dist(self, x: Tensor):
+        pass
+
+    @abc.abstractstaticmethod
+    def dist_mean(self, x: Tensor):
+        pass
+
 
 class Gaussian(Likelihood):
     name = "Gaussian"
@@ -51,9 +71,16 @@ class Gaussian(Likelihood):
                  n: int,
                  sigma: Optional[Tensor] = None,
                  n_gh_locs=n_gh_locs,
-                 learn_sigma=True):
+                 learn_sigma=True,
+                 Y: Optional[np.ndarray] = None,
+                 d: Optional[int] = None):
         super().__init__(n, n_gh_locs)
-        sigma = 1 * torch.ones(n,) if sigma is None else sigma
+
+        if sigma is None:
+            if Y is None:
+                sigma = 1 * torch.ones(n,)
+            else:
+                sigma = FA_init(Y, d=d)
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
 
     @property
@@ -68,14 +95,54 @@ class Gaussian(Likelihood):
     def log_prob(self, y):
         raise Exception("Gaussian likelihood not implemented")
 
-    def sample(self, f_samps: Tensor) -> Tensor:
-        '''f is n_mc x n_samples x n x m'''
+    def dist(self, fs: Tensor):
+        """
+        Parameters
+        ----------
+        fs : Tensor
+            GP mean function values (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        dist : distribution
+            resulting Gaussian distributions
+        """
         prms = self.prms
-        #sample from p(y|f)
-        dist = torch.distributions.Normal(f_samps,
+        dist = torch.distributions.Normal(fs,
                                           torch.sqrt(prms)[None, None, :, None])
+        return dist
+
+    def sample(self, f_samps: Tensor) -> Tensor:
+        """
+        Parameters
+        ----------
+        f_samps : Tensor
+            GP output samples (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        y_samps : Tensor
+            samples from the resulting Gaussian distributions (n_mc x n_samples x n x m)
+        """
+        dist = self.dist(f_samps)
+        #sample from p(y|f)
         y_samps = dist.sample()
         return y_samps
+
+    def dist_mean(self, fs: Tensor):
+        """
+        Parameters
+        ----------
+        fs : Tensor
+            GP mean function values (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        mean : Tensor
+            means of the resulting Gaussian distributions (n_mc x n_samples x n x m)
+            for a Gaussian, this is simply fs
+        """
+        return fs
 
     def variational_expectation(self, y, fmu, fvar):
         """
@@ -138,13 +205,54 @@ class Poisson(Likelihood):
         p = dists.Poisson(lamb)
         return p.log_prob(y[None, ..., None])
 
-    def sample(self, f_samps):
+    def dist(self, fs: Tensor):
+        """
+        Parameters
+        ----------
+        fs : Tensor
+            GP mean function values (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        dist : distribution
+            resulting Poisson distributions
+        """
         c, d = self.prms
-        lambd = self.binsize * self.inv_link(c[..., None] * f_samps +
-                                             d[..., None])
+        lambd = self.binsize * self.inv_link(c[..., None] * fs + d[..., None])
         dist = torch.distributions.Poisson(lambd)
+        return dist
+
+    def sample(self, f_samps: Tensor):
+        """
+        Parameters
+        ----------
+        f_samps : Tensor
+            GP output samples (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        y_samps : Tensor
+            samples from the resulting Poisson distributions (n_mc x n_samples x n x m)
+        """
+        dist = self.dist(f_samps)
         y_samps = dist.sample()
         return y_samps
+
+    def dist_mean(self, fs: Tensor):
+        """
+        Parameters
+        ----------
+        fs : Tensor
+            GP mean function values (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        mean : Tensor
+            means of the resulting Poisson distributions (n_mc x n_samples x n x m)
+        """
+        dist = self.dist(fs)
+        mean = dist.mean.detach()
+        return mean
 
     def variational_expectation(self, y, fmu, fvar):
         """
@@ -200,18 +308,27 @@ class NegativeBinomial(Likelihood):
                  fixed_total_count=False,
                  fixed_c=True,
                  fixed_d=False,
-                 n_gh_locs: Optional[int] = n_gh_locs):
+                 n_gh_locs: Optional[int] = n_gh_locs,
+                 Y: Optional[np.ndarray] = None):
         super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
         self.binsize = binsize
-        total_count = 4 * torch.ones(n,) if total_count is None else total_count
+
+        ###initialize total_counts
+        if total_count is None:
+            if Y is None:
+                total_count = 4 * torch.ones(n,)
+            else:  #assume p = 0.5; mean = total_count
+                total_count = torch.tensor(np.mean(Y, axis=(0, -1)))
+
         total_count = dists.transform_to(
             dists.constraints.greater_than_eq(0)).inv(total_count)
         assert (total_count is not None)
-        c = torch.ones(n,) if c is None else c
-        d = torch.zeros(n,) if d is None else d
         self.total_count = nn.Parameter(data=total_count,
                                         requires_grad=not fixed_total_count)
+
+        c = torch.ones(n,) if c is None else c
+        d = torch.zeros(n,) if d is None else d
         self.c = nn.Parameter(data=c, requires_grad=not fixed_c)
         self.d = nn.Parameter(data=d, requires_grad=not fixed_d)
 
@@ -221,15 +338,56 @@ class NegativeBinomial(Likelihood):
             self.total_count)
         return total_count, self.c, self.d
 
-    def sample(self, f_samps):
-        '''f_samps is n_mc x n_samples x n x m'''
+    def dist(self, fs: Tensor):
+        """
+        Parameters
+        ----------
+        fs : Tensor
+            GP mean function values (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        dist : distribution
+            resulting negative binomial distributions
+        """
         total_count, c, d = self.prms
-        rate = c[..., None] * f_samps + d[..., None]  #shift+scale
+        rate = c[..., None] * fs + d[..., None]  #shift+scale
         rate = self.inv_link(rate) * self.binsize
         dist = dists.NegativeBinomial(total_count[None, None, ..., None],
                                       logits=rate)  #neg binom
+        return dist
+
+    def sample(self, f_samps: Tensor):
+        """
+        Parameters
+        ----------
+        f_samps : Tensor
+            GP output samples (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        y_samps : Tensor
+            samples from the resulting negative binomial distributions (n_mc x n_samples x n x m)
+        """
+        dist = self.dist(f_samps)
         y_samps = dist.sample()  #sample observations
         return y_samps
+
+    def dist_mean(self, fs: Tensor):
+        """
+        Parameters
+        ----------
+        fs : Tensor
+            GP mean function values (n_mc x n_samples x n x m)
+
+        Returns
+        -------
+        mean : Tensor
+            means of the resulting negative binomial distributions (n_mc x n_samples x n x m)
+        """
+        dist = self.dist(fs)
+        mean = dist.mean.detach()
+        return mean
 
     def log_prob(self, total_count, rate, y):
         #total count: (n) -> (n_mc, n_samples, n, m, n_gh)

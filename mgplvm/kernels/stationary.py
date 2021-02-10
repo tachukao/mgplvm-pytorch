@@ -62,12 +62,12 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
         self.ard = (d is not None)
         if ell is None:
             if d is None:
-                _ell = inv_softplus(torch.ones(n,))
+                _ell = inv_softplus(2 * torch.ones(n,))
             elif ell_byneuron:
                 assert (d is not None)
-                _ell = inv_softplus(torch.ones(n, d))
+                _ell = inv_softplus(2 * torch.ones(n, d))
             else:
-                _ell = inv_softplus(torch.ones(1, d))
+                _ell = inv_softplus(2 * torch.ones(1, d))
         else:
             if d is not None:
                 assert ell.shape[-1] == d

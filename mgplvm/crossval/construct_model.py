@@ -117,11 +117,11 @@ def load_model(params):
     #### specify likelihood ####
     if params['likelihood'] == 'Gaussian':
         likelihood: Likelihood = likelihoods.Gaussian(
-            n, sigma=params['lik_gauss_std'])
+            n, sigma=params['lik_gauss_std'], Y=params['Y'], d=d)
     elif params['likelihood'] == 'Poisson':
         likelihood = likelihoods.Poisson(n)
     elif params['likelihood'] == 'NegBinom':
-        likelihood = likelihoods.NegativeBinomial(n)
+        likelihood = likelihoods.NegativeBinomial(n, Y=params['Y'])
 
     #### specify inducing points ####
     z = manif.inducing_points(n, n_z)
