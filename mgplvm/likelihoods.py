@@ -25,7 +25,7 @@ def id_link(x):
     return x
 
 
-def FA_init(Y, d):
+def FA_init(Y, d: Optional[int] = None):
     n_samples, n, m = Y.shape
     if d is None:
         d = int(np.round(d / 4))
@@ -72,7 +72,7 @@ class Gaussian(Likelihood):
             if Y is None:
                 sigma = 1 * torch.ones(n,)
             else:
-                sigma = FA_init(Y, d)
+                sigma = FA_init(Y, d=d)
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
 
     @property
@@ -106,7 +106,7 @@ class Gaussian(Likelihood):
         y_samps = dist.sample()
         return y_samps
 
-    def dist_mean(self, fs):
+    def dist_mean(self, fs: Tensor):
         """
         Parameters
         ----------
@@ -182,7 +182,7 @@ class Poisson(Likelihood):
         p = dists.Poisson(lamb)
         return p.log_prob(y[None, ..., None])
 
-    def dist(self, fs):
+    def dist(self, fs: Tensor):
         """
         Parameters
         ----------
@@ -199,7 +199,7 @@ class Poisson(Likelihood):
         dist = torch.distributions.Poisson(lambd)
         return dist
 
-    def sample(self, f_samps):
+    def sample(self, f_samps: Tensor):
         """
         Parameters
         ----------
@@ -215,7 +215,7 @@ class Poisson(Likelihood):
         y_samps = dist.sample()
         return y_samps
 
-    def dist_mean(self, fs):
+    def dist_mean(self, fs: Tensor):
         """
         Parameters
         ----------
@@ -315,7 +315,7 @@ class NegativeBinomial(Likelihood):
             self.total_count)
         return total_count, self.c, self.d
 
-    def dist(self, fs):
+    def dist(self, fs: Tensor):
         """
         Parameters
         ----------
@@ -334,7 +334,7 @@ class NegativeBinomial(Likelihood):
                                       logits=rate)  #neg binom
         return dist
 
-    def sample(self, f_samps):
+    def sample(self, f_samps: Tensor):
         """
         Parameters
         ----------
@@ -350,7 +350,7 @@ class NegativeBinomial(Likelihood):
         y_samps = dist.sample()  #sample observations
         return y_samps
 
-    def dist_mean(self, fs):
+    def dist_mean(self, fs: Tensor):
         """
         Parameters
         ----------
