@@ -118,7 +118,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
     def elbo(self,
              y: Tensor,
              x: Tensor,
-             sample_idxs: Optional[List[int]] = None) -> Tuple[Tensor, Tensor]:
+             sample_idxs: Optional[List[int]] = None,
+            m: Optional[int] = None) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------
@@ -126,6 +127,11 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
             data tensor with dimensions (n_samples x n x m)
         x : Tensor (single kernel) or Tensor list (product kernels)
             input tensor(s) with dimensions (n_mc x n_samples x d x m)
+        m : Optional int
+            used to scale the svgp likelihood.
+            If not provided, self.m is used which is provided at initialization.
+            This parameter is useful if we subsample data but want to weight the prior as if it was the full dataset.
+            We use this e.g. in crossvalidation
 
         Returns
         -------
@@ -158,7 +164,8 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
         # scale is (m / batch_size) * (self.n_samples / sample size)
         # to compute an unbiased estimate of the likelihood of the full dataset
-        scale = (self.m / batch_size) * (self.n_samples / sample_size)
+        m = (self.m if m is None else m)
+        scale = (m / batch_size) * (self.n_samples / sample_size)
         lik = lik.sum(-2)
         lik = lik * scale
 

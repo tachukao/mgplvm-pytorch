@@ -52,7 +52,7 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
             _scale_sqr = torch.tensor(scale,
                                       dtype=torch.get_default_dtype()).square()
         elif Y is not None:
-            _scale_sqr = torch.tensor(np.mean(Y**2, axis=(0, -1)))
+            _scale_sqr = torch.tensor(1*np.mean(Y**2, axis=(0, -1)))
         else:
             _scale_sqr = torch.ones(n,)
 

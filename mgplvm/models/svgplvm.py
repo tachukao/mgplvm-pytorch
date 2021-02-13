@@ -79,7 +79,8 @@ class SvgpLvm(nn.Module):
              kmax=5,
              batch_idxs=None,
              sample_idxs=None,
-             neuron_idxs=None):
+             neuron_idxs=None,
+            m = None):
         """
         Parameters
         ----------
@@ -99,6 +100,11 @@ class SvgpLvm(nn.Module):
         neuron_idxs: Optional int list
             if None then use all data 
             otherwise, compute only elbo for selected neurons
+        m : Optional int
+            used to scale the svgp likelihood and sgp prior.
+            If not provided, self.m is used which is provided at initialization.
+            This parameter is useful if we subsample data but want to weight the prior as if it was the full dataset.
+            We use this e.g. in crossvalidation
 
         Returns
         -------
@@ -113,7 +119,8 @@ class SvgpLvm(nn.Module):
         ELBO of the model per batch is [ svgp_elbo - kl ]
         """
 
-        n_samples, n, m = self.n_samples, self.n, self.m
+        n_samples, n = self.n_samples, self.n
+        m = (self.m if m is None else m)
 
         g, lq = self.lat_dist.sample(torch.Size([n_mc]),
                                      data,
@@ -130,7 +137,7 @@ class SvgpLvm(nn.Module):
         # and so we need to permute [ g ] to have the right dimensions
         #(n_mc x n), (1 x n)
         svgp_lik, svgp_kl = self.svgp.elbo(data, g.transpose(-1, -2),
-                                           sample_idxs)
+                                           sample_idxs, m = m)
         if neuron_idxs is not None:
             svgp_lik = svgp_lik[..., neuron_idxs]
             svgp_kl = svgp_kl[..., neuron_idxs]
@@ -152,7 +159,8 @@ class SvgpLvm(nn.Module):
                 kmax=5,
                 batch_idxs=None,
                 sample_idxs=None,
-                neuron_idxs=None):
+                neuron_idxs=None,
+               m=None):
         """
         Parameters
         ----------
@@ -172,6 +180,11 @@ class SvgpLvm(nn.Module):
         neuron_idxs: Optional int list
             if None then use all data 
             otherwise, compute only elbo for selected neurons
+        m : Optional int
+            used to scale the svgp likelihood and sgp prior.
+            If not provided, self.m is used which is provided at initialization.
+            This parameter is useful if we subsample data but want to weight the prior as if it was the full dataset.
+            We use this e.g. in crossvalidation
 
         Returns
         -------
@@ -185,14 +198,15 @@ class SvgpLvm(nn.Module):
                             kmax=kmax,
                             batch_idxs=batch_idxs,
                             sample_idxs=sample_idxs,
-                            neuron_idxs=neuron_idxs)
+                            neuron_idxs=neuron_idxs,
+                           m=m)
         #sum over neurons and mean over  MC samples
         lik = lik.sum(-1).mean()
         kl = kl.mean()
 
         return lik, kl  #mean across batches, sum across everything else
 
-    def calc_LL(self, data, n_mc, kmax=5):
+    def calc_LL(self, data, n_mc, kmax=5, m=None):
         """
         Parameters
         ----------
@@ -203,6 +217,11 @@ class SvgpLvm(nn.Module):
         kmax : int
             parameter for estimating entropy for several manifolds
             (not used for some manifolds)
+        m : Optional int
+            used to scale the svgp likelihood and sgp prior.
+            If not provided, self.m is used which is provided at initialization.
+            This parameter is useful if we subsample data but want to weight the prior as if it was the full dataset.
+            We use this e.g. in crossvalidation
 
         Returns
         -------
@@ -211,7 +230,7 @@ class SvgpLvm(nn.Module):
         """
 
         #(n_mc, n), (n_mc)
-        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax)
+        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax,m=m)
         svgp_elbo = svgp_elbo.sum(-1)  #(n_mc)
         LLs = svgp_elbo - kl  # LL for each batch (n_mc)
         assert (LLs.shape == torch.Size([n_mc]))
