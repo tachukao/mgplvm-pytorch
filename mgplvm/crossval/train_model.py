@@ -46,6 +46,6 @@ def train_model(mod, data, params):
                                       stop=params['callback'],
                                       neuron_idxs=params['neuron_idxs'],
                                       mask_Ts=params['mask_Ts'],
-                                     prior_m=params['prior_m']),
+                                      prior_m=params['prior_m']),
 
     return trained_mod

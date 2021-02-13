@@ -119,7 +119,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
              y: Tensor,
              x: Tensor,
              sample_idxs: Optional[List[int]] = None,
-            m: Optional[int] = None) -> Tuple[Tensor, Tensor]:
+             m: Optional[int] = None) -> Tuple[Tensor, Tensor]:
         """
         Parameters
         ----------

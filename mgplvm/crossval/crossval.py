@@ -66,7 +66,7 @@ def train_cv(mod,
     split = {'Y': Y, 'N1': N1, 'T1': T1}
 
     #mod.m, mod.svgp.m = len(T1), len(T1)
-    train_ps1 = update_params(train_ps, batch_pool=T1, prior_m = len(T1))
+    train_ps1 = update_params(train_ps, batch_pool=T1, prior_m=len(T1))
 
     #print(Y.shape, mod.lat_dist.prms[0].shape, mod.lat_dist.prms[1].shape)
 
@@ -79,7 +79,10 @@ def train_cv(mod,
         return grad
 
     #mod.m, mod.svgp.m = m, m
-    train_ps2 = update_params(train_ps, neuron_idxs=N1, mask_Ts=mask_Ts, prior_m = None)
+    train_ps2 = update_params(train_ps,
+                              neuron_idxs=N1,
+                              mask_Ts=mask_Ts,
+                              prior_m=None)
 
     for p in mod.parameters():  #no gradients for the remaining parameters
         p.requires_grad = False
@@ -95,7 +98,7 @@ def train_cv(mod,
     return mod, split
 
 
-def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean = False):
+def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False):
     Y, T1, N1 = split['Y'], split['T1'], split['N1']
     n_samples, n, m = Y.shape
 
@@ -108,17 +111,18 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean = False):
     latents = mod.lat_dist.prms[0].detach()[:, T2,
                                             ...]  #latent means (ntrial, T2, d)
     query = latents.transpose(-1, -2)  #(ntrial, d, m)
-    
-    if sample_mean: #we don't have a closed form mean prediction so sample from (mu|GP) and average instead
+
+    if sample_mean:  #we don't have a closed form mean prediction so sample from (mu|GP) and average instead
         #n_mc x n_samples x N x d
-        Ypred = mod.svgp.sample(query, n_mc = n_mc, noise = False)
-        Ypred = Ypred.mean(0).cpu().numpy()[:, N2, :] #(ntrial x N2 x T2)
+        Ypred = mod.svgp.sample(query, n_mc=n_mc, noise=False)
+        Ypred = Ypred.mean(0).cpu().numpy()[:, N2, :]  #(ntrial x N2 x T2)
     else:
         Ypred, var = mod.svgp.predict(query[None, ...], False)
         Ypred = Ypred.detach().cpu().numpy()[0][:, N2, :]  #(ntrial, N2, T2)
-    MSE_vals = np.mean((Ypred - Ytest)**2, axis = (0, -1))
-    MSE = np.mean(MSE_vals) #standard MSE
-    norm_MSE = MSE_vals / np.var(Ytest, axis = (0, -1)) #normalize by neuron variance
+    MSE_vals = np.mean((Ypred - Ytest)**2, axis=(0, -1))
+    MSE = np.mean(MSE_vals)  #standard MSE
+    norm_MSE = MSE_vals / np.var(Ytest,
+                                 axis=(0, -1))  #normalize by neuron variance
     norm_MSE = np.mean(norm_MSE)
 
     var_cap = 1 - np.var(Ytest - Ypred) / np.var(Ytest)
@@ -127,18 +131,18 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean = False):
     #mold = mod.m
     #mod.m = len(T2) #use correct scaling factor for the test data
     #mod.svgp.m = len(T2)
-    
+
     data = torch.tensor(Y, device=device)
     #(n_mc, n_samples, n), (n_mc, n_samples)
     svgp_elbo, kl = mod.elbo(data[:, :, T2],
                              n_mc,
                              batch_idxs=T2,
                              neuron_idxs=N2,
-                            m = len(T2))
-    
+                             m=len(T2))
+
     #mod.m = mold #restore original scaling factor
     #mod.svgp.m = mold
-    
+
     svgp_elbo = svgp_elbo.sum(-1)  #(n_mc)
     LLs = svgp_elbo - kl  # LL for each batch (n_mc, )
     LL = (torch.logsumexp(LLs, 0) - np.log(n_mc)).detach().cpu().numpy()

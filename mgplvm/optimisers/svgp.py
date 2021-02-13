@@ -62,7 +62,9 @@ def print_progress(model,
                '| |mu| {:.3f} | sig {:.3f} |').format(i, svgp_elbo_val / Z,
                                                       kl_val / Z, loss_val / Z,
                                                       mu_mag, sig)
-        print(msg + model.kernel.msg + model.lprior.msg + model.svgp.likelihood.msg, end="\r")
+        print(msg + model.kernel.msg + model.lprior.msg +
+              model.svgp.likelihood.msg,
+              end="\r")
 
 
 def fit(dataset: Union[Tensor, DataLoader],
@@ -76,7 +78,7 @@ def fit(dataset: Union[Tensor, DataLoader],
         print_every: int = 50,
         mask_Ts=None,
         neuron_idxs: Optional[List[int]] = None,
-        prior_m = None):
+        prior_m=None):
     '''
     Parameters
     ----------
@@ -133,7 +135,7 @@ def fit(dataset: Union[Tensor, DataLoader],
                                   batch_idxs=batch_idxs,
                                   sample_idxs=sample_idxs,
                                   neuron_idxs=neuron_idxs,
-                                 m = prior_m)
+                                  m=prior_m)
 
             loss = (-svgp_elbo) + (ramp * kl)  # -LL
             loss_vals.append(loss.item())

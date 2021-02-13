@@ -62,7 +62,7 @@ class Likelihood(Module, metaclass=abc.ABCMeta):
     @abc.abstractstaticmethod
     def dist_mean(self, x: Tensor):
         pass
-    
+
     @property
     @abc.abstractmethod
     def msg(self):
@@ -176,7 +176,7 @@ class Gaussian(Likelihood):
 
         #(n_mc x n_samples x n)
         return ve1 + ve2 + ve3.sum(-1) + ve4.sum(-1)
-    
+
     @property
     def msg(self):
         sig = np.mean(self.sigma.data.cpu().numpy())
@@ -303,11 +303,10 @@ class Poisson(Likelihood):
             lp = self.log_prob(locs, y)
             return 1 / np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-1)
             #return torch.sum(1 / np.sqrt(np.pi) * lp * ws)
-            
+
     @property
     def msg(self):
         return " "
-
 
 
 class NegativeBinomial(Likelihood):
@@ -448,9 +447,8 @@ class NegativeBinomial(Likelihood):
 
         #print(lp.shape, ws.shape, (lp * ws).shape)
         return 1 / np.sqrt(np.pi) * (lp * ws).sum(-1).sum(-1)
-    
+
     @property
     def msg(self):
         total_count = np.mean(self.prms[0].data.cpu().numpy())
         return (' lik_count {:.3f} |').format(total_count)
-

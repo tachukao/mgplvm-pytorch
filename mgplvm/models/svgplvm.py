@@ -80,7 +80,7 @@ class SvgpLvm(nn.Module):
              batch_idxs=None,
              sample_idxs=None,
              neuron_idxs=None,
-            m = None):
+             m=None):
         """
         Parameters
         ----------
@@ -136,8 +136,10 @@ class SvgpLvm(nn.Module):
         # note that [ svgp.elbo ] recognizes inputs of dims (n_mc x d x m)
         # and so we need to permute [ g ] to have the right dimensions
         #(n_mc x n), (1 x n)
-        svgp_lik, svgp_kl = self.svgp.elbo(data, g.transpose(-1, -2),
-                                           sample_idxs, m = m)
+        svgp_lik, svgp_kl = self.svgp.elbo(data,
+                                           g.transpose(-1, -2),
+                                           sample_idxs,
+                                           m=m)
         if neuron_idxs is not None:
             svgp_lik = svgp_lik[..., neuron_idxs]
             svgp_kl = svgp_kl[..., neuron_idxs]
@@ -160,7 +162,7 @@ class SvgpLvm(nn.Module):
                 batch_idxs=None,
                 sample_idxs=None,
                 neuron_idxs=None,
-               m=None):
+                m=None):
         """
         Parameters
         ----------
@@ -199,7 +201,7 @@ class SvgpLvm(nn.Module):
                             batch_idxs=batch_idxs,
                             sample_idxs=sample_idxs,
                             neuron_idxs=neuron_idxs,
-                           m=m)
+                            m=m)
         #sum over neurons and mean over  MC samples
         lik = lik.sum(-1).mean()
         kl = kl.mean()
@@ -230,7 +232,7 @@ class SvgpLvm(nn.Module):
         """
 
         #(n_mc, n), (n_mc)
-        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax,m=m)
+        svgp_elbo, kl = self.elbo(data, n_mc, kmax=kmax, m=m)
         svgp_elbo = svgp_elbo.sum(-1)  #(n_mc)
         LLs = svgp_elbo - kl  # LL for each batch (n_mc)
         assert (LLs.shape == torch.Size([n_mc]))
