@@ -238,9 +238,9 @@ class Exp(QuadExp):
         """
         scale_sqr, ell = self.prms
         if self.ard:
-            ell = ell[:, :, None]
+            ell = ell[:, :, None] #(n x d x 1) / (1 x d x 1)
         else:
-            ell = ell[:, None, None]
+            ell = ell[:, None, None] #(n x 1 x 1)
         distance = self.distance(x, y, ell=ell)  # dims (... n x mx x my)
 
         # NOTE: distance means squared distance ||x-y||^2 ?
