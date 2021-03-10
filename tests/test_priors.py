@@ -147,7 +147,50 @@ def test_ARP_runs():
                                 print_every=1000)
 
 
+def fio_id(x): return x
+def fio_ReLU(x): return torch.max(0, x)
+def fio_tanh(x): return torch.tanh(x)
+
+def test_LDS_prior_runs():
+    m, d, n, n_z, p = 10, 3, 5, 5, 1
+    n_samples = 2
+    Y = np.random.normal(0, 1, (n_samples, n, m))
+    data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
+    for i, fio in enumerate([fio_id, fio_ReLU, fio_tanh]):
+        print('fio', i)
+        manif = mgp.manifolds.Euclid(m, d)
+        lat_dist = mgp.rdist.ReLie(manif,
+                                   m,
+                                   n_samples,
+                                   sigma=0.4,
+                                   diagonal=True)
+        kernel = mgp.kernels.QuadExp(n, manif.distance, Y=Y)
+        # generate model
+        lik = mgp.likelihoods.Gaussian(n)
+        lprior = mgp.lpriors.DS(manif, fio = fio)
+        z = manif.inducing_points(n, n_z)
+        mod = mgp.models.SvgpLvm(n,
+                                 m,
+                                 n_samples,
+                                 z,
+                                 kernel,
+                                 lik,
+                                 lat_dist,
+                                 lprior,
+                                 whiten=True).to(device)
+
+        # train model
+        mgp.optimisers.svgp.fit(data,
+                                mod,
+                                max_steps=10,
+                                n_mc=16,
+                                optimizer=optim.Adam,
+                                print_every=1000)
+    
+    return
+
 if __name__ == '__main__':
-    test_GP_prior()
+    #test_GP_prior()
     test_ARP_runs()
+    test_LDS_prior_runs()
     print('Tested priors')

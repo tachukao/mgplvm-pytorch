@@ -13,13 +13,13 @@ class Linear(Kernel):
                  n: int,
                  d: int,
                  scale=None,
-                 learn_scale=False,
+                 learn_scale=True,
                  Y=None,
                  ard=False):
         '''
         n is number of neurons/readouts
         d is the dimensionality of the group parameterization
-        scaling determines wheter an output scale parameter is learned for each neuron
+        scale is an output scale parameter for each neuron
         
         learn_scale : learn an output scaling parameter (similar to the RBF signal variance)
 
