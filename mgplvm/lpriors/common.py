@@ -105,7 +105,7 @@ class Gaussian(Lprior):
 
     def forward(self, g, batch_idxs=None, kmax=5):
         '''
-        g: (n_b x mx x d)
+        g: (n_samples, n_mc, m, d)
         output: (n_b)
         '''
         if g.device != self.gamma.device:
