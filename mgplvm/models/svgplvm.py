@@ -80,7 +80,8 @@ class SvgpLvm(nn.Module):
              batch_idxs=None,
              sample_idxs=None,
              neuron_idxs=None,
-             m=None):
+             m=None,
+            analytical_kl = False):
         """
         Parameters
         ----------
@@ -150,10 +151,15 @@ class SvgpLvm(nn.Module):
 
         # compute kl term for the latents (n_mc, n_samples) per batch
         prior = self.lprior(g, batch_idxs)  #(n_mc)
-        print('prior, lq shapes:', prior.shape, lq.shape)
+        #print('prior, lq shapes:', prior.shape, lq.shape)
         kl = lq.sum(-1).sum(-1) - prior  #(n_mc) (sum q(g) over conditions)
         #rescale KL to entire dataset (basically structured conditions)
         kl = (m / batch_size) * (n_samples / sample_size) * kl
+        
+        
+        if analytical_kl:
+            kl = self.lat_dist.kl(lprior, batch_idxs, sample_idxs)       
+        
         return lik, kl
 
     def forward(self,

@@ -9,6 +9,7 @@ from ..models import Svgp
 from ..inducing_variables import InducingPoints
 from ..likelihoods import Gaussian
 from .common import Lprior
+from ..utils import softplus, inv_softplus
 from typing import Optional
 
 
@@ -150,27 +151,35 @@ class GP_full(LpriorEuclid):
         self.d = d
         self.ts = ts
         
-        jitter = 1e-3 #noise variance
-        ell = (torch.max(ts) - torch.min(ts))/20
-        self.scale = nn.Parameter(torch.ones(1, n, 1)*np.sqrt(1-jitter**2), requires_grad=False)
-        self.ell = nn.Parameter(torch.ones(1, n, 1, 1)*ell, requires_grad=True)
+        jitter = 1e-3 #noise std
+        self.scale = np.sqrt(1-jitter**2)#nn.Parameter(torch.ones(1, n, 1)*np.sqrt(1-jitter**2), requires_grad=False)
         self.noise = nn.Parameter(torch.ones(n_samples, n, m)*jitter, requires_grad=False)
+        
+        ell = (torch.max(ts) - torch.min(ts))/10
+        _ell = torch.ones(1, n, 1, 1)*ell
+        self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=False)#True)
+        
         
         self.dts_sq = torch.square(ts[..., None] - ts[..., None, :]) #(n_samples x 1 x m x m)
         self.dts_sq = self.dts_sq.sum(-3)[:, None, ...] #sum over _input_ dimension, add an axis for _output_ dimension
-        print('prior dts:', self.dts_sq.shape)
+        #print('prior dts:', self.dts_sq.shape)
 
     def mvn(self, gamma):
         n_samples, d, _, m = gamma.shape
         mu = torch.zeros(n_samples, d, m).to(gamma.device)
         return dists.MultivariateNormal(mu, covariance_matrix=gamma)
+    
+    @property
+    def ell(self) -> torch.Tensor:
+        return softplus(self._ell)
         
     @property
     def prms(self):
         gamma = torch.exp(-self.dts_sq / (2 * torch.square(self.ell))) #(n_samples x d x m x m)
-        gamma = self.scale[..., None, :] * gamma * self.scale[..., None]
+        #gamma = self.scale[..., None, :] * gamma * self.scale[..., None]
+        gamma = (self.scale**2) * gamma
         gamma = gamma + torch.diag_embed(torch.square(self.noise)) #covariance
-        print('prior gamma:', gamma.shape)
+        #print('prior gamma:', gamma.shape)
         return gamma
 
     def forward(self, x, batch_idxs=None):
@@ -188,7 +197,7 @@ class GP_full(LpriorEuclid):
         
         p = self.mvn(gamma)
         lp = p.log_prob(x.transpose(-1, -2))
-        print('prior logprob:', lp.shape) #(n_mc x n_samples x n)
+        #print('prior logprob:', lp.shape) #(n_mc x n_samples x n)
 
         return lp.sum(-1).sum(-1)  #sum over dimensions and samples (n_mc)
 
