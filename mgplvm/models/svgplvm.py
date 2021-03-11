@@ -81,7 +81,7 @@ class SvgpLvm(nn.Module):
              sample_idxs=None,
              neuron_idxs=None,
              m=None,
-            analytical_kl = False):
+            analytic_kl = False):
         """
         Parameters
         ----------
@@ -127,7 +127,9 @@ class SvgpLvm(nn.Module):
                                      data,
                                      batch_idxs=batch_idxs,
                                      sample_idxs=sample_idxs,
-                                     kmax=kmax)
+                                     kmax=kmax,
+                                    analytic_kl = analytic_kl,
+                                    prior = self.lprior)
         # g is shape (n_samples, n_mc, m, d)
         # lq is shape (n_mc x n_samples x m)
 
@@ -149,16 +151,17 @@ class SvgpLvm(nn.Module):
         sample_size = n_samples if sample_idxs is None else len(sample_idxs)
         lik = svgp_lik - svgp_kl
 
-        # compute kl term for the latents (n_mc, n_samples) per batch
-        prior = self.lprior(g, batch_idxs)  #(n_mc)
-        #print('prior, lq shapes:', prior.shape, lq.shape)
-        kl = lq.sum(-1).sum(-1) - prior  #(n_mc) (sum q(g) over conditions)
+        if analytic_kl:
+            kl = (torch.ones(n_mc).to(data.device))*lq.sum() #kl per MC sample; lq already represents the full KL
+        else:
+            # compute kl term for the latents (n_mc, n_samples) per batch
+            prior = self.lprior(g, batch_idxs)  #(n_mc)
+            #print('prior, lq shapes:', prior.shape, lq.shape)
+            kl = lq.sum(-1).sum(-1) - prior  #(n_mc) (sum q(g) over samples, conditions)
+            
         #rescale KL to entire dataset (basically structured conditions)
         kl = (m / batch_size) * (n_samples / sample_size) * kl
-        
-        
-        if analytical_kl:
-            kl = self.lat_dist.kl(lprior, batch_idxs, sample_idxs)       
+            
         
         return lik, kl
 
@@ -169,7 +172,8 @@ class SvgpLvm(nn.Module):
                 batch_idxs=None,
                 sample_idxs=None,
                 neuron_idxs=None,
-                m=None):
+                m=None,
+               analytic_kl = False):
         """
         Parameters
         ----------
@@ -208,7 +212,8 @@ class SvgpLvm(nn.Module):
                             batch_idxs=batch_idxs,
                             sample_idxs=sample_idxs,
                             neuron_idxs=neuron_idxs,
-                            m=m)
+                            m=m,
+                           analytic_kl = analytic_kl)
         #sum over neurons and mean over  MC samples
         lik = lik.sum(-1).mean()
         kl = kl.mean()

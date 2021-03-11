@@ -79,7 +79,8 @@ def fit(dataset: Union[Tensor, DataLoader],
         print_every: int = 50,
         mask_Ts=None,
         neuron_idxs: Optional[List[int]] = None,
-        prior_m=None):
+        prior_m=None,
+       analytic_kl = False):
     '''
     Parameters
     ----------
@@ -136,7 +137,8 @@ def fit(dataset: Union[Tensor, DataLoader],
                                   batch_idxs=batch_idxs,
                                   sample_idxs=sample_idxs,
                                   neuron_idxs=neuron_idxs,
-                                  m=prior_m)
+                                  m=prior_m,
+                                 analytic_kl = analytic_kl)
 
             loss = (-svgp_elbo) + (ramp * kl)  # -LL
             loss_vals.append(loss.item())
