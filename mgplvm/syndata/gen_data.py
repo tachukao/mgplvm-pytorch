@@ -51,7 +51,7 @@ class Euclid(Manif):
     def name(self):
         return "euclid(%i)" % self.d
 
-    def gen(self, n, n_samples, ell=None, sig=10, prefs = False):
+    def gen(self, n, n_samples, ell=None, sig=10, prefs=False):
         if ell is None:
             #gs = np.random.uniform(0, 4, size=(n_samples, n, self.d))
             #gs = np.random.normal(2, 1, size=(n_samples, n, self.d))
@@ -89,7 +89,7 @@ class Torus(Manif):
     def norm(self, gs):
         return gs % (2 * np.pi)
 
-    def gen(self, n, n_samples, ell=None, sig=10, prefs = False):
+    def gen(self, n, n_samples, ell=None, sig=10, prefs=False):
         """if l is none, draw random samples - otherwise draw from an RBF GP with ell = l"""
         if ell is None:
             gs = np.random.uniform(0, 2 * np.pi, size=(n_samples, n, self.d))
@@ -133,7 +133,7 @@ class Sphere(Manif):
         gs = gs + np.random.normal(0, np.std(gs) * variability, size=gs.shape)
         return self.norm(gs)
 
-    def gen(self, n, n_samples, ell=None, sig=None, prefs = False):
+    def gen(self, n, n_samples, ell=None, sig=None, prefs=False):
         '''generate random points in spherical space according to the prior'''
         gs = np.random.normal(0, 1, size=(n_samples, n, self.d + 1))
         return self.norm(gs)
@@ -165,7 +165,7 @@ class So3(Manif):
         gs = gs * np.sign(gs[..., :1])
         return gs
 
-    def gen(self, n, n_samples, ell=None, sig=None, prefs = False):
+    def gen(self, n, n_samples, ell=None, sig=None, prefs=False):
         '''generate random points in spherical space according to the prior'''
         gs = np.random.normal(0, 1, size=(n_samples, n, self.d + 1))
         return self.norm(gs)
@@ -202,8 +202,11 @@ class Product(Manif):
         names = "x".join([m.name for m in self.manifs])
         return names
 
-    def gen(self, n, n_samples, ell=None, sig=10, prefs = False):
-        gs = [m.gen(n, n_samples, ell=ell, sig=sig, prefs = prefs) for m in self.manifs]
+    def gen(self, n, n_samples, ell=None, sig=10, prefs=False):
+        gs = [
+            m.gen(n, n_samples, ell=ell, sig=sig, prefs=prefs)
+            for m in self.manifs
+        ]
         return gs
 
     def gen_ginit(self, n, n_samples):
@@ -287,7 +290,7 @@ class Gen():
 
     def gen_gprefs(self):
         '''generate prefered directions for each neuron'''
-        self.gprefs = self.manifold.gen(self.n, self.n_samples, prefs = True)
+        self.gprefs = self.manifold.gen(self.n, self.n_samples, prefs=True)
         return self.gprefs
 
     def gen_gconds(self, ell=None, sig=10):
