@@ -26,8 +26,8 @@ class Rdist(Module, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def sample(self, size, Y, batch_idxs, sample_idxs,
-               kmax) -> Tuple[Tensor, Tensor]:
+    def sample(self, size, Y, batch_idxs, sample_idxs, kmax, analytic_kl,
+               prior) -> Tuple[Tensor, Tensor]:
         pass
 
     @abc.abstractmethod

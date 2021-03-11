@@ -43,7 +43,14 @@ class ReLieBase(Rdist):
         mu = torch.zeros(n_samples, m, self.d).to(gamma.device)
         return MultivariateNormal(mu, scale_tril=gamma)
 
-    def sample(self, size, Y=None, batch_idxs=None, sample_idxs=None, kmax=5):
+    def sample(self,
+               size,
+               Y=None,
+               batch_idxs=None,
+               sample_idxs=None,
+               kmax=5,
+               analytic_kl=False,
+               prior=None):
         """
         generate samples and computes its log entropy
         """

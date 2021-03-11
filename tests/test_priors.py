@@ -147,9 +147,17 @@ def test_ARP_runs():
                                 print_every=1000)
 
 
-def fio_id(x): return x
-def fio_ReLU(x): return torch.max(0, x)
-def fio_tanh(x): return torch.tanh(x)
+def fio_id(x):
+    return x
+
+
+def fio_ReLU(x):
+    return torch.max(0, x)
+
+
+def fio_tanh(x):
+    return torch.tanh(x)
+
 
 def test_LDS_prior_runs():
     m, d, n, n_z, p = 10, 3, 5, 5, 1
@@ -167,7 +175,7 @@ def test_LDS_prior_runs():
         kernel = mgp.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.DS(manif, fio = fio)
+        lprior = mgp.lpriors.DS(manif, fio=fio)
         z = manif.inducing_points(n, n_z)
         mod = mgp.models.SvgpLvm(n,
                                  m,
@@ -186,8 +194,9 @@ def test_LDS_prior_runs():
                                 n_mc=16,
                                 optimizer=optim.Adam,
                                 print_every=1000)
-    
+
     return
+
 
 if __name__ == '__main__':
     #test_GP_prior()
