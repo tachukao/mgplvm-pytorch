@@ -10,7 +10,7 @@ device = mgp.utils.get_device()
 
 def test_GP_lat_prior():
     device = mgp.utils.get_device("cuda")  # get_device("cpu")
-    d = 1  # dims of latent space
+    d = 2  # dims of latent space
     dfit = 2 #dimensions of fitted space
     n = 50  # number of neurons
     m = 80  # number of conditions / time points
@@ -30,7 +30,7 @@ def test_GP_lat_prior():
     w = np.random.normal(0, 1, size = (n, d))
     Y = w @ xs.transpose(0, 2, 1) #(n_samples x n x m)
     #Y = Y + np.random.normal(0, 0.2, size = Y.shape)
-    Y = np.random.poisson( 4/d*(Y - np.amin(Y)) )
+    Y = np.random.poisson( 2*(Y - np.amin(Y)))
     print('Y:', Y.shape, np.std(Y), np.quantile(Y, 0.99))
 
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
@@ -73,16 +73,17 @@ def test_GP_lat_prior():
                             mod,
                             optimizer=optim.Adam,
                             n_mc=n_mc,
-                            max_steps=3000,
+                            max_steps=500,
                             burnin=50,
                             lrate=5e-2,
                             print_every=5,
-                           stop = cb)
+                           stop = cb,
+                           analytic_kl = True)
 
     
-    print('lat_dist (ell, scale):', mod.lat_dist.f.ell.flatten(), mod.lat_dist.f.scale.flatten())
-    print('prior:', mod.lprior.ell.flatten())
-    print('kernel:', (mod.kernel.input_scale)**(-1))
+    print('lat ell, scale:', mod.lat_dist.f.ell.detach().flatten(), mod.lat_dist.f.scale.detach().flatten())
+    print('prior:', mod.lprior.ell.detach().flatten())
+    print('kernel:', (mod.kernel.input_scale.detach())**(-1))
     
     
     mus = mod.lat_dist.prms[0].detach().cpu().numpy()

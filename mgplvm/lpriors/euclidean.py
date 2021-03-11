@@ -153,21 +153,25 @@ class GP_full(LpriorEuclid):
         
         jitter = 1e-3 #noise std
         self.scale = np.sqrt(1-jitter**2)#nn.Parameter(torch.ones(1, n, 1)*np.sqrt(1-jitter**2), requires_grad=False)
-        self.noise = nn.Parameter(torch.ones(n_samples, n, m)*jitter, requires_grad=False)
+        #self.noise = nn.Parameter(torch.ones(n_samples, n, m)*jitter, requires_grad=False)
+        self.noise = jitter
         
         ell = (torch.max(ts) - torch.min(ts))/10
         _ell = torch.ones(1, n, 1, 1)*ell
-        self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=False)#True)
-        
+        self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=True)#True)
         
         self.dts_sq = torch.square(ts[..., None] - ts[..., None, :]) #(n_samples x 1 x m x m)
         self.dts_sq = self.dts_sq.sum(-3)[:, None, ...] #sum over _input_ dimension, add an axis for _output_ dimension
         #print('prior dts:', self.dts_sq.shape)
 
-    def mvn(self, gamma):
-        n_samples, d, _, m = gamma.shape
-        mu = torch.zeros(n_samples, d, m).to(gamma.device)
-        return dists.MultivariateNormal(mu, covariance_matrix=gamma)
+    def mvn(self, L, batch_idxs = None):
+        """
+        L is lower cholesky factor
+        """
+        L = L if batch_idxs is None else L[..., batch_idxs][..., batch_idxs, :]
+        n_samples, d, _, m = L.shape #n_samples x d x m x m
+        mu = torch.zeros(n_samples, d, m).to(L.device)
+        return dists.MultivariateNormal(mu, scale_tril = L)
     
     @property
     def ell(self) -> torch.Tensor:
@@ -175,10 +179,14 @@ class GP_full(LpriorEuclid):
         
     @property
     def prms(self):
+        """
+        return covariance matrix
+        """
         gamma = torch.exp(-self.dts_sq / (2 * torch.square(self.ell))) #(n_samples x d x m x m)
         #gamma = self.scale[..., None, :] * gamma * self.scale[..., None]
         gamma = (self.scale**2) * gamma
-        gamma = gamma + torch.diag_embed(torch.square(self.noise)) #covariance
+        #gamma = gamma + torch.diag_embed(torch.square(self.noise)) #covariance
+        gamma = gamma + torch.eye(gamma.shape[-1]).to(gamma.device)*(self.noise**2)
         #print('prior gamma:', gamma.shape)
         return gamma
 
@@ -193,9 +201,8 @@ class GP_full(LpriorEuclid):
         #batch_size = m if batch_idxs is None else len(batch_idxs)
         
         gamma = self.prms
-        gamma = gamma if batch_idxs is None else gamma[..., batch_idxs][..., batch_idxs, :]
-        
-        p = self.mvn(gamma)
+        Lp = torch.cholesky(gamma)
+        p = self.mvn(Lp)
         lp = p.log_prob(x.transpose(-1, -2))
         #print('prior logprob:', lp.shape) #(n_mc x n_samples x n)
 
