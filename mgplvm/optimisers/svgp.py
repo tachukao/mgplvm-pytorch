@@ -58,7 +58,7 @@ def print_progress(model,
 
         mu_mag = torch.sqrt(torch.mean(mu**2)).item()
         #sig = torch.median(gamma).item()
-        sig = torch.median(gamma).sqrt().item()
+        sig = torch.median(gamma).item()
         msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
                '| |mu| {:.3f} | sig {:.3f} |').format(i, svgp_elbo_val / Z,
                                                       kl_val / Z, loss_val / Z,
