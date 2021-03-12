@@ -111,6 +111,8 @@ def load_model(params):
                              learn_eta=params['arp_learn_eta'],
                              learn_c=params['arp_learn_c'],
                              diagonal=params['diagonal'])
+    elif params['prior'] == 'LDS':
+        lprior = lpriors.DS(manif)
     else:
         lprior = lpriors.Uniform(manif)
 
