@@ -193,14 +193,13 @@ def test_LDS_prior_runs():
                                 n_mc=16,
                                 optimizer=optim.Adam,
                                 print_every=1000)
-        
-        
+
         A, Q = mod.lprior.prms
         A = A.detach().cpu().numpy()
         eigs = np.linalg.eigvals(A)
         print(eigs, np.amax(eigs))
-        assert np.amax(eigs) < (1+1e-10) #assert stability allowing for numerical errors
-        
+        assert np.amax(eigs) < (
+            1 + 1e-10)  #assert stability allowing for numerical errors
 
     return
 
