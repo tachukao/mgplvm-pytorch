@@ -223,7 +223,7 @@ def fio_id(x):
 
 
 def fio_ReLU(x):
-    return torch.max(0, x)
+    return torch.nn.functional.relu(x)
 
 
 def fio_tanh(x):
@@ -256,8 +256,7 @@ class DS(LpriorEuclid):
 
     @property
     def prms(self):
-        A = self.A
-        O, R = torch.qr(A)
+        O, R = torch.qr(self.A)
         signs = torch.diag_embed(torch.sign(torch.diag(R)))
         O = O @ signs
         R = signs @ R
@@ -289,5 +288,5 @@ class DS(LpriorEuclid):
     @property
     def msg(self):
         A, Q = self.prms
-        lp_msg = (' A {:.3f} |').format(torch.diag(A).mean())
+        lp_msg = (' A {:.3f} |').format(torch.diag(A).mean().item())
         return lp_msg

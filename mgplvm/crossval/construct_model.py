@@ -68,7 +68,7 @@ def load_model(params):
         params['diagonal'] = False
 
     #### specify latent distribution ####
-    lat_dist = rdist.ReLie(manif,
+    lat_dist : rdist.Rdist = rdist.ReLie(manif,
                            m,
                            n_samples,
                            sigma=params['latent_sigma'],
@@ -116,7 +116,7 @@ def load_model(params):
                                Y=params['Y'],
                                initialization=params['initialization'],
                                ell=params['prior_ell'])
-        lprior = lpriors.Null(manif)
+        lprior : Lprior = lpriors.Null(manif)
 
     elif params['prior'] == 'ARP':
         lprior = lpriors.ARP(params['arp_p'],

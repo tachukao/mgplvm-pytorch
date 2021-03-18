@@ -45,7 +45,7 @@ class Linear(Kernel):
             _scale_sqr = torch.tensor(np.var(Y, axis=(0, 2)) / d) * (
                 0.5**2)  #assume half signal half noise
             if Poisson:
-                _scale_sqrt /= 100
+                _scale_sqr /= 100
         else:
             _scale_sqr = torch.ones(n,)  #one per neuron
         self._scale_sqr = nn.Parameter(data=inv_softplus(_scale_sqr),
