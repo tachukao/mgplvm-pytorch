@@ -9,7 +9,7 @@ from ..base import Module
 from ..kernels import Kernel
 from ..inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
-from torch.distributions import MultivariateNormal, kl_divergence, transform_to, constraints, Normal
+from torch.distributions import MultivariateNormal, LowRankMultivariateNormal, kl_divergence, transform_to, constraints, Normal
 from ..likelihoods import Likelihood
 
 jitter: float = 1E-8
@@ -17,6 +17,66 @@ log2pi: float = np.log(2 * np.pi)
 
 
 class Bfa(Module):
+    """
+    Assumes Gaussian observation noise
+    Computes log_prob and posterior predictions exactly
+    """
+
+    def __init__(self,
+                 n: int,
+                 sigma: Optional[Tensor] = None,
+                 learn_sigma=True):
+        super().__init__()
+        if sigma is None:
+            sigma = torch.ones(n,)  # TODO: FA init
+        self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
+
+    @property
+    def prms(self) -> Tensor:
+        variance = torch.square(self._sigma)
+        return variance
+
+    @property
+    def sigma(self) -> Tensor:
+        return (1e-20 + self.prms).sqrt()
+
+    def log_prob(self, y, x):
+        m = x.shape[-1]
+        d = x.shape[-2]
+        n = y.shape[-2]
+        cov_factor = x[..., None, :, :].transpose(-1, -2)
+        cov_diag = self.prms[:, None] * torch.ones(m)
+        dist = LowRankMultivariateNormal(loc=torch.zeros(n, m),
+                                         cov_factor=cov_factor,
+                                         cov_diag=cov_diag)
+        lp = dist.log_prob(y)
+        return lp.sum()
+
+    def predict(self, xstar, y, x, full_cov=False):
+        m = x.shape[-1]
+        d = x.shape[-2]
+        n = y.shape[-2]
+        x = x[..., None, :, :]
+        cov_factor = x.transpose(-1, -2)
+        cov_diag = self.prms[:, None] * torch.ones(m)
+        dist = LowRankMultivariateNormal(loc=torch.zeros(n, m),
+                                         cov_factor=cov_factor,
+                                         cov_diag=cov_diag)
+        prec = dist.precision_matrix
+        l = torch.cholesky(prec, upper=False)
+        xl = x.matmul(l)
+        _mu = xl.matmul(l.transpose(-1, -2)).matmul(y[..., None]).squeeze(-1)
+        mu = _mu.matmul(xstar)
+        xstar = xstar[..., None, :, :]
+        if not full_cov:
+            return mu, torch.square(xstar).sum(-2) - torch.square(
+                xstar.transpose(-1, -2).matmul(xl)).sum(-1)
+        else:
+            z = torch.eye(m) - xl.matmul(xl.transpose(-1, 2))
+            return mu, xstar.transpose(-1, -2).matmul(z).matmul(xstar)
+
+
+class Svbfa(Module):
 
     def __init__(self,
                  n: int,
@@ -214,7 +274,6 @@ class Bfa(Module):
         """
 
         q_mu, q_sqrt = self.prms
-        x = x[..., None, :, :]
 
         assert (q_mu.shape[0] == q_sqrt.shape[0])
         if (not self.tied_samples) and sample_idxs is not None:
@@ -222,7 +281,8 @@ class Bfa(Module):
             q_sqrt = q_sqrt[sample_idxs]
 
         mu = q_mu.matmul(x)  # n_b x n_samples x n x m
-        l = x.transpose(-1, -2).matmul(q_sqrt)
+        l = x[..., None, :, :].transpose(-1, -2).matmul(
+            q_sqrt)  # n_b x n_samples x m x d
         if not full_cov:
             return mu, torch.square(l).sum(-1)
         else:
