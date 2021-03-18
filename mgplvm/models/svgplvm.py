@@ -151,9 +151,10 @@ class SvgpLvm(nn.Module):
         sample_size = n_samples if sample_idxs is None else len(sample_idxs)
         lik = svgp_lik - svgp_kl
 
-        if analytic_kl:
-            kl = (torch.ones(n_mc).to(data.device)) * lq.sum(
-            )  #kl per MC sample; lq already represents the full KL
+        if analytic_kl or (self.lat_dist.name == 'EP_GP'):
+            #print('analytic KL')
+            #kl per MC sample; lq already represents the full KL
+            kl = (torch.ones(n_mc).to(data.device)) * lq.sum()
         else:
             # compute kl term for the latents (n_mc, n_samples) per batch
             prior = self.lprior(g, batch_idxs)  #(n_mc)

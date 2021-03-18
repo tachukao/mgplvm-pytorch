@@ -50,28 +50,18 @@ def print_progress(model,
     lat_dist = model.lat_dist
     if i % print_every == 0:
         Z = n * m * n_samples
-        mu = lat_dist.lat_gmu(Y, batch_idxs=batch_idxs, sample_idxs=sample_idxs)
-        gamma = lat_dist.lat_gamma(Y,
-                                   batch_idxs=batch_idxs,
-                                   sample_idxs=sample_idxs).diagonal(dim1=-1,
-                                                                     dim2=-2)
+        msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} |').format(
+            i, svgp_elbo_val / Z, kl_val / Z, loss_val / Z)
 
-        mu_mag = torch.sqrt(torch.mean(mu**2)).item()
-        #sig = torch.median(gamma).item()
-        sig = torch.median(gamma).item()
-        msg = ('\riter {:3d} | elbo {:.3f} | kl {:.3f} | loss {:.3f} ' +
-               '| |mu| {:.3f} | sig {:.3f} |').format(i, svgp_elbo_val / Z,
-                                                      kl_val / Z, loss_val / Z,
-                                                      mu_mag, sig)
-        print(msg + model.kernel.msg + model.lprior.msg +
-              model.svgp.likelihood.msg,
+        print(msg + model.lat_dist.msg(Y, batch_idxs, sample_idxs) +
+              model.kernel.msg + model.lprior.msg + model.svgp.likelihood.msg,
               end="\r")
 
 
 def fit(dataset: Union[Tensor, DataLoader],
         model: SvgpLvm,
         optimizer=optim.Adam,
-        n_mc: int = 128,
+        n_mc: int = 32,
         burnin: int = 100,
         lrate: float = 1E-3,
         max_steps: int = 1000,
