@@ -40,6 +40,8 @@ def test_sampling():
             mgp.likelihoods.NegativeBinomial(n)
     ]):
 
+        if i >= 1:
+            Y = np.round(Y).astype(float)
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
         lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
