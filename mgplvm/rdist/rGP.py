@@ -139,9 +139,9 @@ class _F(Module):
             data=inv_softplus(_scale), requires_grad=True
         )  #can add separate scale for each latent in the future
         self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=True)
-        self.noise = torch.ones(
-            n_samples, self.d, m
-        ) * jitter  #nn.Parameter(torch.ones(n_samples, self.d, m)*jitter, requires_grad=False)
+        #self.noise = torch.ones(
+        #    n_samples, self.d, m
+        #) * jitter  #nn.Parameter(torch.ones(n_samples, self.d, m)*jitter, requires_grad=False)
         self.noise = jitter
 
         #pre-compute time differences
