@@ -5,6 +5,7 @@ import mgplvm
 from mgplvm import kernels, rdist, models, optimisers, syndata, likelihoods
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
+
 torch.set_default_dtype(torch.float64)
 if torch.cuda.is_available():
     device = torch.device("cuda")
