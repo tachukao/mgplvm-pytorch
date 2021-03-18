@@ -41,7 +41,7 @@ def test_sampling():
     ]):
 
         if i >= 1:
-            Y = np.round(Y).astype(float)
+            Y = np.round(Y)
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
         lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
