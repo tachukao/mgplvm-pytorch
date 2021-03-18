@@ -179,8 +179,8 @@ class Gaussian(Likelihood):
 
     @property
     def msg(self):
-        sig = np.mean(self.sigma.data.cpu().numpy())
-        return (' lik_sig {:.3f} |').format(sig.astype(float))
+        sig = torch.mean(self.sigma).item()
+        return (' lik_sig {:.3f} |').format(sig)
 
 
 class Poisson(Likelihood):
@@ -450,5 +450,5 @@ class NegativeBinomial(Likelihood):
 
     @property
     def msg(self):
-        total_count = np.mean(self.prms[0].data.cpu().numpy())
-        return (' lik_count {:.3f} |').format(total_count.astype(float))
+        total_count = torch.mean(self.prms[0]).item()
+        return (' lik_count {:.3f} |').format(total_count)
