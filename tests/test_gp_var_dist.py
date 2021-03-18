@@ -113,6 +113,7 @@ def test_GP_lat_prior():
 
     print(mus.shape)
 
+
 #     plt.figure()
 #     plt.hist(mus.flatten(), bins=30)
 #     plt.savefig('figures/test_hist.png', bbox_inches='tight')
@@ -143,7 +144,6 @@ def test_GP_lat_prior():
 #     plt.legend(['inferred', 'true'], frameon=False)
 #     plt.savefig('figures/test_gp.png', bbox_inches='tight')
 #     plt.close()
-
 
 if __name__ == '__main__':
     test_GP_lat_prior()
