@@ -14,10 +14,10 @@ def test_bfa():
     lik = mgp.likelihoods.Gaussian(n)
     bfa = mgp.models.Bfa(n)
     optimizer = torch.optim.Adam(bfa.parameters(), lr=0.001)
-    for k in range(2000):
+    for k in range(100):
         optimizer.zero_grad()
         lp = bfa.log_prob(ytrain, xtrain)
-        if k % 200 == 0:
+        if k % 50 == 0:
             xtest = torch.randn(n_samples, d, m)
             ytest = c.matmul(xtest)
             ypred, _ = bfa.predict(xtest, ytrain, xtrain, full_cov=False)
@@ -29,7 +29,7 @@ def test_bfa():
     assert (err < 1e-4)
 
 
-def test_svbfa():
+def test_bvfa():
     n_samples = 2
     m = 200
     n = 5
@@ -40,7 +40,7 @@ def test_svbfa():
     ytrain = c.matmul(xtrain) + sigma * torch.randn(n_samples, n, m)
     lik = mgp.likelihoods.Gaussian(n)
 
-    model = mgp.models.Svbfa(n, d, m, n_samples, lik)
+    model = mgp.models.Bvfa(n, d, m, n_samples, lik)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     for k in range(1000):
@@ -65,4 +65,4 @@ def test_svbfa():
 
 if __name__ == '__main__':
     test_bfa()
-    test_svbfa()
+    test_bvfa()

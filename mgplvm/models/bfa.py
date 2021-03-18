@@ -18,6 +18,7 @@ log2pi: float = np.log(2 * np.pi)
 
 class Bfa(Module):
     """
+    Bayesian Factor Analysis
     Assumes Gaussian observation noise
     Computes log_prob and posterior predictions exactly
     """
@@ -76,7 +77,7 @@ class Bfa(Module):
             return mu, xstar.transpose(-1, -2).matmul(z).matmul(xstar)
 
 
-class Svbfa(Module):
+class Bvfa(Module):
 
     def __init__(self,
                  n: int,
@@ -88,7 +89,7 @@ class Svbfa(Module):
                  q_sqrt: Optional[Tensor] = None,
                  tied_samples=True):
         """
-        __init__ method for Base Sparse Variational GP Class
+        __init__ method for Base Variational Factor Analysis 
         Parameters
         ----------
         n : int
