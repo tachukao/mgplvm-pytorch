@@ -43,7 +43,14 @@ class ReLieBase(Rdist):
         mu = torch.zeros(n_samples, m, self.d).to(gamma.device)
         return MultivariateNormal(mu, scale_tril=gamma)
 
-    def sample(self, size, Y=None, batch_idxs=None, sample_idxs=None, kmax=5):
+    def sample(self,
+               size,
+               Y=None,
+               batch_idxs=None,
+               sample_idxs=None,
+               kmax=5,
+               analytic_kl=False,
+               prior=None):
         """
         generate samples and computes its log entropy
         """
@@ -73,6 +80,17 @@ class ReLieBase(Rdist):
 
     def concentration_parameters(self):
         return self.f.concentration_parameters()
+
+    def msg(self, Y=None, batch_idxs=None, sample_idxs=None):
+        mu, gamma = self.lat_prms(Y=Y,
+                                  batch_idxs=batch_idxs,
+                                  sample_idxs=sample_idxs)
+        gamma = gamma.diagonal(dim1=-1, dim2=-2)
+
+        mu_mag = torch.sqrt(torch.mean(mu**2)).item()
+        sig = torch.median(gamma).item()
+        string = (' |mu| {:.3f} | sig {:.3f} |').format(mu_mag, sig)
+        return string
 
 
 class _F(Module):

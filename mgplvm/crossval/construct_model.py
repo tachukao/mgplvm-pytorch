@@ -35,6 +35,7 @@ def model_params(n, m, d, n_z, n_samples, **kwargs):
         'arp_learn_eta': True,
         'arp_learn_c': False,
         'arp_learn_phi': True,
+        'prior_ell': None,
         'lik_gauss_std': None,
         'ts': torch.arange(m)[None, None, ...].repeat(n_samples, 1, 1),
         'device': None
@@ -54,6 +55,8 @@ def load_model(params):
 
     n, m, d, n_z, n_samples = params['n'], params['m'], params['d'], params[
         'n_z'], params['n_samples']
+    device = (utils.get_device()
+              if params['device'] is None else params['device'])
 
     #### specify manifold ####
     if params['manifold'] == 'euclid':
@@ -65,14 +68,14 @@ def load_model(params):
         params['diagonal'] = False
 
     #### specify latent distribution ####
-    lat_dist = rdist.ReLie(manif,
-                           m,
-                           n_samples,
-                           sigma=params['latent_sigma'],
-                           diagonal=params['diagonal'],
-                           initialization=params['initialization'],
-                           Y=params['Y'],
-                           mu=params['latent_mu'])
+    lat_dist: rdist.Rdist = rdist.ReLie(manif,
+                                        m,
+                                        n_samples,
+                                        sigma=params['latent_sigma'],
+                                        diagonal=params['diagonal'],
+                                        initialization=params['initialization'],
+                                        Y=params['Y'],
+                                        mu=params['latent_mu'])
 
     #### specify kernel ####
     if params['kernel'] == 'linear':
@@ -93,6 +96,7 @@ def load_model(params):
 
     #### speciy prior ####
     if params['prior'] == 'GP':
+        """
         lprior_kernel = kernels.QuadExp(d,
                                         manif.distance,
                                         learn_scale=False,
@@ -104,6 +108,16 @@ def load_model(params):
                                     lprior_kernel,
                                     n_z=n_z,
                                     ts=params['ts'])
+        """
+        lat_dist = rdist.EP_GP(manif,
+                               m,
+                               n_samples,
+                               params['ts'].to(device),
+                               Y=params['Y'],
+                               initialization=params['initialization'],
+                               ell=params['prior_ell'])
+        lprior: Lprior = lpriors.Null(manif)
+
     elif params['prior'] == 'ARP':
         lprior = lpriors.ARP(params['arp_p'],
                              manif,
@@ -111,6 +125,8 @@ def load_model(params):
                              learn_eta=params['arp_learn_eta'],
                              learn_c=params['arp_learn_c'],
                              diagonal=params['diagonal'])
+    elif params['prior'] == 'LDS':
+        lprior = lpriors.DS(manif)
     else:
         lprior = lpriors.Uniform(manif)
 
@@ -127,8 +143,6 @@ def load_model(params):
     z = manif.inducing_points(n, n_z)
 
     #### construct model ####
-    device = (utils.get_device()
-              if params['device'] is None else params['device'])
     mod = models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
                          lprior).to(device)
 
