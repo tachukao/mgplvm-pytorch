@@ -20,7 +20,8 @@ def training_params(**kwargs):
         'batch_pool': None,
         'neuron_idxs': None,
         'mask_Ts': None,
-        'n_mc': 32
+        'n_mc': 32,
+        'prior_m': None
     }
 
     for key, value in kwargs.items():
@@ -44,6 +45,7 @@ def train_model(mod, data, params):
                                       print_every=params['print_every'],
                                       stop=params['callback'],
                                       neuron_idxs=params['neuron_idxs'],
-                                      mask_Ts=params['mask_Ts']),
+                                      mask_Ts=params['mask_Ts'],
+                                      prior_m=params['prior_m']),
 
     return trained_mod

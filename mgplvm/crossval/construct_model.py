@@ -31,7 +31,7 @@ def model_params(n, m, d, n_z, n_samples, **kwargs):
         'RBF_scale': None,
         'RBF_ell': None,
         'arp_p': 1,
-        'arp_eta': np.ones(d) * 0.3,
+        'arp_eta': np.ones(d) * 1,
         'arp_learn_eta': True,
         'arp_learn_c': False,
         'arp_learn_phi': True,

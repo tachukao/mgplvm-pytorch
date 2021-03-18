@@ -6,6 +6,7 @@ import mgplvm
 from mgplvm import rdist, models, optimisers, syndata, likelihoods, lpriors
 from mgplvm.manifolds import Torus, Euclid
 import sklearn.gaussian_process.kernels as sklkernels
+
 torch.set_default_dtype(torch.float64)
 
 

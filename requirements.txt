@@ -3,7 +3,7 @@ sphinx
 sphinx-rtd-theme
 pytest
 pytest-cov
-torch
+torch==1.7
 numpy 
 scipy
 matplotlib

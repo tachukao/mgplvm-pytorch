@@ -121,9 +121,13 @@ class S3(Manifold):
         return lp
 
     @staticmethod
-    def distance(x: Tensor, y: Tensor, ell: Optional[None] = None) -> Tensor:
+    def distance(x: Tensor, y: Tensor, ell: Optional[Tensor] = None) -> Tensor:
         # distance: 2 - 2 (x dot y)
+
+        if ell is None:
+            ell = torch.ones(1, 1, 1)
+
         z = x.transpose(-1, -2).matmul(y)
-        res = 2 * (1 - z)
+        res = 2 * (1 - z) / ell**2
         res.clamp_min_(0)
         return res

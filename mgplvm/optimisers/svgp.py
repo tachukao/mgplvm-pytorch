@@ -19,8 +19,6 @@ def sort_params(model, hook):
     params0 = list(
         itertools.chain.from_iterable([
             model.z.parameters(),
-            model.likelihood.parameters(),
-            model.lprior.parameters(),
             model.lat_dist.gmu_parameters(),
             [model.svgp.q_mu, model.svgp.q_sqrt],
         ]))
@@ -28,6 +26,8 @@ def sort_params(model, hook):
     params1 = list(
         itertools.chain.from_iterable([
             model.lat_dist.concentration_parameters(),
+            model.lprior.parameters(),
+            model.likelihood.parameters(),
             model.kernel.parameters()
         ]))
 
@@ -62,7 +62,9 @@ def print_progress(model,
                '| |mu| {:.3f} | sig {:.3f} |').format(i, svgp_elbo_val / Z,
                                                       kl_val / Z, loss_val / Z,
                                                       mu_mag, sig)
-        print(msg + model.kernel.msg + model.lprior.msg, end="\r")
+        print(msg + model.kernel.msg + model.lprior.msg +
+              model.svgp.likelihood.msg,
+              end="\r")
 
 
 def fit(dataset: Union[Tensor, DataLoader],
@@ -75,7 +77,8 @@ def fit(dataset: Union[Tensor, DataLoader],
         stop=None,
         print_every: int = 50,
         mask_Ts=None,
-        neuron_idxs: Optional[List[int]] = None):
+        neuron_idxs: Optional[List[int]] = None,
+        prior_m=None):
     '''
     Parameters
     ----------
@@ -131,7 +134,8 @@ def fit(dataset: Union[Tensor, DataLoader],
                                   n_mc,
                                   batch_idxs=batch_idxs,
                                   sample_idxs=sample_idxs,
-                                  neuron_idxs=neuron_idxs)
+                                  neuron_idxs=neuron_idxs,
+                                  m=prior_m)
 
             loss = (-svgp_elbo) + (ramp * kl)  # -LL
             loss_vals.append(loss.item())

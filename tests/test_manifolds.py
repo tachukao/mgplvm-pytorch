@@ -3,6 +3,7 @@ from mgplvm import manifolds, rdist, kernels, likelihoods, lpriors, models, opti
 import numpy as np
 import torch
 from torch import optim
+
 torch.set_default_dtype(torch.float64)
 device = mgplvm.utils.get_device()
 

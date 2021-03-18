@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm as mgp
+
 torch.set_default_dtype(torch.float64)
 device = mgp.utils.get_device()
 

@@ -52,7 +52,7 @@ class Stationary(Kernel, metaclass=abc.ABCMeta):
             _scale_sqr = torch.tensor(scale,
                                       dtype=torch.get_default_dtype()).square()
         elif Y is not None:
-            _scale_sqr = torch.tensor(np.mean(Y**2, axis=(0, -1)))
+            _scale_sqr = torch.tensor(1 * np.mean(Y**2, axis=(0, -1)))
         else:
             _scale_sqr = torch.ones(n,)
 
@@ -238,9 +238,9 @@ class Exp(QuadExp):
         """
         scale_sqr, ell = self.prms
         if self.ard:
-            ell = ell[:, :, None]
+            ell = ell[:, :, None]  #(n x d x 1) / (1 x d x 1)
         else:
-            ell = ell[:, None, None]
+            ell = ell[:, None, None]  #(n x 1 x 1)
         distance = self.distance(x, y, ell=ell)  # dims (... n x mx x my)
 
         # NOTE: distance means squared distance ||x-y||^2 ?
