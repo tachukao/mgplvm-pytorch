@@ -150,11 +150,11 @@ class So3(Manifold):
     def distance(x: Tensor, y: Tensor, ell: Optional[Tensor] = None) -> Tensor:
         """x, y: (..., n x d x m)"""
         # distance: 4 - 4 (x dot y)^2
-        
+
         if ell is None:
             ell = torch.ones(1, 1, 1)
-        
-        z = x.transpose(-1, -2).matmul(y) # (..., n, m, m)
+
+        z = x.transpose(-1, -2).matmul(y)  # (..., n, m, m)
         res = 4 * (1 - z.square()) / ell**2
         res.clamp_min_(0)
         return res
