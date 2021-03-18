@@ -81,6 +81,17 @@ class ReLieBase(Rdist):
     def concentration_parameters(self):
         return self.f.concentration_parameters()
 
+    def msg(self, Y=None, batch_idxs=None, sample_idxs=None):
+        mu, gamma = self.lat_prms(Y=Y,
+                                  batch_idxs=batch_idxs,
+                                  sample_idxs=sample_idxs)
+        gamma = gamma.diagonal(dim1=-1, dim2=-2)
+
+        mu_mag = torch.sqrt(torch.mean(mu**2)).item()
+        sig = torch.median(gamma).item()
+        string = (' |mu| {:.3f} | sig {:.3f} |').format(mu_mag, sig)
+        return string
+
 
 class _F(Module):
 

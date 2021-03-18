@@ -275,17 +275,13 @@ class DS(LpriorEuclid):
         """
 
         A, Q = self.prms
-        #print(A.shape, Q.shape, x.shape)
         xA = torch.matmul(x, A)  #(n_mc, n_samples, m, d)
         dx = x[..., 1:, :] - xA[..., :-1, :]
-        #print(dx.shape)
 
         mu = torch.zeros(self.d).to(x.device)
         normal = dists.MultivariateNormal(mu, scale_tril=Q)
         lq = normal.log_prob(dx)  #(n_mc x n_samplesx m-1)
-        #print('LDS logprob shape:', lq.shape)
         lq = lq.sum(-1).sum(-1)  #(n_mc)
-        #print('LDS prior shape:', lq.shape)
 
         #in the future, we may want an explicit prior over the initial point
         return lq

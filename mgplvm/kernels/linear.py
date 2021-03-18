@@ -15,7 +15,8 @@ class Linear(Kernel):
                  scale=None,
                  learn_scale=True,
                  Y=None,
-                 ard=False):
+                 ard=False,
+                 Poisson=False):
         '''
         n is number of neurons/readouts
         d is the dimensionality of the group parameterization
@@ -43,12 +44,21 @@ class Linear(Kernel):
         ) and learn_scale:  # <Y^2> = scale * d * <x^2> + <eps^2> = scale * d + sig_noise^2
             _scale_sqr = torch.tensor(np.var(Y, axis=(0, 2)) / d) * (
                 0.5**2)  #assume half signal half noise
+            if Poisson:
+                _scale_sqrt /= 100
         else:
             _scale_sqr = torch.ones(n,)  #one per neuron
         self._scale_sqr = nn.Parameter(data=inv_softplus(_scale_sqr),
                                        requires_grad=learn_scale)
 
-        _input_scale = inv_softplus(torch.ones(d))
+        if ard and (not learn_scale) and (Y is not None):
+            _input_scale = torch.ones(d) * (np.std(Y) / np.sqrt(d) * 0.5)
+            if Poisson:
+                _input_scale /= 100
+        else:
+            _input_scale = torch.ones(d)
+
+        _input_scale = inv_softplus(_input_scale)
         self._input_scale = nn.Parameter(data=_input_scale, requires_grad=ard)
 
     def diagK(self, x: Tensor) -> Tensor:
