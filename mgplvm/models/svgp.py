@@ -166,7 +166,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         # to compute an unbiased estimate of the likelihood of the full dataset
         m = (self.m if m is None else m)
         scale = (m / batch_size) * (self.n_samples / sample_size)
-        lik = lik.sum(-2)
+        lik = lik.sum(-2) #sum over samples
         lik = lik * scale
 
         return lik, prior_kl
@@ -374,65 +374,3 @@ class Svgp(SvgpBase):
     def _expand_x(self, x: Tensor) -> Tensor:
         x = x[..., None, :, :]
         return x
-
-
-#class SvgpComb(SvgpBase):
-#    def __init__(self,
-#                 kernel: Combination,
-#                 n: int,
-#                 zs: List[InducingPoints],
-#                 likelihood: Likelihood,
-#                 whiten: Optional[bool] = True):
-#        """
-#        __init__ method for Sparse GP with Combination Kernels
-#        Parameters
-#        ----------
-#        kernels : Combination Kernel
-#            combination kernel used for sparse GP (e.g., Product)
-#        n : int
-#            number of neurons
-#        m : int
-#            number of conditions
-#        zs : InducingPoints list
-#            list of inducing points
-#        likleihood: Likelihood
-#            likelihood p(y|f)
-#        whiten : Optional bool
-#            whiten q if true
-#        """
-#
-#        n_inducing = zs[0].n_inducing
-#        # check all the zs have the same n_inducing
-#        for z in zs:
-#            assert (z.n_inducing == n_inducing)
-#
-#        # initialize q_sqrt
-#        _zs = [z.prms for z in zs]
-#        _z = self._expand_z(_zs)
-#        e = torch.eye(n_inducing)
-#        kzz = kernel(z, z) + (e * jitter)
-#        l = torch.cholesky(kzz, upper=False)
-#        super().__init__(kernel,
-#                         n,
-#                         n_inducing,
-#                         likelihood,
-#                         q_sqrt=l,
-#                         whiten=whiten)
-#        self.zs = zs
-#
-#    @property
-#    def prms(self) -> Tuple[Tensor, Union[List[Tensor], nn.ParameterList]]:
-#        zs = [z.prms for z in self.zs]
-#        q_mu = self.q_mu
-#        q_sqrt = torch.distributions.transform_to(
-#            MultivariateNormal.arg_constraints['scale_tril'])(self.q_sqrt)
-#        return q_mu, q_sqrt, zs
-#
-#    def _expand_z(self, zs: List[Tensor]) -> Tuple[List[Tensor]]:
-#        zs = [z for z in zs]
-#        return zs
-#
-#    def _expand_x(self, xs: List[Tensor]) -> Tuple[List[Tensor]]:
-#        xs = [x[:, None, ...] for x in xs]
-#        return xs
-#

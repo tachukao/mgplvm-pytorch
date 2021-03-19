@@ -15,7 +15,7 @@ def test_fa():
     optimizer = torch.optim.Adam(fa.parameters(), lr=0.002)
     for k in range(5000):
         optimizer.zero_grad()
-        lp = fa.log_prob(ytrain, xtrain)
+        lp = fa.log_prob(ytrain, xtrain).sum()
         if k % 500 == 0:
             xtest = torch.randn(n_samples, d, m)
             ytest = c.matmul(xtest)
@@ -41,7 +41,7 @@ def test_bfa():
     optimizer = torch.optim.Adam(bfa.parameters(), lr=0.001)
     for k in range(100):
         optimizer.zero_grad()
-        lp = bfa.log_prob(ytrain, xtrain)
+        lp = bfa.log_prob(ytrain, xtrain).sum()
         if k % 50 == 0:
             xtest = torch.randn(n_samples, d, m)
             ytest = c.matmul(xtest)
@@ -96,7 +96,7 @@ def test_bvfa():
         loglik, kl = model.elbo(ytrain, xtrain)
         loss = -(loglik - kl).sum()
         bfa = mgp.models.Bfa(n, model.likelihood.sigma.data, learn_sigma=False)
-        true_log_prob = bfa.log_prob(ytrain, xtrain)
+        true_log_prob = bfa.log_prob(ytrain, xtrain).sum()
         if k % 200 == 0:
             xtest = torch.randn(n_samples, d, m)
             ytest = c.matmul(xtest)

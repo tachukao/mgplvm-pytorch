@@ -5,16 +5,16 @@ import torch.nn as nn
 from torch import Tensor
 import numpy as np
 from mgplvm.utils import softplus
-from ..base import Module
+from ..base import Module, NoneClass
 from ..kernels import Kernel
 from ..inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
 from torch.distributions import MultivariateNormal, LowRankMultivariateNormal, kl_divergence, transform_to, constraints, Normal
 from ..likelihoods import Likelihood
+from sklearn import decomposition
 
 jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)
-
 
 def batch_capacitance_tril(W, D):
     r"""
@@ -38,13 +38,25 @@ class Bfa(Module):
 
     def __init__(self,
                  n: int,
+                 d: int,
                  sigma: Optional[Tensor] = None,
-                 learn_sigma=True):
+                 learn_sigma=True,
+                Y = None):
+        
         super().__init__()
         if sigma is None:
-            sigma = torch.ones(n,)  # TODO: FA init
+            if Y is None:
+                sigma = torch.ones(n,)  # TODO: FA init
+            else:
+                n_samples, n, m = Y.shape
+                mod = decomposition.FactorAnalysis(n_components=d)
+                Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
+                mudata = mod.fit_transform(Y)  #m*n_samples x d
+                sigma = torch.tensor(np.sqrt(mod.noise_variance_))
+                
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
         self.n = n
+        self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
 
     @property
     def prms(self) -> Tensor:
@@ -72,6 +84,32 @@ class Bfa(Module):
         """compute prior p(y) = N(y|0, X^T X)"""
         lp = self._dist(x).log_prob(y)
         return lp.sum()
+    
+    def elbo(self,
+             y: Tensor,
+             x: Tensor,
+             sample_idxs: Optional[List[int]] = None,
+             m: Optional[int] = None) -> Tuple[Tensor, Tensor]:
+        """
+        Parameters
+        ----------
+        y : Tensor
+            data tensor with dimensions (n_samples x n x m)
+        x : Tensor (single kernel) or Tensor list (product kernels)
+            input tensor(s) with dimensions (n_mc x n_samples x d x m)
+
+        Returns
+        -------
+        lik, prior_kl : Tuple[torch.Tensor, torch.Tensor]
+            lik has dimensions (n_mc x n) 
+            prior_kl has dimensions (n) and is zero
+        """
+        
+        lik = self.log_prob(y, x) #(n_mc x n_samples x n)
+        lik = lik.sum(-2)
+        prior_kl = torch.zeros(self.n).to(x.device)
+        return lik, prior_kl
+        
 
     def predict(self, xstar, y, x, full_cov=False):
         """
@@ -147,6 +185,7 @@ class Bvfa(Module):
         self.m = m
         self.tied_samples = tied_samples
         self.n_samples = n_samples
+        self.z, self.kernel = [NoneClass() for i in range(2)]
 
         if q_mu is None:
             if tied_samples:
@@ -331,8 +370,8 @@ class Bvfa(Module):
         q_sqrt = transform_to(constraints.lower_cholesky)(self.q_sqrt)
         return q_mu, q_sqrt
 
-
-class fa(Module):
+    
+class Fa(Module):
     """
     Standard non-Bayesian Factor Analysis
     Assumes Gaussian observation noise
@@ -343,20 +382,30 @@ class fa(Module):
                  n: int,
                  d: int,
                  sigma: Optional[Tensor] = None,
-                 learn_sigma=True):
+                 learn_sigma=True,
+                Y = None):
         """
         n: number of neurons
         d: number of latents
         """
         super().__init__()
-        if sigma is None:
-            sigma = torch.ones(n,) * 0.5  # TODO: FA init
-        self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
-
-        C = torch.randn(n, d) * d**(-0.5)  # TODO: FA init
-        self.C = nn.Parameter(data=C, requires_grad=True)
-
         self.n = n
+        
+        if Y is None:
+            C = torch.randn(n, d) * d**(-0.5) # TODO: FA init
+            sigma = torch.ones(n,)*0.5  # TODO: FA init
+        else:
+            n_samples, n, m = Y.shape
+            mod = decomposition.FactorAnalysis(n_components=d)
+            Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
+            mudata = mod.fit_transform(Y)  #m*n_samples x d
+            sigma = torch.tensor(np.sqrt(mod.noise_variance_))
+            C = torch.tensor(mod.components_)
+            
+        self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
+        self.C = nn.Parameter(data=C, requires_grad=True)
+        
+        self.likelihood, self.z, self.kernel = None, None, None
 
     @property
     def prms(self) -> Tensor:
@@ -374,24 +423,49 @@ class fa(Module):
         x is (n_mc x n_samples x d x m)
         y is (n_samples x n x m)
         """
-        mean = self.C @ x  #(... x n x m)
-        mean = mean.transpose(-1, -2)  #(... x m x n)
-        dist = Normal(loc=mean, scale=self.sigma)
-        lp = dist.log_prob(y.transpose(-1, -2))  #(... x m x n)
+        mean = self.C @ x #(... x n x m)
+        mean = mean.transpose(-1, -2) #(... x m x n)
+        dist = Normal(loc = mean, scale = self.sigma)
+        lp = dist.log_prob(y.transpose(-1, -2)) #(... x m x n)
         #print('lp:', lp.shape)
-        return lp.sum()
+        return lp
+    
+    def elbo(self,
+             y: Tensor,
+             x: Tensor,
+             sample_idxs: Optional[List[int]] = None,
+             m: Optional[int] = None) -> Tuple[Tensor, Tensor]:
+        """
+        Parameters
+        ----------
+        y : Tensor
+            data tensor with dimensions (n_samples x n x m)
+        x : Tensor (single kernel) or Tensor list (product kernels)
+            input tensor(s) with dimensions (n_mc x n_samples x d x m)
+
+        Returns
+        -------
+        lik, prior_kl : Tuple[torch.Tensor, torch.Tensor]
+            lik has dimensions (n_mc x n) 
+            prior_kl has dimensions (n) and is zero
+        """
+        
+        lik = self.log_prob(y, x) #(n_mc x n_samples x m x n)
+        lik = lik.sum(-2).sum(-2) #n_mc x n
+        prior_kl = torch.zeros(self.n).to(x.device)
+        return lik, prior_kl
 
     def predict(self, xstar, full_cov=False):
         """
         compute posterior p(f* | x, y, C) = N(C@x*, Sig)
         """
-        mu = self.C @ xstar  #(n_samples x n x m)
-        cov = torch.zeros(mu.shape)  #p(f|C, x) is a delta function
+        mu = self.C @ xstar #(n_samples x n x m)
+        cov = torch.zeros(mu.shape) #p(f|C, x) is a delta function
         if not full_cov:
             return mu, cov
         else:
             return mu, torch.diag_embed(cov)
-
+        
     def sample(self,
                query: Tensor,
                n_mc: int = 1000,
@@ -425,16 +499,17 @@ class fa(Module):
 
         if noise:
             #sample from observation function p(y|f)
-            dist = Normal(loc=f_samps, scale=self.sigma[..., None])
-            y_samps = dist.sample(n_mc)  #n_mc x n_samples x n x m
+            dist = Normal(loc = f_samps, scale = self.sigma[..., None])
+            y_samps = dist.sample(n_mc)   #n_mc x n_samples x n x m
             print(y_samps.shape)
         else:
             #compute mean observations mu(f) for each f
-            y_samps = torch.ones(
-                n_mc, mu.shape[0], mu.shape[1], mu.shape[2]).to(
-                    query.device) * f_samps  #n_mc x n_samples x n x m
+            y_samps = torch.ones(n_mc, mu.shape[0], mu.shape[1], mu.shape[2]).to(query.device)*f_samps  #n_mc x n_samples x n x m
 
         if square:
             y_samps = y_samps**2
 
         return y_samps
+
+
+    

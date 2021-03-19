@@ -27,7 +27,7 @@ class SvgpLvm(nn.Module):
                  kernel: Kernel,
                  likelihood: Likelihood,
                  lat_dist: Rdist,
-                 lprior=Lprior,
+                 lprior: Lprior,
                  whiten: bool = True,
                  tied_samples=True):
         """
@@ -57,18 +57,16 @@ class SvgpLvm(nn.Module):
         self.n = n
         self.m = m
         self.n_samples = n_samples
-        self.kernel = kernel
-        self.z = z
-        self.likelihood = likelihood
-        self.whiten = whiten
-        self.svgp = svgp.Svgp(self.kernel,
+        
+        self.svgp = svgp.Svgp(kernel,
                               n,
                               m,
                               n_samples,
-                              self.z,
+                              z,
                               likelihood,
                               whiten=whiten,
                               tied_samples=tied_samples)
+
         # latent distribution
         self.lat_dist = lat_dist
         self.lprior = lprior
@@ -146,9 +144,6 @@ class SvgpLvm(nn.Module):
         if neuron_idxs is not None:
             svgp_lik = svgp_lik[..., neuron_idxs]
             svgp_kl = svgp_kl[..., neuron_idxs]
-
-        batch_size = m if batch_idxs is None else len(batch_idxs)
-        sample_size = n_samples if sample_idxs is None else len(sample_idxs)
         lik = svgp_lik - svgp_kl
 
         if analytic_kl or (self.lat_dist.name == 'EP_GP'):
@@ -163,6 +158,8 @@ class SvgpLvm(nn.Module):
                 -1) - prior  #(n_mc) (sum q(g) over samples, conditions)
 
         #rescale KL to entire dataset (basically structured conditions)
+        batch_size = m if batch_idxs is None else len(batch_idxs)
+        sample_size = n_samples if sample_idxs is None else len(sample_idxs)
         kl = (m / batch_size) * (n_samples / sample_size) * kl
 
         return lik, kl

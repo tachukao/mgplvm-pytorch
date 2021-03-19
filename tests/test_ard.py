@@ -72,7 +72,7 @@ def test_linear_ard():
                                           lrate=20E-2,
                                           print_every=50)
 
-    ells = (mod.kernel.input_scale)**(-1)
+    ells = (mod.svgp.kernel.input_scale)**(-1)
     ells = np.sort(ells.detach().cpu().numpy())
     print('\n', ells)
 
@@ -125,7 +125,7 @@ def test_rbf_ard():
                                           lrate=15E-2,
                                           print_every=50)
 
-    ells = np.sort(mod.kernel.ell.detach().cpu().numpy()[0, :])
+    ells = np.sort(mod.svgp.kernel.ell.detach().cpu().numpy()[0, :])
     print('\n', ells)
 
     for i in range(d - d0):

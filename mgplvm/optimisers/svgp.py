@@ -18,7 +18,7 @@ def sort_params(model, hook):
 
     params0 = list(
         itertools.chain.from_iterable([
-            model.z.parameters(),
+            model.svgp.z.parameters(),
             model.lat_dist.gmu_parameters(),
             [model.svgp.q_mu, model.svgp.q_sqrt],
         ]))
@@ -27,8 +27,8 @@ def sort_params(model, hook):
         itertools.chain.from_iterable([
             model.lat_dist.concentration_parameters(),
             model.lprior.parameters(),
-            model.likelihood.parameters(),
-            model.kernel.parameters()
+            model.svgp.likelihood.parameters(),
+            model.svgp.kernel.parameters()
         ]))
 
     params = [{'params': params0}, {'params': params1}]
@@ -54,7 +54,7 @@ def print_progress(model,
             i, svgp_elbo_val / Z, kl_val / Z, loss_val / Z)
 
         print(msg + model.lat_dist.msg(Y, batch_idxs, sample_idxs) +
-              model.kernel.msg + model.lprior.msg + model.svgp.likelihood.msg,
+              model.svgp.kernel.msg + model.lprior.msg + model.svgp.likelihood.msg,
               end="\r")
 
 
