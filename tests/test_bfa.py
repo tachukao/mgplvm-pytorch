@@ -11,7 +11,6 @@ def test_bfa():
     sigma = 1E-3
     xtrain = torch.randn(n_samples, d, m)
     ytrain = c.matmul(xtrain) + sigma * torch.randn(n_samples, n, m)
-    lik = mgp.likelihoods.Gaussian(n)
     bfa = mgp.models.Bfa(n)
     optimizer = torch.optim.Adam(bfa.parameters(), lr=0.001)
     for k in range(100):

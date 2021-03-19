@@ -31,9 +31,11 @@ class Bfa(Module):
         if sigma is None:
             sigma = torch.ones(n,)  # TODO: FA init
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
+        self.n = n
 
     @property
     def prms(self) -> Tensor:
+        """p(y_i | f_i) = N(0, sigma^2)"""
         variance = torch.square(self._sigma)
         return variance
 
@@ -41,30 +43,33 @@ class Bfa(Module):
     def sigma(self) -> Tensor:
         return (1e-20 + self.prms).sqrt()
 
-    def log_prob(self, y, x):
+    def dist(self, x):
+        """
+        construct low rank prior MVN = N(0, X^T X)
+        """
         m = x.shape[-1]
         d = x.shape[-2]
-        n = y.shape[-2]
-        cov_factor = x[..., None, :, :].transpose(-1, -2)
+        cov_factor = x[..., None, :, :].transpose(-1, -2)  #(..., mxd)
         cov_diag = self.prms[:, None] * torch.ones(m)
-        dist = LowRankMultivariateNormal(loc=torch.zeros(n, m),
+        dist = LowRankMultivariateNormal(loc=torch.zeros(self.n, m),
                                          cov_factor=cov_factor,
                                          cov_diag=cov_diag)
+        return dist
+
+    def log_prob(self, y, x):
+        """compute prior p(y) = N(y|0, X^T X)"""
+        dist = self.dist(x)
         lp = dist.log_prob(y)
         return lp.sum()
 
     def predict(self, xstar, y, x, full_cov=False):
-        m = x.shape[-1]
-        d = x.shape[-2]
-        n = y.shape[-2]
+        """
+        compute posterior p(f* | x, y)
+        """
+        dist = self.dist(x)
+        prec = dist.precision_matrix  #(K+sigma^2I)^-1
+        l = torch.cholesky(prec, upper=False)  #mxm??
         x = x[..., None, :, :]
-        cov_factor = x.transpose(-1, -2)
-        cov_diag = self.prms[:, None] * torch.ones(m)
-        dist = LowRankMultivariateNormal(loc=torch.zeros(n, m),
-                                         cov_factor=cov_factor,
-                                         cov_diag=cov_diag)
-        prec = dist.precision_matrix
-        l = torch.cholesky(prec, upper=False)
         xl = x.matmul(l)
         _mu = xl.matmul(l.transpose(-1, -2)).matmul(y[..., None]).squeeze(-1)
         mu = _mu.matmul(xstar)
@@ -144,6 +149,9 @@ class Bvfa(Module):
         self.likelihood = likelihood
 
     def prior_kl(self, sample_idxs=None):
+        """
+        KL(p(f) || q(f))
+        """
         q_mu, q_sqrt = self.prms
         assert (q_mu.shape[0] == q_sqrt.shape[0])
         if not self.tied_samples and sample_idxs is not None:
