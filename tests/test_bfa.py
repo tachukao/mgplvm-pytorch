@@ -28,6 +28,29 @@ def test_bfa():
     assert (err < 1e-4)
 
 
+def test_bfa_cov():
+    n_samples = 2
+    m = 20
+    n = 5
+    d = 3
+    c = torch.randn(n, d)
+    sigma = 1E-3
+    x = torch.randn(n_samples, d, m)
+    xstar = torch.randn(n_samples, d, m)
+    y = c.matmul(x)
+    bfa = mgp.models.Bfa(n)
+    prec = bfa._dist(x).precision_matrix
+    _, v = bfa.predict(xstar, y, x, full_cov=False)
+    _, cov = bfa.predict(xstar, y, x, full_cov=True)
+    x = x[..., None, :, :]
+    xstar = xstar[..., None, :, :]
+    slow_cov = xstar.transpose(-1, -2).matmul(xstar) - xstar.transpose(
+        -1, -2).matmul(x.matmul(prec).matmul(x.transpose(-1, -2))).matmul(xstar)
+    slow_v = torch.diagonal(slow_cov, dim1=-1, dim2=-2)
+    assert torch.allclose(slow_v, v)
+    assert torch.allclose(slow_cov, cov)
+
+
 def test_bvfa():
     n_samples = 2
     m = 200
@@ -41,7 +64,7 @@ def test_bvfa():
 
     model = mgp.models.Bvfa(n, d, m, n_samples, lik)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.008)
     for k in range(1000):
         optimizer.zero_grad()
         loglik, kl = model.elbo(ytrain, xtrain)
@@ -64,4 +87,5 @@ def test_bvfa():
 
 if __name__ == '__main__':
     test_bfa()
+    test_bfa_cov()
     test_bvfa()

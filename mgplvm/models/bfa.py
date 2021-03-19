@@ -16,6 +16,19 @@ jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)
 
 
+def batch_capacitance_tril(W, D):
+    r"""
+    Copied from pytorch source code
+    Computes Cholesky of :math:`I + W.T @ inv(D) @ W` for a batch of matrices :math:`W`
+    and a batch of vectors :math:`D`.
+    """
+    m = W.size(-1)
+    Wt_Dinv = W.transpose(-1, -2) / D.unsqueeze(-2)
+    K = torch.matmul(Wt_Dinv, W).contiguous()
+    K.view(-1, m * m)[:, ::m + 1] += 1
+    return torch.cholesky(K)
+
+
 class Bfa(Module):
     """
     Bayesian Factor Analysis
@@ -43,12 +56,11 @@ class Bfa(Module):
     def sigma(self) -> Tensor:
         return (1e-20 + self.prms).sqrt()
 
-    def dist(self, x):
+    def _dist(self, x):
         """
-        construct low rank prior MVN = N(0, X^T X)
+        construct low rank prior MVN = N(0, X^T X + sigma^2 I)
         """
         m = x.shape[-1]
-        d = x.shape[-2]
         cov_factor = x[..., None, :, :].transpose(-1, -2)  #(..., mxd)
         cov_diag = self.prms[:, None] * torch.ones(m)
         dist = LowRankMultivariateNormal(loc=torch.zeros(self.n, m),
@@ -58,29 +70,44 @@ class Bfa(Module):
 
     def log_prob(self, y, x):
         """compute prior p(y) = N(y|0, X^T X)"""
-        dist = self.dist(x)
-        lp = dist.log_prob(y)
+        lp = self._dist(x).log_prob(y)
         return lp.sum()
 
     def predict(self, xstar, y, x, full_cov=False):
         """
         compute posterior p(f* | x, y)
         """
+
+        prec = self._dist(x.squeeze()).precision_matrix  #(K+sigma^2I)^-1
         m = x.shape[-1]
-        dist = self.dist(x)
-        prec = dist.precision_matrix  #(K+sigma^2I)^-1
-        l = torch.cholesky(prec, upper=False)  #mxm??
-        x = x[..., None, :, :]
-        xl = x.matmul(l)
-        _mu = xl.matmul(l.transpose(-1, -2)).matmul(y[..., None]).squeeze(-1)
-        mu = _mu.matmul(xstar)
-        xstar = xstar[..., None, :, :]
+        d = x.shape[-2]
+        x = x[..., None, :, :]  #(...,d,m)
+        xstar = xstar[..., None, :, :]  #(...,d,m)
+        xt = x.transpose(-1, -2)  #(...,m,d)
+        variance = self.prms  #(n)
+        cov_diag = variance[..., None] * torch.ones(m)
+        capacitance_tril = batch_capacitance_tril(xt, cov_diag)
+        xdinv = (x / variance[..., None, None])
+        A = torch.triangular_solve(xdinv, capacitance_tril,
+                                   upper=False)[0]  #(...,d,m)
+        y = y[..., None]
+        _mu1 = xdinv.matmul(y)
+        _mu2 = x.matmul(A.transpose(-1, -2).matmul(A.matmul(y)))
+        mu = xstar.transpose(-1, -2).matmul(_mu1 - _mu2).squeeze(-1)
         if not full_cov:
-            return mu, torch.square(xstar).sum(-2) - torch.square(
-                xstar.transpose(-1, -2).matmul(xl)).sum(-1)
+            v1 = torch.square(xstar).sum(-2)
+            v2 = xstar.transpose(-1, -2).matmul(
+                x / variance[:, None, None].sqrt()).square().sum(-1)
+            v3 = A.matmul(x.transpose(-1, -2)).matmul(xstar).square().sum(-2)
+            v = v1 - v2 + v3
+            return mu, v1 - v2 + v3
         else:
-            z = torch.eye(m) - xl.matmul(xl.transpose(-1, 2))
-            return mu, xstar.transpose(-1, -2).matmul(z).matmul(xstar)
+            xxT = xdinv.matmul(x.transpose(-1, -2))
+            xAT = x.matmul(A.transpose(-1, -2))
+            xATAxT = xAT.matmul(xAT.transpose(-1, -2))
+            z = torch.eye(d) - xxT + xATAxT
+            c = xstar.transpose(-1, -2).matmul(z).matmul(xstar)
+            return mu, c
 
 
 class Bvfa(Module):
