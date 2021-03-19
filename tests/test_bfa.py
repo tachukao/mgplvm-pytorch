@@ -1,6 +1,7 @@
 import torch
 import mgplvm as mgp
 
+
 def test_fa():
     n_samples = 2
     m = 200
@@ -10,7 +11,7 @@ def test_fa():
     sigma = 1E-3
     xtrain = torch.randn(n_samples, d, m)
     ytrain = c.matmul(xtrain) + sigma * torch.randn(n_samples, n, m)
-    fa = mgp.models.fa(n,d)
+    fa = mgp.models.fa(n, d)
     optimizer = torch.optim.Adam(fa.parameters(), lr=0.002)
     for k in range(5000):
         optimizer.zero_grad()
@@ -25,6 +26,7 @@ def test_fa():
         (-lp).backward()
         optimizer.step()
     assert (err < 5e-4)
+
 
 def test_bfa():
     n_samples = 2
