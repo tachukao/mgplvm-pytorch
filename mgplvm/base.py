@@ -17,14 +17,16 @@ class Module(nn.Module, metaclass=abc.ABCMeta):
     def prms(self) -> Any:
         pass
 
+
 class NoneClass(Module):
+
     def __init__(self):
         super().__init__()
 
     @property
     def prms(self) -> Any:
         return
-    
+
     @property
     def msg(self):
         return ''

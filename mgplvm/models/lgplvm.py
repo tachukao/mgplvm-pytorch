@@ -15,11 +15,11 @@ from ..likelihoods import Likelihood
 from ..lpriors.common import Lprior
 from ..rdist import Rdist
 
-from .bfa import fa, Bfa, Bvfa
-from .svgplvm import Svgplvm
+from .bfa import Fa, Bfa, Bvfa
+from .gplvm import Gplvm
 
 
-class LgpLvm(Svgplvm):
+class Lgplvm(Gplvm):
     name = "Lgplvm"
 
     def __init__(self,
@@ -29,45 +29,41 @@ class LgpLvm(Svgplvm):
                  n_samples: int,
                  lat_dist: Rdist,
                  lprior: Lprior,
-                 likelihood: Likelihood = None,
-                 whiten: bool = True,
-                 tied_samples=True,
-                svgp = None,
-                stochastic = True,
-                Y = None):
+                 Bayesian=True,
+                 Y=None):
         """
-        __init__ method for Vanilla model
+        __init__ method for linear GPLVM with exact posteriors and Gaussian noise
         Parameters
         ----------
-        n : int
-            number of neurons
-        m : int
-            number of conditions
-        n_samples: int
-            number of samples
-        z : Inducing Points
-            inducing points
-        kernel : Kernel
-            kernel used for GP regression
-        likelihood : Likelihood
-            likelihood p(y|f)
-        lat_dist : rdist
-            latent distribution
-        lprior: Lprior
-            log prior over the latents
         """
-        self.n = n
-        self.m = m
-        self.n_samples = n_samples
-        
+
         #observation model (P(Y|X))
-        if stochastic:
-            self.svgp = Bvfa(n,d,m,n_samples,likelihood: Likelihood, tied_samples=tied_samples)
-        elif Bayesian:
-            self.svgp = Bfa(n,d,Y = Y)
+        if Bayesian:
+            obs = Bfa(n, d, Y=Y)  #Bayesian FA
         else:
-            self.svgp = Fa(n,d,Y = Y)
-        
-        # latent distribution
-        self.lat_dist = lat_dist
-        self.lprior = lprior
+            obs = Fa(n, d, Y=Y)  #non-Bayesian FA
+
+        super().__init__(obs, lat_dist, lprior, n, m, n_samples)
+
+
+class Lvgplvm(Gplvm):
+    name = "Lvgplvm"
+
+    def __init__(self,
+                 n: int,
+                 m: int,
+                 d: int,
+                 n_samples: int,
+                 lat_dist: Rdist,
+                 lprior: Lprior,
+                 likelihood: Likelihood,
+                 tied_samples=True):
+        """
+        __init__ method for linear GPLVM with approximate posteriors and flexible noise models
+        Parameters
+        ----------
+        """
+
+        #observation model (P(Y|X))
+        obs = Bvfa(n, d, m, n_samples, likelihood, tied_samples=tied_samples)
+        super().__init__(obs, lat_dist, lprior, n, m, n_samples)

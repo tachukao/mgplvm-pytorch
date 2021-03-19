@@ -237,21 +237,18 @@ class lat_GP(GPbase):
     def prms(self):
         return self.f.prms
 
-    
+
 ############ new approach ################
 
-
-
 # Class GP_efficient():
-    
-    
+
 #     sample()
 #     """
 #     input: n_mc
 #     output: n_mc samples from the posterior Q(X), KL between Q(X) and p(X)
 #     both should be differentiable
 #     """
-    
+
 
 class EP_GP(Rdist):
     name = "EP_GP"
@@ -296,13 +293,13 @@ class EP_GP(Rdist):
 
         #initialize GP mean
         nu = torch.randn((n_samples, self.d, m)) * 1
-        self._nu = nn.Parameter(data=nu, requires_grad=True) #m in the notes
+        self._nu = nn.Parameter(data=nu, requires_grad=True)  #m in the notes
 
         #self._nu_s = nn.Parameter(data=torch.ones(1), requires_grad=True)
         #self._nu_i = nn.Parameter(data=torch.zeros(1), requires_grad=True)
 
         #initialize covariance parameters
-        _scale = torch.ones(n_samples, self.d, m) * _scale #n_diag x T
+        _scale = torch.ones(n_samples, self.d, m) * _scale  #n_diag x T
         self._scale = nn.Parameter(data=inv_softplus(_scale),
                                    requires_grad=True)
 
@@ -375,10 +372,12 @@ class EP_GP(Rdist):
         """
 
         #compute KL analytically
-        lq = self.kl(batch_idxs = batch_idxs, sample_idxs = sample_idxs)  #(n_samples x d)
+        lq = self.kl(batch_idxs=batch_idxs,
+                     sample_idxs=sample_idxs)  #(n_samples x d)
 
         #(n_samples x m x d), (n_samples x d x m x m)
-        mu, K_half_S = self.lat_prms(batch_idxs = batch_idxs, sample_idxs = sample_idxs)
+        mu, K_half_S = self.lat_prms(batch_idxs=batch_idxs,
+                                     sample_idxs=sample_idxs)
 
         # sample a batch with dims: (n_samples x d x m x n_mc)
         x = K_half_S @ torch.randn(
@@ -390,7 +389,7 @@ class EP_GP(Rdist):
         #(n_mc x n_samples x m x d), (n_samples x d)
         return x, lq
 
-    def kl(self, batch_idxs = None, sample_idxs = None):
+    def kl(self, batch_idxs=None, sample_idxs=None):
         """
         compute KL divergence analytically
         """
@@ -425,14 +424,18 @@ class EP_GP(Rdist):
         if sample_idxs is not None:
             mu = mu[sample_idxs, ...]
             K_half_S = K_half_S[sample_idxs, ...]
-            
+
         return mu, K_half_S
 
     def lat_gmu(self, Y=None, batch_idxs=None, sample_idxs=None):
-        return self.lat_prms(Y = Y, batch_idxs = batch_idxs, sample_idxs = sample_idxs)[0]
+        return self.lat_prms(Y=Y,
+                             batch_idxs=batch_idxs,
+                             sample_idxs=sample_idxs)[0]
 
     def lat_gamma(self, Y=None, batch_idxs=None, sample_idxs=None):
-        return self.lat_prms(Y = Y, batch_idxs = batch_idxs, sample_idxs = sample_idxs)[1]
+        return self.lat_prms(Y=Y,
+                             batch_idxs=batch_idxs,
+                             sample_idxs=sample_idxs)[1]
 
     def msg(self, Y=None, batch_idxs=None, sample_idxs=None):
         mu, gamma = self.lat_prms(Y=Y,

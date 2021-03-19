@@ -64,7 +64,7 @@ def test_bfa_cov():
     x = torch.randn(n_samples, d, m)
     xstar = torch.randn(n_samples, d, m)
     y = c.matmul(x)
-    bfa = mgp.models.Bfa(n)
+    bfa = mgp.models.Bfa(n, d)
     prec = bfa._dist(x).precision_matrix
     _, v = bfa.predict(xstar, y, x, full_cov=False)
     _, cov = bfa.predict(xstar, y, x, full_cov=True)
@@ -95,7 +95,10 @@ def test_bvfa():
         optimizer.zero_grad()
         loglik, kl = model.elbo(ytrain, xtrain)
         loss = -(loglik - kl).sum()
-        bfa = mgp.models.Bfa(n, d, model.likelihood.sigma.data, learn_sigma=False)
+        bfa = mgp.models.Bfa(n,
+                             d,
+                             model.likelihood.sigma.data,
+                             learn_sigma=False)
         true_log_prob = bfa.log_prob(ytrain, xtrain).sum()
         if k % 200 == 0:
             xtest = torch.randn(n_samples, d, m)
@@ -108,7 +111,7 @@ def test_bvfa():
                   torch.mean(torch.square(model.likelihood.sigma)).item(), err)
         loss.backward()
         optimizer.step()
-    assert (err < 5e-4)
+    assert (err < 5e-3)
 
 
 if __name__ == '__main__':

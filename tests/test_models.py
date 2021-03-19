@@ -186,7 +186,64 @@ def test_svgp_batching():
         assert err < 1e-3
 
 
+def test_lgplvm_LL():
+    """
+    test that Lgplvm and Lvgplvm run without explicit check for correctness
+    also test that burda log likelihood runs and is smaller than elbo
+    """
+    d = 3  # dims of latent space
+    n = 8  # number of neurons
+    m = 10  # number of conditions / time points
+    n_z = 5  # number of inducing points
+    n_samples = 2  # number of samples
+    gen = mgp.syndata.Gen(mgp.syndata.Euclid(d),
+                          n,
+                          m,
+                          variability=0.25,
+                          n_samples=n_samples)
+    Y = gen.gen_data()
+    # specify manifold, kernel and rdist
+    for nmod in range(3):
+        manif = mgp.manifolds.Euclid(m, d)
+        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        kernel = mgp.kernels.QuadExp(n, manif.distance)
+        lik = mgp.likelihoods.Gaussian(n)
+        lprior = mgp.lpriors.Uniform(manif)
+        z = manif.inducing_points(n, n_z)
+        if nmod in [0, 1]:
+            mod = mgp.models.Lgplvm(n,
+                                    m,
+                                    d,
+                                    n_samples,
+                                    lat_dist,
+                                    lprior,
+                                    Bayesian=(nmod == 1),
+                                    Y=Y).to(device)
+        else:
+            mod = mgp.models.Lvgplvm(n, m, d, n_samples, lat_dist, lprior,
+                                     lik).to(device)
+
+        data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
+        # train model
+        mgp.optimisers.svgp.fit(data,
+                                mod,
+                                optimizer=optim.Adam,
+                                max_steps=5,
+                                burnin=5 / 2E-2,
+                                n_mc=64,
+                                lrate=2E-2,
+                                print_every=1000)
+
+        ### test burda log likelihood ###
+        LL = mod.calc_LL(data, 128)
+        svgp_elbo, kl = mod.forward(data, 128)
+        elbo = (svgp_elbo - kl).data.cpu().numpy() / np.prod(Y.shape)
+
+        assert elbo < LL
+
+
 if __name__ == '__main__':
+    test_lgplvm_LL()
     test_svgp_batching()
     test_svgplvm_batching()
     test_svgplvm_LL()

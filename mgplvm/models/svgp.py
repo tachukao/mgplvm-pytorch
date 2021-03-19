@@ -166,7 +166,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
         # to compute an unbiased estimate of the likelihood of the full dataset
         m = (self.m if m is None else m)
         scale = (m / batch_size) * (self.n_samples / sample_size)
-        lik = lik.sum(-2) #sum over samples
+        lik = lik.sum(-2)  #sum over samples
         lik = lik * scale
 
         return lik, prior_kl
