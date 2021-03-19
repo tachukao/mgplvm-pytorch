@@ -360,10 +360,10 @@ class EP_GP(Rdist):
         """
 
         #compute KL analytically
-        lq = self.kl()  #(n_samples x d)
+        lq = self.kl(batch_idxs = batch_idxs, sample_idxs = sample_idxs)  #(n_samples x d)
 
         #(n_samples x m x d), (n_samples x d x m x m)
-        mu, K_half_S = self.prms
+        mu, K_half_S = self.lat_prms(batch_idxs = batch_idxs, sample_idxs = sample_idxs)
 
         # sample a batch with dims: (n_samples x d x m x n_mc)
         x = K_half_S @ torch.randn(
@@ -375,12 +375,18 @@ class EP_GP(Rdist):
         #(n_mc x n_samples x m x d), (n_samples x d)
         return x, lq
 
-    def kl(self):
+    def kl(self, batch_idxs = None, sample_idxs = None):
         """
         compute KL divergence analytically
         """
         #(n_samples x d x m), (n_samples x d x m)
         nu, S = self.nu, self.scale
+        if batch_idxs is not None:
+            nu = nu[..., batch_idxs]
+            S = S[..., batch_idxs]
+        if sample_idxs is not None:
+            nu = nu[sample_idxs, ...]
+            S = S[sample_idxs, ...]
 
         TrTerm = torch.square(S).sum(-1)  #(n_samples x d)
         MeanTerm = torch.square(nu).sum(-1)  #(n_samples x d)
@@ -397,13 +403,21 @@ class EP_GP(Rdist):
         return [self._scale, self._ell]
 
     def lat_prms(self, Y=None, batch_idxs=None, sample_idxs=None):
-        return self.prms
+        mu, K_half_S = self.prms
+        if batch_idxs is not None:
+            mu = mu[:, batch_idxs, :]
+            K_half_S = K_half_S[..., :, batch_idxs][..., batch_idxs, :]
+        if sample_idxs is not None:
+            mu = mu[sample_idxs, ...]
+            K_half_S = K_half_S[sample_idxs, ...]
+            
+        return mu, K_half_S
 
     def lat_gmu(self, Y=None, batch_idxs=None, sample_idxs=None):
-        return self.prms[0]
+        return self.lat_prms(Y = Y, batch_idxs = batch_idxs, sample_idxs = sample_idxs)[0]
 
     def lat_gamma(self, Y=None, batch_idxs=None, sample_idxs=None):
-        return self.prms[1]
+        return self.lat_prms(Y = Y, batch_idxs = batch_idxs, sample_idxs = sample_idxs)[1]
 
     def msg(self, Y=None, batch_idxs=None, sample_idxs=None):
         mu, gamma = self.lat_prms(Y=Y,
