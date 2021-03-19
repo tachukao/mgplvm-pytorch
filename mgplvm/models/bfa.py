@@ -83,7 +83,8 @@ class Bfa(Module):
     def log_prob(self, y, x):
         """compute prior p(y) = N(y|0, X^T X)"""
         lp = self._dist(x).log_prob(y)
-        return lp.sum()
+        print(lp.shape)
+        return lp
     
     def elbo(self,
              y: Tensor,
