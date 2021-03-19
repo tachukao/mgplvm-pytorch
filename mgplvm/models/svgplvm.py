@@ -58,6 +58,7 @@ class SvgpLvm(nn.Module):
         self.m = m
         self.n_samples = n_samples
         
+        #p(Y|X)
         self.svgp = svgp.Svgp(kernel,
                               n,
                               m,
@@ -68,8 +69,8 @@ class SvgpLvm(nn.Module):
                               tied_samples=tied_samples)
 
         # latent distribution
-        self.lat_dist = lat_dist
-        self.lprior = lprior
+        self.lat_dist = lat_dist #Q(X)
+        self.lprior = lprior #P(X)
 
     def elbo(self,
              data,
@@ -140,7 +141,7 @@ class SvgpLvm(nn.Module):
         svgp_lik, svgp_kl = self.svgp.elbo(data,
                                            g.transpose(-1, -2),
                                            sample_idxs,
-                                           m=m)
+                                           m=m) #p(Y|g)
         if neuron_idxs is not None:
             svgp_lik = svgp_lik[..., neuron_idxs]
             svgp_kl = svgp_kl[..., neuron_idxs]

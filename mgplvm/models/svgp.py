@@ -29,7 +29,7 @@ class SvgpBase(Module, metaclass=abc.ABCMeta):
                  whiten=True,
                  tied_samples=True):
         """
-        __init__ method for Base Sparse Variational GP Class
+        __init__ method for Base Sparse Variational GP Class (p(Y|X))
         Parameters
         ----------
         n : int

@@ -60,7 +60,7 @@ class LgpLvm(Svgplvm):
         self.m = m
         self.n_samples = n_samples
         
-        #observation model
+        #observation model (P(Y|X))
         if stochastic:
             self.svgp = Bvfa(n,d,m,n_samples,likelihood: Likelihood, tied_samples=tied_samples)
         elif Bayesian:

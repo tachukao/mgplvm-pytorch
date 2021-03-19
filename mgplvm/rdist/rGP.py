@@ -237,6 +237,21 @@ class lat_GP(GPbase):
     def prms(self):
         return self.f.prms
 
+    
+############ new approach ################
+
+
+
+# Class GP_efficient():
+    
+    
+#     sample()
+#     """
+#     input: n_mc
+#     output: n_mc samples from the posterior Q(X), KL between Q(X) and p(X)
+#     both should be differentiable
+#     """
+    
 
 class EP_GP(Rdist):
     name = "EP_GP"
@@ -281,13 +296,13 @@ class EP_GP(Rdist):
 
         #initialize GP mean
         nu = torch.randn((n_samples, self.d, m)) * 1
-        self._nu = nn.Parameter(data=nu, requires_grad=True)
+        self._nu = nn.Parameter(data=nu, requires_grad=True) #m in the notes
 
         #self._nu_s = nn.Parameter(data=torch.ones(1), requires_grad=True)
         #self._nu_i = nn.Parameter(data=torch.zeros(1), requires_grad=True)
 
         #initialize covariance parameters
-        _scale = torch.ones(n_samples, self.d, m) * _scale
+        _scale = torch.ones(n_samples, self.d, m) * _scale #n_diag x T
         self._scale = nn.Parameter(data=inv_softplus(_scale),
                                    requires_grad=True)
 
