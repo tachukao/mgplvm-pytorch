@@ -303,3 +303,112 @@ class Bvfa(Module):
         q_mu = self.q_mu
         q_sqrt = transform_to(constraints.lower_cholesky)(self.q_sqrt)
         return q_mu, q_sqrt
+
+    
+class fa(Module):
+    """
+    Standard non-Bayesian Factor Analysis
+    Assumes Gaussian observation noise
+    Computes log_prob and posterior predictions exactly
+    """
+
+    def __init__(self,
+                 n: int,
+                 d: int,
+                 sigma: Optional[Tensor] = None,
+                 learn_sigma=True):
+        """
+        n: number of neurons
+        d: number of latents
+        """
+        super().__init__()
+        if sigma is None:
+            sigma = torch.ones(n,)*0.5  # TODO: FA init
+        self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
+        
+        C = torch.randn(n, d) * d**(-0.5) # TODO: FA init
+        self.C = nn.Parameter(data=C, requires_grad=True)
+        
+        self.n = n
+
+    @property
+    def prms(self) -> Tensor:
+        """p(y_i | f_i) = N(0, sigma^2_i)"""
+        variance = torch.square(self._sigma)
+        return variance
+
+    @property
+    def sigma(self) -> Tensor:
+        return (1e-20 + self.prms).sqrt()
+
+    def log_prob(self, y, x):
+        """
+        compute p(y|X) = N(y|CX, I)
+        x is (n_mc x n_samples x d x m)
+        y is (n_samples x n x m)
+        """
+        mean = self.C @ x #(... x n x m)
+        mean = mean.transpose(-1, -2) #(... x m x n)
+        dist = Normal(loc = mean, scale = self.sigma)
+        lp = dist.log_prob(y.transpose(-1, -2)) #(... x m x n)
+        #print('lp:', lp.shape)
+        return lp.sum()
+
+    def predict(self, xstar, full_cov=False):
+        """
+        compute posterior p(f* | x, y, C) = N(C@x*, Sig)
+        """
+        mu = self.C @ xstar #(n_samples x n x m)
+        cov = torch.zeros(mu.shape) #p(f|C, x) is a delta function
+        if not full_cov:
+            return mu, cov
+        else:
+            return mu, torch.diag_embed(cov)
+        
+    def sample(self,
+               query: Tensor,
+               n_mc: int = 1000,
+               square: bool = False,
+               noise: bool = True):
+        """
+        Parameters
+        ----------
+        query : Tensor (single kernel)
+            test input tensor with dimensions (n_samples x d x m)
+        n_mc : int
+            numper of samples to return
+        square : bool
+            determines whether to square the output
+        noise : bool
+            determines whether we also sample explicitly from the noise model or simply return samples of the mean
+
+        Returns
+        -------
+        y_samps : Tensor
+            samples from the model (n_mc x n_samples x d x m)
+        """
+
+        query = query[None, ...]  #add batch dimension (1 x n_samples x d x m)
+
+        mu, _ = self.predict(query, False)  #1xn_samplesxnxm, 1xn_samplesxnxm
+        # remove batch dimension
+        mu = mu[0]  #n_samples x n x m,
+        #sample from p(f|x) which is a delta function for FA
+        f_samps = mu
+
+        if noise:
+            #sample from observation function p(y|f)
+            dist = Normal(loc = f_samps, scale = self.sigma[..., None])
+            y_samps = dist.sample(n_mc)   #n_mc x n_samples x n x m
+            print(y_samps.shape)
+        else:
+            #compute mean observations mu(f) for each f
+            y_samps = torch.ones(n_mc, mu.shape[0], mu.shape[1], mu.shape[2]).to(query.device)*f_samps  #n_mc x n_samples x n x m
+
+        if square:
+            y_samps = y_samps**2
+
+        return y_samps
+
+
+    
