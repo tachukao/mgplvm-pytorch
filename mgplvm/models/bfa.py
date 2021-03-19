@@ -66,6 +66,7 @@ class Bfa(Module):
         """
         compute posterior p(f* | x, y)
         """
+        m = x.shape[-1]
         dist = self.dist(x)
         prec = dist.precision_matrix  #(K+sigma^2I)^-1
         l = torch.cholesky(prec, upper=False)  #mxm??
