@@ -14,6 +14,7 @@ from ..kernels import Kernel
 from ..likelihoods import Likelihood
 from ..lpriors.common import Lprior
 from ..rdist import Rdist
+from .gp_base import GpBase
 
 from .bfa import Fa, Bfa, Bvfa
 from .gplvm import Gplvm
@@ -39,9 +40,9 @@ class Lgplvm(Gplvm):
 
         #observation model (P(Y|X))
         if Bayesian:
-            obs = Bfa(n, d, Y=Y)  #Bayesian FA
+            obs: GpBase = Bfa(n, d, Y=Y)  #Bayesian FA
         else:
-            obs = Fa(n, d, Y=Y)  #non-Bayesian FA
+            obs: GpBase = Fa(n, d, Y=Y)  #non-Bayesian FA
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)
 
