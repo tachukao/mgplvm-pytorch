@@ -12,6 +12,7 @@ from typing import Tuple, List, Optional, Union
 from torch.distributions import MultivariateNormal, LowRankMultivariateNormal, kl_divergence, transform_to, constraints, Normal
 from ..likelihoods import Likelihood
 from sklearn import decomposition
+from .gp_base import GpBase
 
 jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)
@@ -30,7 +31,7 @@ def batch_capacitance_tril(W, D):
     return torch.cholesky(K)
 
 
-class Bfa(Module):
+class Bfa(GpBase):
     """
     Bayesian Factor Analysis
     Assumes Gaussian observation noise
@@ -149,7 +150,7 @@ class Bfa(Module):
             return mu, c
 
 
-class Bvfa(Module):
+class Bvfa(GpBase):
 
     def __init__(self,
                  n: int,
@@ -372,7 +373,7 @@ class Bvfa(Module):
         return q_mu, q_sqrt
 
 
-class Fa(Module):
+class Fa(GpBase):
     """
     Standard non-Bayesian Factor Analysis
     Assumes Gaussian observation noise
