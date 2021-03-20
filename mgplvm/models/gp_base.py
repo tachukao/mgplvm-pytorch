@@ -12,9 +12,5 @@ class GpBase(Module, metaclass=abc.ABCMeta):
         super().__init__()
 
     @abc.abstractmethod
-    def elbo(self,
-             y: Tensor,
-             x: Tensor,
-             sample_idxs: Optional[List[int]] = None,
-             m: Optional[int] = None) -> Tuple[Tensor, Tensor]:
+    def elbo(self):
         return
