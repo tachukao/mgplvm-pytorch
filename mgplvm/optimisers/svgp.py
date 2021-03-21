@@ -17,40 +17,37 @@ def sort_params(model, hook):
         prm.register_hook(hook)
 
 
-#     params0 = list(
-#         itertools.chain.from_iterable([
-#             model.svgp.z.parameters(),
-#             model.lat_dist.gmu_parameters(),
-#             [model.svgp.q_mu, model.svgp.q_sqrt],
-#         ]))
 
     params0 = list(
         itertools.chain.from_iterable([
             model.lat_dist.gmu_parameters(),
+            model.svgp.parameters()
         ]))
-
-    try:
-        params0 += list(
-            itertools.chain.from_iterable([
-                [model.svgp.q_mu, model.svgp.q_sqrt],
-            ]))
-    except AttributeError:
-        None
-    try:
+        
+    params1 = list(
+        itertools.chain.from_iterable([
+            model.lat_dist.concentration_parameters(),
+            model.lprior.parameters()
+        ]))
+    
+    
+    if model.svgp.name == 'Svgp':
         params0 += list(
             itertools.chain.from_iterable([
                 model.svgp.z.parameters(),
             ]))
-    except AttributeError:
-        None
-
-    params1 = list(
-        itertools.chain.from_iterable([
-            model.lat_dist.concentration_parameters(),
-            model.lprior.parameters(),
-            model.svgp.likelihood.parameters(),
-            model.svgp.kernel.parameters()
-        ]))
+        params1 += list(
+            itertools.chain.from_iterable([
+                model.svgp.likelihood.parameters(),
+                model.svgp.kernel.parameters()
+            ]))
+    
+    elif model.svgp.name == 'Bvfa':
+        params1 += list(
+            itertools.chain.from_iterable([
+                model.svgp.likelihood.parameters(),
+            ]))
+    
 
     params = [{'params': params0}, {'params': params1}]
     return params
@@ -75,9 +72,7 @@ def print_progress(model,
             i, svgp_elbo_val / Z, kl_val / Z, loss_val / Z)
 
         print(msg + model.lat_dist.msg(Y, batch_idxs, sample_idxs) +
-              model.svgp.kernel.msg + model.lprior.msg +
-              model.svgp.likelihood.msg,
-              end="\r")
+              model.svgp.msg + model.lprior.msg, end="\r")
 
 
 def fit(dataset: Union[Tensor, DataLoader],

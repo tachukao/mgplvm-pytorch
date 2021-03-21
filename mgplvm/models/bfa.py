@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch import Tensor
 import numpy as np
 from mgplvm.utils import softplus, inv_softplus
-from ..base import Module, NoneClass
+from ..base import Module
 from ..kernels import Kernel
 from ..inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
@@ -37,28 +37,61 @@ class Bfa(GpBase):
     Assumes Gaussian observation noise
     Computes log_prob and posterior predictions exactly
     """
+    
+    name = "Bfa"
 
     def __init__(self,
                  n: int,
                  d: int,
                  sigma: Optional[Tensor] = None,
                  learn_sigma=True,
-                 Y=None):
+                 Y=None,
+                learn_neuron_scale = False,
+                ard = False,
+                learn_scale = None):
 
         super().__init__()
+        
+        if Y is not None:
+            n_samples_fa, n_fa, m_fa = Y.shape
+            mod = decomposition.FactorAnalysis(n_components=d)
+            Y_fa = Y.transpose(0, 2, 1).reshape(n_samples_fa * m_fa, n_fa)
+            mudata = mod.fit_transform(Y_fa)  #m*n_samples x d
+            C = torch.tensor(mod.components_.T) # (n x d)
+        
+        #### initialize noise parameters ####
         if sigma is None:
             if Y is None:
                 sigma = torch.ones(n,)  # TODO: FA init
             else:
-                n_samples, n, m = Y.shape
-                mod = decomposition.FactorAnalysis(n_components=d)
-                Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
-                mudata = mod.fit_transform(Y)  #m*n_samples x d
                 sigma = torch.tensor(np.sqrt(mod.noise_variance_))
 
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
         self.n = n
-        self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
+        #self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
+        
+        
+        #### initialize prior parameters ####
+        if learn_neuron_scale:
+            print('neuron scale not implemented')
+            exit()
+            
+        _scale = torch.ones(1)
+        _dim_scale = torch.ones(d)
+        _neuron_scale = torch.ones(n)
+        if learn_scale is None: learn_scale = not (ard or learn_neuron_scale)
+        
+        if Y is not None: #initialize from FA
+            if learn_scale:
+                _scale = torch.square(C).mean().sqrt() #global scale
+            if learn_neuron_scale:
+                _neuron_scale = torch.square(C).mean(1).sqrt() #per neuron
+            if ard:
+                _dim_scale = torch.square(C).mean(0).sqrt() #per latent
+            
+        self._scale = nn.Parameter(inv_softplus(_scale), requires_grad = learn_scale)
+        self._neuron_scale = nn.Parameter(inv_softplus(_neuron_scale), requires_grad = learn_neuron_scale)
+        self._dim_scale = nn.Parameter(inv_softplus(_dim_scale), requires_grad = ard)
 
     @property
     def prms(self) -> Tensor:
@@ -69,12 +102,25 @@ class Bfa(GpBase):
     @property
     def sigma(self) -> Tensor:
         return (1e-20 + self.prms).sqrt()
+    
+    @property
+    def scale(self):
+        return softplus(self._scale)
+    
+    @property
+    def neuron_scale(self):
+        return softplus(self._neuron_scale)[:, None]
+    
+    @property
+    def dim_scale(self):
+        return softplus(self._dim_scale)[:, None]
 
     def _dist(self, x):
         """
         construct low rank prior MVN = N(0, X^T X + sigma^2 I)
         """
         m = x.shape[-1]
+        x = self.scale * self.dim_scale * x
         cov_factor = x[..., None, :, :].transpose(-1, -2)  #(..., mxd)
         cov_diag = self.prms[:, None] * torch.ones(m).to(x.device)
         dist = LowRankMultivariateNormal(loc=torch.zeros(self.n,
@@ -121,6 +167,10 @@ class Bfa(GpBase):
         prec = self._dist(x.squeeze()).precision_matrix  #(K+sigma^2I)^-1
         m = x.shape[-1]
         d = x.shape[-2]
+        
+        x = self.scale * self.dim_scale * x
+        xstar = self.scale * self.dim_scale * xstar
+        
         x = x[..., None, :, :]  #(...,d,m)
         xstar = xstar[..., None, :, :]  #(...,d,m)
         xt = x.transpose(-1, -2)  #(...,m,d)
@@ -148,9 +198,15 @@ class Bfa(GpBase):
             z = torch.eye(d) - xxT + xATAxT
             c = xstar.transpose(-1, -2).matmul(z).matmul(xstar)
             return mu, c
+        
+    @property
+    def msg(self):
+        return ('scale {:.3f} |').format(
+            (self.scale.mean()*self.neuron_scale.mean()*self.dim_scale.mean()).item())
 
 
 class Bvfa(GpBase):
+    name = "Bvfa"
 
     def __init__(self,
                  n: int,
@@ -191,7 +247,7 @@ class Bvfa(GpBase):
         self.m = m
         self.tied_samples = tied_samples
         self.n_samples = n_samples
-        self.z, self.kernel = [NoneClass() for i in range(2)]
+        #self.z, self.kernel = [NoneClass() for i in range(2)]
 
         #### initialize prior parameters ####
         
@@ -418,6 +474,12 @@ class Bvfa(GpBase):
         #multiply the posterior by a scale factor for each neuron
         q_mu, q_sqrt = self.neuron_scale * q_mu, self.neuron_scale[..., None] * q_sqrt
         return q_mu, q_sqrt
+    
+    @property
+    def msg(self):
+        newmsg = ('scale {:.3f} |').format(
+            (self.scale.mean()*self.neuron_scale.mean()*self.dim_scale.mean()).item())
+        return newmsg + self.likelihood.msg
 
 
 class Fa(GpBase):
@@ -426,6 +488,8 @@ class Fa(GpBase):
     Assumes Gaussian observation noise
     Computes log_prob and posterior predictions exactly
     """
+    
+    name = "Fa"
 
     def __init__(self,
                  n: int,
@@ -454,7 +518,7 @@ class Fa(GpBase):
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
         self.C = nn.Parameter(data=C, requires_grad=True)
 
-        self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
+        #self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
 
     @property
     def prms(self) -> Tensor:
@@ -560,3 +624,7 @@ class Fa(GpBase):
             y_samps = y_samps**2
 
         return y_samps
+    
+    @property
+    def msg(self):
+        return ''
