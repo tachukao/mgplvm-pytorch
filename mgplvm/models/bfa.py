@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 import numpy as np
-from mgplvm.utils import softplus
+from mgplvm.utils import softplus, inv_softplus
 from ..base import Module, NoneClass
 from ..kernels import Kernel
 from ..inducing_variables import InducingPoints
@@ -160,7 +160,11 @@ class Bvfa(GpBase):
                  likelihood: Likelihood,
                  q_mu: Optional[Tensor] = None,
                  q_sqrt: Optional[Tensor] = None,
-                 tied_samples=True):
+                 tied_samples=True,
+                Y = None,
+                learn_neuron_scale = False,
+                ard = False,
+                learn_scale = None):
         """
         __init__ method for Base Variational Factor Analysis 
         Parameters
@@ -189,6 +193,32 @@ class Bvfa(GpBase):
         self.n_samples = n_samples
         self.z, self.kernel = [NoneClass() for i in range(2)]
 
+        #### initialize prior parameters ####
+        
+        _scale = torch.ones(1)
+        _dim_scale = torch.ones(d)
+        _neuron_scale = torch.ones(n)
+        if learn_scale is None: learn_scale = not (ard or learn_neuron_scale)
+        
+        if Y is not None: #initialize from FA
+            n_samples_fa, n_fa, m_fa = Y.shape
+            mod = decomposition.FactorAnalysis(n_components=d)
+            Y_fa = Y.transpose(0, 2, 1).reshape(n_samples_fa * m_fa, n_fa)
+            mudata = mod.fit_transform(Y_fa)  #m*n_samples x d
+            C = torch.tensor(mod.components_.T) # (n x d)
+            #print(C.shape)
+            if learn_scale:
+                _scale = torch.square(C).mean().sqrt() #global scale
+            if learn_neuron_scale:
+                _neuron_scale = torch.square(C).mean(1).sqrt() #per neuron
+            if ard:
+                _dim_scale = torch.square(C).mean(0).sqrt() #per latent
+            
+        self._scale = nn.Parameter(inv_softplus(_scale), requires_grad = learn_scale)
+        self._neuron_scale = nn.Parameter(inv_softplus(_neuron_scale), requires_grad = learn_neuron_scale)
+        self._dim_scale = nn.Parameter(inv_softplus(_dim_scale), requires_grad = ard)
+        
+        #### initialize variational distribution (should we initialize this to the Gaussian ground truth?)####
         if q_mu is None:
             if tied_samples:
                 q_mu = torch.zeros(1, n, d)
@@ -214,8 +244,20 @@ class Bvfa(GpBase):
 
         self.q_mu = nn.Parameter(q_mu, requires_grad=True)
         self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
-
+        
         self.likelihood = likelihood
+    
+    @property
+    def scale(self):
+        return softplus(self._scale)
+    
+    @property
+    def neuron_scale(self):
+        return softplus(self._neuron_scale)[:, None]
+    
+    @property
+    def dim_scale(self):
+        return softplus(self._dim_scale)[:, None]
 
     def prior_kl(self, sample_idxs=None):
         """
@@ -358,6 +400,8 @@ class Bvfa(GpBase):
             q_mu = q_mu[sample_idxs]
             q_sqrt = q_sqrt[sample_idxs]
 
+        x = self.scale * self.dim_scale*x #multiply each dimension by the prior scale
+
         mu = q_mu.matmul(x)  # n_b x n_samples x n x m
         l = x[..., None, :, :].transpose(-1, -2).matmul(
             q_sqrt)  # n_b x n_samples x m x d
@@ -370,6 +414,9 @@ class Bvfa(GpBase):
     def prms(self) -> Tuple[Tensor, Tensor]:
         q_mu = self.q_mu
         q_sqrt = transform_to(constraints.lower_cholesky)(self.q_sqrt)
+        
+        #multiply the posterior by a scale factor for each neuron
+        q_mu, q_sqrt = self.neuron_scale * q_mu, self.neuron_scale[..., None] * q_sqrt
         return q_mu, q_sqrt
 
 
