@@ -311,6 +311,8 @@ class SvgpBase(GpBase):
 
 
 class Svgp(SvgpBase):
+    
+    name = "Svgp"
 
     def __init__(self,
                  kernel: Kernel,
@@ -375,3 +377,7 @@ class Svgp(SvgpBase):
     def _expand_x(self, x: Tensor) -> Tensor:
         x = x[..., None, :, :]
         return x
+    
+    @property
+    def msg(self):
+        return self.kernel.msg + self.likelihood.msg
