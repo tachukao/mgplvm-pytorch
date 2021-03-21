@@ -88,7 +88,7 @@ def test_bvfa():
     ytrain = c.matmul(xtrain) + sigma * torch.randn(n_samples, n, m)
     lik = mgp.likelihoods.Gaussian(n)
 
-    model = mgp.models.Bvfa(n, d, m, n_samples, lik)
+    model = mgp.models.Bvfa(n, d, m, n_samples, lik, learn_scale = False)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.008)
     for k in range(1000):
