@@ -12,5 +12,5 @@ class GpBase(Module, metaclass=abc.ABCMeta):
         super().__init__()
 
     @abc.abstractmethod
-    def elbo(self):
+    def elbo(self, y, x, sample_idxs, m):
         return

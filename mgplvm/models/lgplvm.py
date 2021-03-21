@@ -39,10 +39,7 @@ class Lgplvm(Gplvm):
         """
 
         #observation model (P(Y|X))
-        if Bayesian:
-            obs: GpBase = Bfa(n, d, Y=Y)  #Bayesian FA
-        else:
-            obs: GpBase = Fa(n, d, Y=Y)  #non-Bayesian FA
+        obs = Bfa(n, d, Y=Y) if Bayesian else Fa(n, d, Y=Y)
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)
 
