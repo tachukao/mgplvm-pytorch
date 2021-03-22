@@ -6,3 +6,4 @@ from . import rdist
 from . import manifolds
 from . import crossval
 from . import syndata
+from . import fast_utils

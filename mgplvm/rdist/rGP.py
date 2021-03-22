@@ -11,7 +11,7 @@ from .common import Rdist
 from typing import Optional
 from ..base import Module
 
-from ..toeplitz import sym_toeplitz_matmul
+from ..fast_utils.toeplitz import sym_toeplitz_matmul
 
 
 class GPbase(Rdist):
