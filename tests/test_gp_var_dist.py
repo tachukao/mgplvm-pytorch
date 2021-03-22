@@ -318,3 +318,4 @@ def test_toeplitz_match_no_toeplitz_GP_lat_prior():
 if __name__ == '__main__':
     test_GP_lat_prior()
     test_toeplitz_GP_lat_prior()
+    test_toeplitz_match_no_toeplitz_GP_lat_prior()
