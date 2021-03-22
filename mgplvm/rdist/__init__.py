@@ -1,3 +1,3 @@
 from .common import Rdist
 from .relie import (ReLie, ReLieBase)
-from .rGP import lat_GP, EP_GP
+from .rGP import EP_GP
