@@ -42,7 +42,12 @@ class Lgplvm(Gplvm):
         """
 
         #observation model (P(Y|X))
-        obs = Bfa(n, d, Y=Y, learn_neuron_scale=learn_neuron_scale, ard=ard, learn_scale=learn_scale) if Bayesian else Fa(n, d, Y=Y)
+        obs = Bfa(n,
+                  d,
+                  Y=Y,
+                  learn_neuron_scale=learn_neuron_scale,
+                  ard=ard,
+                  learn_scale=learn_scale) if Bayesian else Fa(n, d, Y=Y)
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)
 
