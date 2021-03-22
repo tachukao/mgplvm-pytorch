@@ -16,40 +16,16 @@ def sort_params(model, hook):
     for prm in model.lat_dist.parameters():
         prm.register_hook(hook)
 
-
-#     params0 = list(
-#         itertools.chain.from_iterable([
-#             model.svgp.z.parameters(),
-#             model.lat_dist.gmu_parameters(),
-#             [model.svgp.q_mu, model.svgp.q_sqrt],
-#         ]))
-
     params0 = list(
-        itertools.chain.from_iterable([
-            model.lat_dist.gmu_parameters(),
-        ]))
-
-    try:
-        params0 += list(
-            itertools.chain.from_iterable([
-                [model.svgp.q_mu, model.svgp.q_sqrt],
-            ]))
-    except AttributeError:
-        None
-    try:
-        params0 += list(
-            itertools.chain.from_iterable([
-                model.svgp.z.parameters(),
-            ]))
-    except AttributeError:
-        None
+        itertools.chain.from_iterable(
+            [model.lat_dist.gmu_parameters(),
+             model.svgp.g0_parameters()]))
 
     params1 = list(
         itertools.chain.from_iterable([
             model.lat_dist.concentration_parameters(),
             model.lprior.parameters(),
-            model.svgp.likelihood.parameters(),
-            model.svgp.kernel.parameters()
+            model.svgp.g1_parameters()
         ]))
 
     params = [{'params': params0}, {'params': params1}]
@@ -75,8 +51,7 @@ def print_progress(model,
             i, svgp_elbo_val / Z, kl_val / Z, loss_val / Z)
 
         print(msg + model.lat_dist.msg(Y, batch_idxs, sample_idxs) +
-              model.svgp.kernel.msg + model.lprior.msg +
-              model.svgp.likelihood.msg,
+              model.svgp.msg + model.lprior.msg,
               end="\r")
 
 
