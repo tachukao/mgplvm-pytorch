@@ -11,6 +11,8 @@ from .common import Rdist
 from typing import Optional
 from ..base import Module
 
+from ..fast_utils.toeplitz import sym_toeplitz_matmul
+
 
 class GPbase(Rdist):
     name = "GPBase"
@@ -262,7 +264,8 @@ class EP_GP(Rdist):
                  initialization: Optional[str] = 'random',
                  Y=None,
                  _scale=0.2,
-                 ell=None):
+                 ell=None,
+                 use_fast_toeplitz=True):
         """
         Parameters
         ----------
@@ -288,6 +291,7 @@ class EP_GP(Rdist):
 
         super(EP_GP, self).__init__(manif, 1)
 
+        self.use_fast_toeplitz = use_fast_toeplitz
         self.manif = manif
         self.d = manif.d
 
@@ -342,7 +346,13 @@ class EP_GP(Rdist):
         #(n_samples x d x m x m)
         K_half = sig_sqr_half * torch.exp(-self.dts_sq /
                                           (2 * torch.square(ell_half)))
-        mu = K_half @ nu[..., None]  #(n_samples x d x m x 1)
+        # the if and else do the same matmul, but sym_toeplitz takes advantage of structure
+        if self.use_fast_toeplitz:
+            mu = sym_toeplitz_matmul(K_half[:, :, :, 0],
+                                     nu[..., None])  #(n_samples x d x m x 1)
+        else:
+            mu = K_half @ nu[..., None]  #(n_samples x d x m x 1)
+
         #multiply diagonal scale column wise to get cholesky factor
         scale = self.scale
         #scale = scale / scale * scale.mean()
@@ -380,9 +390,15 @@ class EP_GP(Rdist):
                                      sample_idxs=sample_idxs)
 
         # sample a batch with dims: (n_samples x d x m x n_mc)
-        x = K_half_S @ torch.randn(
-            (mu.shape[0], mu.shape[2], mu.shape[1], size[0])).to(
-                K_half_S.device)
+        rand = torch.randn((mu.shape[0], mu.shape[2], mu.shape[1],
+                            size[0])).to(K_half_S.device)
+
+        # the if and else do the same matmul, but sym_toeplitz takes advantage of structure
+        if self.use_fast_toeplitz:
+            x = sym_toeplitz_matmul(K_half_S[:, :, :, 0], rand)
+        else:
+            x = K_half_S @ rand
+
         x = x.permute(-1, 0, 2, 1)  #(n_mc x n_samples x m x d)
         x = x + mu[None, ...]  #add mean
 
