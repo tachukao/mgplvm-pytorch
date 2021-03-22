@@ -108,7 +108,7 @@ def test_fast_GP_lat_prior():
               mod.lat_dist.ell.detach().flatten(),
               mod.lat_dist.scale.detach().mean(0).mean(-1))
 
-    print('kernel:', (mod.kernel.input_scale.detach())**(-1))
+    #print('kernel:', (mod.kernel.input_scale.detach())**(-1))
     mus = mod.lat_dist.prms[0].detach().cpu().numpy()
     print('mus:', np.std(mus, axis=(0, 1)))
 
