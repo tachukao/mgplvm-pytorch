@@ -108,7 +108,7 @@ def test_toeplitz_GP_lat_prior():
               mod.lat_dist.ell.detach().flatten(),
               mod.lat_dist.scale.detach().mean(0).mean(-1))
 
-    print('kernel:', (mod.kernel.input_scale.detach())**(-1))
+    #print('kernel:', (mod.kernel.input_scale.detach())**(-1))
     mus = mod.lat_dist.prms[0].detach().cpu().numpy()
     print('mus:', np.std(mus, axis=(0, 1)))
 
@@ -218,8 +218,8 @@ def test_GP_lat_prior():
                              lprior).to(device)
 
     print(mod.lat_dist.name)
+
     ### test that training runs ###
-    n_mc = 16
 
     def cb(mod, i, loss):
         if i % 5 == 0:
@@ -247,7 +247,7 @@ def test_GP_lat_prior():
               mod.lat_dist.ell.detach().flatten(),
               mod.lat_dist.scale.detach().mean(0).mean(-1))
 
-    print('kernel:', (mod.kernel.input_scale.detach())**(-1))
+    #print('kernel:', (mod.kernel.input_scale.detach())**(-1))
     mus = mod.lat_dist.prms[0].detach().cpu().numpy()
     print('mus:', np.std(mus, axis=(0, 1)))
 
