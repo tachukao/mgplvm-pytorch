@@ -11,6 +11,7 @@ from typing import Tuple, List, Optional, Union
 from torch.distributions import MultivariateNormal, kl_divergence, transform_to, constraints, Normal
 from ..likelihoods import Likelihood
 from .gp_base import GpBase
+import itertools
 
 jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)
@@ -311,7 +312,7 @@ class SvgpBase(GpBase):
 
 
 class Svgp(SvgpBase):
-    
+
     name = "Svgp"
 
     def __init__(self,
@@ -377,7 +378,18 @@ class Svgp(SvgpBase):
     def _expand_x(self, x: Tensor) -> Tensor:
         x = x[..., None, :, :]
         return x
-    
+
     @property
     def msg(self):
         return self.kernel.msg + self.likelihood.msg
+
+    def g0_parameters(self):
+        return [self.q_mu, self.q_sqrt]
+
+    def g1_parameters(self):
+        return list(
+            itertools.chain.from_iterable([
+                self.kernel.parameters(),
+                self.z.parameters(),
+                self.likelihood.parameters()
+            ]))

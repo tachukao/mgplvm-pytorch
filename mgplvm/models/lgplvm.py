@@ -32,9 +32,9 @@ class Lgplvm(Gplvm):
                  lprior: Lprior,
                  Bayesian=True,
                  Y=None,
-                learn_neuron_scale = False,
-                ard = False,
-                learn_scale = None):
+                 learn_neuron_scale=False,
+                 ard=False,
+                 learn_scale=None):
         """
         __init__ method for linear GPLVM with exact posteriors and Gaussian noise
         Parameters
@@ -42,7 +42,7 @@ class Lgplvm(Gplvm):
         """
 
         #observation model (P(Y|X))
-        obs = Bfa(n, d, Y=Y) if Bayesian else Fa(n, d, Y=Y)
+        obs = Bfa(n, d, Y=Y, learn_neuron_scale=learn_neuron_scale, ard=ard, learn_scale=learn_scale) if Bayesian else Fa(n, d, Y=Y)
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)
 
@@ -59,9 +59,9 @@ class Lvgplvm(Gplvm):
                  lprior: Lprior,
                  likelihood: Likelihood,
                  tied_samples=True,
-                learn_neuron_scale = False,
-                ard = False,
-                learn_scale = None):
+                 learn_neuron_scale=False,
+                 ard=False,
+                 learn_scale=None):
         """
         __init__ method for linear GPLVM with approximate posteriors and flexible noise models
         Parameters
@@ -69,6 +69,14 @@ class Lvgplvm(Gplvm):
         """
 
         #observation model (P(Y|X))
-        obs = Bvfa(n, d, m, n_samples, likelihood, tied_samples=tied_samples, learn_neuron_scale = learn_neuron_scale, ard = ard, learn_scale = learn_scale)
-        
+        obs = Bvfa(n,
+                   d,
+                   m,
+                   n_samples,
+                   likelihood,
+                   tied_samples=tied_samples,
+                   learn_neuron_scale=learn_neuron_scale,
+                   ard=ard,
+                   learn_scale=learn_scale)
+
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)
