@@ -66,7 +66,8 @@ class Lvgplvm(Gplvm):
                  tied_samples=True,
                  learn_neuron_scale=False,
                  ard=False,
-                 learn_scale=None):
+                 learn_scale=None,
+                 Y=None):
         """
         __init__ method for linear GPLVM with approximate posteriors and flexible noise models
         Parameters
@@ -80,6 +81,7 @@ class Lvgplvm(Gplvm):
                    n_samples,
                    likelihood,
                    tied_samples=tied_samples,
+                   Y=Y,
                    learn_neuron_scale=learn_neuron_scale,
                    ard=ard,
                    learn_scale=learn_scale)
