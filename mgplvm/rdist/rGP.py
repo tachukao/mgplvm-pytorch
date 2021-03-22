@@ -240,6 +240,18 @@ class lat_GP(GPbase):
         return self.f.prms
 
 
+############ new approach ################
+
+# Class GP_efficient():
+
+#     sample()
+#     """
+#     input: n_mc
+#     output: n_mc samples from the posterior Q(X), KL between Q(X) and p(X)
+#     both should be differentiable
+#     """
+
+
 class EP_GP(Rdist):
     name = "EP_GP"
 
@@ -285,13 +297,13 @@ class EP_GP(Rdist):
 
         #initialize GP mean
         nu = torch.randn((n_samples, self.d, m)) * 1
-        self._nu = nn.Parameter(data=nu, requires_grad=True)
+        self._nu = nn.Parameter(data=nu, requires_grad=True)  #m in the notes
 
         #self._nu_s = nn.Parameter(data=torch.ones(1), requires_grad=True)
         #self._nu_i = nn.Parameter(data=torch.zeros(1), requires_grad=True)
 
         #initialize covariance parameters
-        _scale = torch.ones(n_samples, self.d, m) * _scale
+        _scale = torch.ones(n_samples, self.d, m) * _scale  #n_diag x T
         self._scale = nn.Parameter(data=inv_softplus(_scale),
                                    requires_grad=True)
 
@@ -343,7 +355,7 @@ class EP_GP(Rdist):
 
         #multiply diagonal scale column wise to get cholesky factor
         scale = self.scale
-        scale = scale / scale * scale.mean()
+        #scale = scale / scale * scale.mean()
         K_half_S = K_half * scale[
             ..., None, :]  # (n_samples x d x m x m) * (n_samples x d x 1 x m)
         return mu[..., 0].transpose(-1, -2), K_half_S
@@ -370,10 +382,12 @@ class EP_GP(Rdist):
         """
 
         #compute KL analytically
-        lq = self.kl()  #(n_samples x d)
+        lq = self.kl(batch_idxs=batch_idxs,
+                     sample_idxs=sample_idxs)  #(n_samples x d)
 
         #(n_samples x m x d), (n_samples x d x m x m)
-        mu, K_half_S = self.prms
+        mu, K_half_S = self.lat_prms(batch_idxs=batch_idxs,
+                                     sample_idxs=sample_idxs)
 
         # sample a batch with dims: (n_samples x d x m x n_mc)
         rand = torch.randn((mu.shape[0], mu.shape[2], mu.shape[1],
@@ -391,12 +405,18 @@ class EP_GP(Rdist):
         #(n_mc x n_samples x m x d), (n_samples x d)
         return x, lq
 
-    def kl(self):
+    def kl(self, batch_idxs=None, sample_idxs=None):
         """
         compute KL divergence analytically
         """
         #(n_samples x d x m), (n_samples x d x m)
         nu, S = self.nu, self.scale
+        if batch_idxs is not None:
+            nu = nu[..., batch_idxs]
+            S = S[..., batch_idxs]
+        if sample_idxs is not None:
+            nu = nu[sample_idxs, ...]
+            S = S[sample_idxs, ...]
 
         TrTerm = torch.square(S).sum(-1)  #(n_samples x d)
         MeanTerm = torch.square(nu).sum(-1)  #(n_samples x d)
@@ -413,13 +433,25 @@ class EP_GP(Rdist):
         return [self._scale, self._ell]
 
     def lat_prms(self, Y=None, batch_idxs=None, sample_idxs=None):
-        return self.prms
+        mu, K_half_S = self.prms
+        if batch_idxs is not None:
+            mu = mu[:, batch_idxs, :]
+            K_half_S = K_half_S[..., :, batch_idxs][..., batch_idxs, :]
+        if sample_idxs is not None:
+            mu = mu[sample_idxs, ...]
+            K_half_S = K_half_S[sample_idxs, ...]
+
+        return mu, K_half_S
 
     def lat_gmu(self, Y=None, batch_idxs=None, sample_idxs=None):
-        return self.prms[0]
+        return self.lat_prms(Y=Y,
+                             batch_idxs=batch_idxs,
+                             sample_idxs=sample_idxs)[0]
 
     def lat_gamma(self, Y=None, batch_idxs=None, sample_idxs=None):
-        return self.prms[1]
+        return self.lat_prms(Y=Y,
+                             batch_idxs=batch_idxs,
+                             sample_idxs=sample_idxs)[1]
 
     def msg(self, Y=None, batch_idxs=None, sample_idxs=None):
         mu, gamma = self.lat_prms(Y=Y,

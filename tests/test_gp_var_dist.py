@@ -108,12 +108,12 @@ def test_toeplitz_GP_lat_prior():
               mod.lat_dist.ell.detach().flatten(),
               mod.lat_dist.scale.detach().mean(0).mean(-1))
 
-    #print('kernel:', (mod.kernel.input_scale.detach())**(-1))
-    mus = mod.lat_dist.prms[0].detach().cpu().numpy()
-    print('mus:', np.std(mus, axis=(0, 1)))
 
-    print(mus.shape)
+#     print('kernel:', (mod.svgp.kernel.input_scale.detach())**(-1))
+#     mus = mod.lat_dist.prms[0].detach().cpu().numpy()
+#     print('mus:', np.std(mus, axis=(0, 1)))
 
+#     print(mus.shape)
 
 #     plt.figure()
 #     plt.hist(mus.flatten(), bins=30)
@@ -130,7 +130,7 @@ def test_toeplitz_GP_lat_prior():
 
 #     #fit xs = mus @ T --> T = (mus' * mus)^(-1) * mus' * xs
 #     T = np.linalg.inv(mus.T @ mus) @ mus.T @ xs
-#     mus = mus @ T  #predicted values
+#     mus = mus @ T  #predicted values (x_hat = mus @ T)
 
 #     print(mus.shape)
 #     plt.figure()

@@ -1,3 +1,5 @@
 from .svgp import Svgp  #, SvgpComb
 from .svgplvm import SvgpLvm
-from .bfa import fa, Bfa, Bvfa
+from .gplvm import Gplvm
+from .lgplvm import Lgplvm, Lvgplvm
+from .bfa import Fa, Bfa, Bvfa
