@@ -345,7 +345,7 @@ class EP_GP(Rdist):
         mu = K_half @ nu[..., None]  #(n_samples x d x m x 1)
         #multiply diagonal scale column wise to get cholesky factor
         scale = self.scale
-        scale = scale / scale * scale.mean()
+        #scale = scale / scale * scale.mean()
         K_half_S = K_half * scale[
             ..., None, :]  # (n_samples x d x m x m) * (n_samples x d x 1 x m)
         return mu[..., 0].transpose(-1, -2), K_half_S

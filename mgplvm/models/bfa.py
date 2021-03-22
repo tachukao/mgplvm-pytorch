@@ -13,6 +13,7 @@ from torch.distributions import MultivariateNormal, LowRankMultivariateNormal, k
 from ..likelihoods import Likelihood
 from sklearn import decomposition
 from .gp_base import GpBase
+import itertools
 
 jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)
@@ -37,7 +38,7 @@ class Bfa(GpBase):
     Assumes Gaussian observation noise
     Computes log_prob and posterior predictions exactly
     """
-    
+
     name = "Bfa"
 
     def __init__(self,
@@ -46,19 +47,19 @@ class Bfa(GpBase):
                  sigma: Optional[Tensor] = None,
                  learn_sigma=True,
                  Y=None,
-                learn_neuron_scale = False,
-                ard = False,
-                learn_scale = None):
+                 learn_neuron_scale=False,
+                 ard=False,
+                 learn_scale=None):
 
         super().__init__()
-        
+
         if Y is not None:
             n_samples_fa, n_fa, m_fa = Y.shape
             mod = decomposition.FactorAnalysis(n_components=d)
             Y_fa = Y.transpose(0, 2, 1).reshape(n_samples_fa * m_fa, n_fa)
             mudata = mod.fit_transform(Y_fa)  #m*n_samples x d
-            C = torch.tensor(mod.components_.T) # (n x d)
-        
+            C = torch.tensor(mod.components_.T)  # (n x d)
+
         #### initialize noise parameters ####
         if sigma is None:
             if Y is None:
@@ -68,30 +69,29 @@ class Bfa(GpBase):
 
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
         self.n = n
-        #self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
-        
-        
+
         #### initialize prior parameters ####
-        if learn_neuron_scale:
-            print('neuron scale not implemented')
-            exit()
-            
+
         _scale = torch.ones(1)
         _dim_scale = torch.ones(d)
         _neuron_scale = torch.ones(n)
-        if learn_scale is None: learn_scale = not (ard or learn_neuron_scale)
-        
-        if Y is not None: #initialize from FA
+        if learn_scale is None:
+            learn_scale = not (ard or learn_neuron_scale)
+
+        if Y is not None:  #initialize from FA
             if learn_scale:
-                _scale = torch.square(C).mean().sqrt() #global scale
+                _scale = torch.square(C).mean().sqrt()  #global scale
             if learn_neuron_scale:
-                _neuron_scale = torch.square(C).mean(1).sqrt() #per neuron
+                _neuron_scale = torch.square(C).mean(1).sqrt()  #per neuron
             if ard:
-                _dim_scale = torch.square(C).mean(0).sqrt() #per latent
-            
-        self._scale = nn.Parameter(inv_softplus(_scale), requires_grad = learn_scale)
-        self._neuron_scale = nn.Parameter(inv_softplus(_neuron_scale), requires_grad = learn_neuron_scale)
-        self._dim_scale = nn.Parameter(inv_softplus(_dim_scale), requires_grad = ard)
+                _dim_scale = torch.square(C).mean(0).sqrt()  #per latent
+
+        self._scale = nn.Parameter(inv_softplus(_scale),
+                                   requires_grad=learn_scale)
+        self._neuron_scale = nn.Parameter(inv_softplus(_neuron_scale),
+                                          requires_grad=learn_neuron_scale)
+        self._dim_scale = nn.Parameter(inv_softplus(_dim_scale),
+                                       requires_grad=ard)
 
     @property
     def prms(self) -> Tensor:
@@ -102,15 +102,15 @@ class Bfa(GpBase):
     @property
     def sigma(self) -> Tensor:
         return (1e-20 + self.prms).sqrt()
-    
+
     @property
     def scale(self):
         return softplus(self._scale)
-    
+
     @property
     def neuron_scale(self):
         return softplus(self._neuron_scale)[:, None]
-    
+
     @property
     def dim_scale(self):
         return softplus(self._dim_scale)[:, None]
@@ -121,8 +121,12 @@ class Bfa(GpBase):
         """
         m = x.shape[-1]
         x = self.scale * self.dim_scale * x
-        cov_factor = x[..., None, :, :].transpose(-1, -2)  #(..., mxd)
-        cov_diag = self.prms[:, None] * torch.ones(m).to(x.device)
+        cov_factor = x[..., None, :, :].transpose(-1,
+                                                  -2)  #(n_samples x 1 x m x d)
+        cov_factor = self.neuron_scale[
+            ..., None] * cov_factor  #(n_samples x n x m x d)
+        cov_diag = self.prms[:, None] * torch.ones(m).to(x.device)  #(n x m)
+
         dist = LowRankMultivariateNormal(loc=torch.zeros(self.n,
                                                          m).to(x.device),
                                          cov_factor=cov_factor,
@@ -167,16 +171,17 @@ class Bfa(GpBase):
         prec = self._dist(x.squeeze()).precision_matrix  #(K+sigma^2I)^-1
         m = x.shape[-1]
         d = x.shape[-2]
-        
+
         x = self.scale * self.dim_scale * x
         xstar = self.scale * self.dim_scale * xstar
-        
+
         x = x[..., None, :, :]  #(...,d,m)
         xstar = xstar[..., None, :, :]  #(...,d,m)
         xt = x.transpose(-1, -2)  #(...,m,d)
-        variance = self.prms  #(n)
-        cov_diag = variance[..., None] * torch.ones(m)
+        variance = self.prms  #(n) (p(Y|F) variance)
+        cov_diag = variance[..., None] * torch.ones(m)  #(n x m)
         capacitance_tril = batch_capacitance_tril(xt, cov_diag)
+
         xdinv = (x / variance[..., None, None])
         A = torch.triangular_solve(xdinv, capacitance_tril,
                                    upper=False)[0]  #(...,d,m)
@@ -198,11 +203,18 @@ class Bfa(GpBase):
             z = torch.eye(d) - xxT + xATAxT
             c = xstar.transpose(-1, -2).matmul(z).matmul(xstar)
             return mu, c
-        
+
+    def g0_parameters(self):
+        return []
+
+    def g1_parameters(self):
+        return [self._sigma, self._neuron_scale, self._dim_scale, self._scale]
+
     @property
     def msg(self):
         return ('scale {:.3f} |').format(
-            (self.scale.mean()*self.neuron_scale.mean()*self.dim_scale.mean()).item())
+            (self.scale.mean() * self.neuron_scale.mean() *
+             self.dim_scale.mean()).item())
 
 
 class Bvfa(GpBase):
@@ -217,10 +229,10 @@ class Bvfa(GpBase):
                  q_mu: Optional[Tensor] = None,
                  q_sqrt: Optional[Tensor] = None,
                  tied_samples=True,
-                Y = None,
-                learn_neuron_scale = False,
-                ard = False,
-                learn_scale = None):
+                 Y=None,
+                 learn_neuron_scale=False,
+                 ard=False,
+                 learn_scale=None):
         """
         __init__ method for Base Variational Factor Analysis 
         Parameters
@@ -250,30 +262,34 @@ class Bvfa(GpBase):
         #self.z, self.kernel = [NoneClass() for i in range(2)]
 
         #### initialize prior parameters ####
-        
+
         _scale = torch.ones(1)
         _dim_scale = torch.ones(d)
         _neuron_scale = torch.ones(n)
-        if learn_scale is None: learn_scale = not (ard or learn_neuron_scale)
-        
-        if Y is not None: #initialize from FA
+        if learn_scale is None:
+            learn_scale = not (ard or learn_neuron_scale)
+
+        if Y is not None:  #initialize from FA
             n_samples_fa, n_fa, m_fa = Y.shape
             mod = decomposition.FactorAnalysis(n_components=d)
             Y_fa = Y.transpose(0, 2, 1).reshape(n_samples_fa * m_fa, n_fa)
             mudata = mod.fit_transform(Y_fa)  #m*n_samples x d
-            C = torch.tensor(mod.components_.T) # (n x d)
+            C = torch.tensor(mod.components_.T)  # (n x d)
             #print(C.shape)
             if learn_scale:
-                _scale = torch.square(C).mean().sqrt() #global scale
+                _scale = torch.square(C).mean().sqrt()  #global scale
             if learn_neuron_scale:
-                _neuron_scale = torch.square(C).mean(1).sqrt() #per neuron
+                _neuron_scale = torch.square(C).mean(1).sqrt()  #per neuron
             if ard:
-                _dim_scale = torch.square(C).mean(0).sqrt() #per latent
-            
-        self._scale = nn.Parameter(inv_softplus(_scale), requires_grad = learn_scale)
-        self._neuron_scale = nn.Parameter(inv_softplus(_neuron_scale), requires_grad = learn_neuron_scale)
-        self._dim_scale = nn.Parameter(inv_softplus(_dim_scale), requires_grad = ard)
-        
+                _dim_scale = torch.square(C).mean(0).sqrt()  #per latent
+
+        self._scale = nn.Parameter(inv_softplus(_scale),
+                                   requires_grad=learn_scale)
+        self._neuron_scale = nn.Parameter(inv_softplus(_neuron_scale),
+                                          requires_grad=learn_neuron_scale)
+        self._dim_scale = nn.Parameter(inv_softplus(_dim_scale),
+                                       requires_grad=ard)
+
         #### initialize variational distribution (should we initialize this to the Gaussian ground truth?)####
         if q_mu is None:
             if tied_samples:
@@ -300,17 +316,17 @@ class Bvfa(GpBase):
 
         self.q_mu = nn.Parameter(q_mu, requires_grad=True)
         self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
-        
+
         self.likelihood = likelihood
-    
+
     @property
     def scale(self):
         return softplus(self._scale)
-    
+
     @property
     def neuron_scale(self):
         return softplus(self._neuron_scale)[:, None]
-    
+
     @property
     def dim_scale(self):
         return softplus(self._dim_scale)[:, None]
@@ -456,7 +472,7 @@ class Bvfa(GpBase):
             q_mu = q_mu[sample_idxs]
             q_sqrt = q_sqrt[sample_idxs]
 
-        x = self.scale * self.dim_scale*x #multiply each dimension by the prior scale
+        x = self.scale * self.dim_scale * x  #multiply each dimension by the prior scale
 
         mu = q_mu.matmul(x)  # n_b x n_samples x n x m
         l = x[..., None, :, :].transpose(-1, -2).matmul(
@@ -470,15 +486,27 @@ class Bvfa(GpBase):
     def prms(self) -> Tuple[Tensor, Tensor]:
         q_mu = self.q_mu
         q_sqrt = transform_to(constraints.lower_cholesky)(self.q_sqrt)
-        
+
         #multiply the posterior by a scale factor for each neuron
-        q_mu, q_sqrt = self.neuron_scale * q_mu, self.neuron_scale[..., None] * q_sqrt
+        q_mu, q_sqrt = self.neuron_scale * q_mu, self.neuron_scale[
+            ..., None] * q_sqrt
         return q_mu, q_sqrt
-    
+
+    def g0_parameters(self):
+        return [self.q_mu, self.q_sqrt]
+
+    def g1_parameters(self):
+        return list(
+            itertools.chain.from_iterable([
+                self.likelihood.parameters(),
+                [self._scale, self._neuron_scale, self._dim_scale]
+            ]))
+
     @property
     def msg(self):
         newmsg = ('scale {:.3f} |').format(
-            (self.scale.mean()*self.neuron_scale.mean()*self.dim_scale.mean()).item())
+            (self.scale.mean() * self.neuron_scale.mean() *
+             self.dim_scale.mean()).item())
         return newmsg + self.likelihood.msg
 
 
@@ -488,7 +516,7 @@ class Fa(GpBase):
     Assumes Gaussian observation noise
     Computes log_prob and posterior predictions exactly
     """
-    
+
     name = "Fa"
 
     def __init__(self,
@@ -624,7 +652,13 @@ class Fa(GpBase):
             y_samps = y_samps**2
 
         return y_samps
-    
+
+    def g0_parameters(self):
+        return []
+
+    def g1_parameters(self):
+        return [self._sigma, self.C]
+
     @property
     def msg(self):
         return ''
