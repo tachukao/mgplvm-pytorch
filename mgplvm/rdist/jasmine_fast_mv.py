@@ -111,12 +111,12 @@ class fast_EP_GP(Rdist):
         tic = process_time()
         mu = K_half @ nu[..., None]  #(n_samples x d x m x 1)
         toc = process_time()
-        print("mu old time", toc -tic)
+        print("mu old time", toc - tic)
         tic = process_time()
-        mu_fast = sym_toeplitz_matmul(K_half[:,:,:,0], nu[..., None])
+        mu_fast = sym_toeplitz_matmul(K_half[:, :, :, 0], nu[..., None])
         toc = process_time()
         print("mu new time", toc - tic)
-        assert(torch.allclose(mu, mu_fast))
+        assert (torch.allclose(mu, mu_fast))
         #multiply diagonal scale column wise to get cholesky factor
         scale = self.scale
         scale = scale / scale * scale.mean()
@@ -152,18 +152,17 @@ class fast_EP_GP(Rdist):
         mu, K_half_S = self.prms
 
         # sample a batch with dims: (n_samples x d x m x n_mc)
-        rand = torch.randn(
-            (mu.shape[0], mu.shape[2], mu.shape[1], size[0])).to(
-                K_half_S.device)
+        rand = torch.randn((mu.shape[0], mu.shape[2], mu.shape[1],
+                            size[0])).to(K_half_S.device)
         tic = process_time()
         x = K_half_S @ rand
         toc = process_time()
-        print("old matmul time", toc-tic)
+        print("old matmul time", toc - tic)
         tic = process_time()
-        y = sym_toeplitz_matmul(K_half_S[:,:,:,0],rand)
-        toc=process_time()
+        y = sym_toeplitz_matmul(K_half_S[:, :, :, 0], rand)
+        toc = process_time()
         print("new matmul time", toc - tic)
-        assert(torch.allclose(x,y))
+        assert (torch.allclose(x, y))
         x = x.permute(-1, 0, 2, 1)  #(n_mc x n_samples x m x d)
         x = x + mu[None, ...]  #add mean
 

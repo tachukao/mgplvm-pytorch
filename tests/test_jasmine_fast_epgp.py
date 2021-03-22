@@ -57,11 +57,11 @@ def test_fast_GP_lat_prior():
     #                                 initialization='fa')
 
     lat_dist = mgp.rdist.fast_EP_GP(manif,
-                               m,
-                               n_samples,
-                               torch.Tensor(ts).to(device),
-                               Y=Y,
-                               initialization='fa')
+                                    m,
+                                    n_samples,
+                                    torch.Tensor(ts).to(device),
+                                    Y=Y,
+                                    initialization='fa')
 
     ###construct prior
     lprior = mgp.lpriors.GP_full(dfit, m, n_samples, manif,

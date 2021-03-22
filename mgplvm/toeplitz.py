@@ -47,21 +47,24 @@ def toeplitz(toeplitz_column, toeplitz_row):
         raise RuntimeError(
             "The first column and first row of the Toeplitz matrix should have "
             "the same first otherwise the value of T[0,0] is ambiguous. "
-            "Got: c[0]={} and r[0]={}".format(toeplitz_column[0], toeplitz_row[0])
-        )
+            "Got: c[0]={} and r[0]={}".format(toeplitz_column[0],
+                                              toeplitz_row[0]))
 
     if len(toeplitz_column) != len(toeplitz_row):
-        raise RuntimeError("c and r should have the same length " "(Toeplitz matrices are necessarily square).")
+        raise RuntimeError("c and r should have the same length "
+                           "(Toeplitz matrices are necessarily square).")
 
     if type(toeplitz_column) != type(toeplitz_row):
-        raise RuntimeError("toeplitz_column and toeplitz_row should be the same type.")
+        raise RuntimeError(
+            "toeplitz_column and toeplitz_row should be the same type.")
 
     if len(toeplitz_column) == 1:
         return toeplitz_column.view(1, 1)
 
-    res = torch.empty(
-        len(toeplitz_column), len(toeplitz_column), dtype=toeplitz_column.dtype, device=toeplitz_column.device
-    )
+    res = torch.empty(len(toeplitz_column),
+                      len(toeplitz_column),
+                      dtype=toeplitz_column.dtype,
+                      device=toeplitz_column.device)
     for i, val in enumerate(toeplitz_column):
         for j in range(len(toeplitz_column) - i):
             res[j + i, j] = val
@@ -124,11 +127,15 @@ def toeplitz_matmul(toeplitz_column, toeplitz_row, tensor):
         - tensor (n x p or b x n x p) - The result of the matrix multiply T * M.
     """
     if toeplitz_column.size() != toeplitz_row.size():
-        raise RuntimeError("c and r should have the same length (Toeplitz matrices are necessarily square).")
+        raise RuntimeError(
+            "c and r should have the same length (Toeplitz matrices are necessarily square)."
+        )
 
     toeplitz_shape = torch.Size((*toeplitz_column.shape, toeplitz_row.size(-1)))
-    output_shape = broadcasting._matmul_broadcast_shape(toeplitz_shape, tensor.shape)
-    broadcasted_t_shape = output_shape[:-1] if tensor.dim() > 1 else output_shape
+    output_shape = broadcasting._matmul_broadcast_shape(toeplitz_shape,
+                                                        tensor.shape)
+    broadcasted_t_shape = output_shape[:-1] if tensor.dim(
+    ) > 1 else output_shape
 
     if tensor.ndimension() == 1:
         tensor = tensor.unsqueeze(-1)
@@ -140,22 +147,28 @@ def toeplitz_matmul(toeplitz_column, toeplitz_row, tensor):
         raise RuntimeError(
             "The first column and first row of the Toeplitz matrix should have "
             "the same first element, otherwise the value of T[0,0] is ambiguous. "
-            "Got: c[0]={} and r[0]={}".format(toeplitz_column[0], toeplitz_row[0])
-        )
+            "Got: c[0]={} and r[0]={}".format(toeplitz_column[0],
+                                              toeplitz_row[0]))
 
-    if type(toeplitz_column) != type(toeplitz_row) or type(toeplitz_column) != type(tensor):
+    if type(toeplitz_column) != type(toeplitz_row) or type(
+            toeplitz_column) != type(tensor):
         raise RuntimeError("The types of all inputs to ToeplitzMV must match.")
 
     *batch_shape, orig_size, num_rhs = tensor.size()
     r_reverse = toeplitz_row[..., 1:].flip(dims=(-1,))
 
-    c_r_rev = torch.zeros(*batch_shape, orig_size + r_reverse.size(-1), dtype=tensor.dtype, device=tensor.device)
+    c_r_rev = torch.zeros(*batch_shape,
+                          orig_size + r_reverse.size(-1),
+                          dtype=tensor.dtype,
+                          device=tensor.device)
     c_r_rev[..., :orig_size] = toeplitz_column
     c_r_rev[..., orig_size:] = r_reverse
 
-    temp_tensor = torch.zeros(
-        *batch_shape, 2 * orig_size - 1, num_rhs, dtype=toeplitz_column.dtype, device=toeplitz_column.device
-    )
+    temp_tensor = torch.zeros(*batch_shape,
+                              2 * orig_size - 1,
+                              num_rhs,
+                              dtype=toeplitz_column.dtype,
+                              device=toeplitz_column.device)
     temp_tensor[..., :orig_size, :] = tensor
 
     fft_M = fft(temp_tensor.transpose(-1, -2).contiguous())
@@ -212,7 +225,8 @@ def sym_toeplitz_derivative_quadratic_form(left_vectors, right_vectors):
     res = toeplitz_matmul(columns, left_vectors, right_vectors.unsqueeze(-1))
     rows = left_vectors.flip(dims=(-1,))
     columns[..., 0] = rows[..., 0]
-    res += toeplitz_matmul(columns, rows, torch.flip(right_vectors, dims=(-1,)).unsqueeze(-1))
+    res += toeplitz_matmul(columns, rows,
+                           torch.flip(right_vectors, dims=(-1,)).unsqueeze(-1))
 
     res = res.reshape(*batch_shape, num_vectors, toeplitz_size).sum(-2)
     res[..., 0] -= (left_vectors * right_vectors).view(*batch_shape, -1).sum(-1)
