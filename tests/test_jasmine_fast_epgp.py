@@ -14,7 +14,7 @@ def test_fast_GP_lat_prior():
     d = 2  # dims of latent space
     dfit = 2  #dimensions of fitted space
     n = 50  # number of neurons
-    m = 1000  # number of conditions / time points
+    m = 80  # number of conditions / time points
     n_z = 15  # number of inducing points
     n_samples = 10  # number of samples
     Poisson = False
