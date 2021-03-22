@@ -48,26 +48,16 @@ def test_toeplitz_GP_lat_prior(use_fast_toeplitz=True):
                                 Y=Y,
                                 Poisson=Poisson)
 
-    #latent distribution is itself a GP
-    #     lat_dist = mgp.rdist.lat_GP(manif,
-    #                                 m,
-    #                                 n_samples,
-    #                                 torch.Tensor(ts).to(device),
-    #                                 Y=Y,
-    #                                 initialization='fa')
-
     print("use fast toeplitz?", use_fast_toeplitz)
     lat_dist = mgp.rdist.EP_GP(manif,
                                m,
                                n_samples,
-                               torch.Tensor(ts).to(device),
+                               torch.Tensor(ts),
                                Y=Y,
                                initialization='fa',
                                use_fast_toeplitz=use_fast_toeplitz)
 
     ###construct prior
-    lprior = mgp.lpriors.GP_full(dfit, m, n_samples, manif,
-                                 torch.Tensor(ts).to(device))
     lprior = mgp.lpriors.Null(manif)
 
     # generate model
@@ -111,44 +101,6 @@ def test_toeplitz_GP_lat_prior(use_fast_toeplitz=True):
               mod.lat_dist.scale.detach().mean(0).mean(-1))
 
 
-#     print('kernel:', (mod.svgp.kernel.input_scale.detach())**(-1))
-#     mus = mod.lat_dist.prms[0].detach().cpu().numpy()
-#     print('mus:', np.std(mus, axis=(0, 1)))
-
-#     print(mus.shape)
-
-#     plt.figure()
-#     plt.hist(mus.flatten(), bins=30)
-#     plt.savefig('figures/test_hist.png', bbox_inches='tight')
-#     plt.close()
-
-#     ex = 0
-#     xs = xs[ex, ...] - np.mean(xs[ex, ...], axis=0, keepdims=True)
-#     mus = mus[ex, ...] - np.mean(mus[ex, ...], axis=0, keepdims=True)
-
-#     #align
-#     if d == 1:
-#         mus = mus[:, :1]
-
-#     #fit xs = mus @ T --> T = (mus' * mus)^(-1) * mus' * xs
-#     T = np.linalg.inv(mus.T @ mus) @ mus.T @ xs
-#     mus = mus @ T  #predicted values (x_hat = mus @ T)
-
-#     print(mus.shape)
-#     plt.figure()
-#     if d >= 2:
-#         plt.plot(mus[:, 0], mus[:, 1], 'k-')
-#         plt.plot(xs[:, 0], xs[:, 1], 'b-')
-#     else:
-#         plt.plot(ts[0, 0, :], mus[:, 0], 'k-')
-#         plt.plot(ts[0, 0, :], xs[:, 0], 'b-')
-#     plt.xlabel('lat dim 1')
-#     plt.ylabel('lat dim 2')
-#     plt.legend(['inferred', 'true'], frameon=False)
-#     plt.savefig('figures/test_gp.png', bbox_inches='tight')
-#     plt.close()
-
-
 def test_no_toeplitz_GP_lat_prior():
     test_toeplitz_GP_lat_prior(use_fast_toeplitz=False)
 
@@ -189,7 +141,7 @@ def test_toeplitz_match_no_toeplitz_GP_lat_prior():
     lat_dist = mgp.rdist.EP_GP(manif,
                                m,
                                n_samples,
-                               torch.Tensor(ts).to(device),
+                               torch.Tensor(ts),
                                Y=Y,
                                initialization='fa',
                                use_fast_toeplitz=False)
@@ -200,7 +152,7 @@ def test_toeplitz_match_no_toeplitz_GP_lat_prior():
     lat_dist_toeplitz = mgp.rdist.EP_GP(manif,
                                         m,
                                         n_samples,
-                                        torch.Tensor(ts).to(device),
+                                        torch.Tensor(ts),
                                         Y=Y,
                                         initialization='fa',
                                         use_fast_toeplitz=True)
@@ -211,7 +163,7 @@ def test_toeplitz_match_no_toeplitz_GP_lat_prior():
     assert torch.allclose(sample1, sample_toeplitz1)
     assert torch.allclose(prms1, prms_toeplitz1)
     assert torch.allclose(sample2, sample_toeplitz2)
-    assert torch.allclose(prms2, prms_toeplitz2)
+    assert torch.allclose(prms2[..., 0], prms_toeplitz2)
 
 
 if __name__ == '__main__':
