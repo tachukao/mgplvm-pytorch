@@ -33,10 +33,12 @@ class BatchDataLoader(DataLoader):
                  batch_pool=None,
                  sample_pool=None,
                  shuffle_batch=False,
-                 shuffle_sample=False):
+                 shuffle_sample=False, 
+                 overlap=0):
         super(BatchDataLoader, self).__init__(data)
         m = self.m
         n_samples = self.n_samples
+        self.overlap = overlap
         self.shuffle_batch = shuffle_batch
         self.shuffle_sample = shuffle_sample
         self.batch_pool = list(range(m)) if batch_pool is None else batch_pool
@@ -91,7 +93,7 @@ class BatchDataLoader(DataLoader):
     def get_next(self):
         i0 = self.i
         i1 = i0 + self.sample_size
-        k0 = self.k
+        k0 = self.k - self.overlap * (self.k > 0)
         k1 = k0 + self.batch_size
         if i1 > self.sample_pool_size:
             i1 = self.sample_pool_size
