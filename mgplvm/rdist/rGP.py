@@ -60,8 +60,7 @@ class EP_GP(Rdist):
         #self._nu_i = nn.Parameter(data=torch.zeros(1), requires_grad=True)
 
         #initialize covariance parameters
-        _scale = torch.ones(n_samples, self.d, m) * _scale * (
-            1 + torch.randn(m) / 100)  #n_diag x T
+        _scale = torch.ones(n_samples, self.d, m) * _scale  #n_diag x T
         self._scale = nn.Parameter(data=inv_softplus(_scale),
                                    requires_grad=True)
 
@@ -98,15 +97,14 @@ class EP_GP(Rdist):
         #K^(1/2) has sig variance sigma*2^1/4*pi^(-1/4)*ell^(-1/2) if K has sigma^2
         sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2)
                                                             )  #(1 x d x 1)
-        
-        
 
         # the if and else do the same matmul, but sym_toeplitz takes advantage of structure
         if self.use_fast_toeplitz:
             # (n_samples x d x m)
-            K_half = sig_sqr_half * torch.exp(-self.dts_sq.to(ell_half.device) / (2 * torch.square(ell_half)))
+            K_half = sig_sqr_half * torch.exp(-self.dts_sq.to(ell_half.device) /
+                                              (2 * torch.square(ell_half)))
             #(n_samples x d x m x 1)
-            mu = sym_toeplitz_matmul(K_half, nu[...,None])
+            mu = sym_toeplitz_matmul(K_half, nu[..., None])
 
         else:
             #compute full TxT covariance matrix

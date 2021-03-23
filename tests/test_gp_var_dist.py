@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torch import optim
+from torch import optim, nn
 import mgplvm as mgp
 from sklearn.cross_decomposition import CCA
-from mgplvm.fast_utils.toeplitz import sym_toeplitz
+from mgplvm.utils import inv_softplus
 
 torch.set_default_dtype(torch.float64)
 device = mgp.utils.get_device()
@@ -57,6 +57,10 @@ def test_toeplitz_GP_lat_prior(use_fast_toeplitz=True):
                                Y=Y,
                                initialization='fa',
                                use_fast_toeplitz=use_fast_toeplitz)
+    _scale = torch.ones(n_samples, d, m) * .2 * (1 + torch.randn(m) / 100
+                                                )  #n_diag x T
+    lat_dist._scale = nn.Parameter(data=inv_softplus(_scale),
+                                   requires_grad=True)
 
     ###construct prior
     lprior = mgp.lpriors.Null(manif)
@@ -146,6 +150,11 @@ def test_toeplitz_match_no_toeplitz_GP_lat_prior():
                                Y=Y,
                                initialization='fa',
                                use_fast_toeplitz=False)
+    # break symmetry in K_half@S
+    _scale = torch.ones(n_samples, lat_dist.d, m) * .2 * (
+        1 + torch.randn(m) / 100)  #n_diag x T
+    lat_dist._scale = nn.Parameter(data=inv_softplus(_scale),
+                                   requires_grad=True)
     sample1, sample2 = lat_dist.sample((2,))
     prms1, prms2 = lat_dist.prms
 
@@ -157,6 +166,10 @@ def test_toeplitz_match_no_toeplitz_GP_lat_prior():
                                         Y=Y,
                                         initialization='fa',
                                         use_fast_toeplitz=True)
+    _scale = torch.ones(n_samples, d, m) * .2 * (1 + torch.randn(m) / 100
+                                                )  #n_diag x T
+    lat_dist_toeplitz._scale = nn.Parameter(data=inv_softplus(_scale),
+                                            requires_grad=True)
 
     sample_toeplitz1, sample_toeplitz2 = lat_dist_toeplitz.sample((2,))
     prms_toeplitz1, prms_toeplitz2 = lat_dist_toeplitz.prms
@@ -164,7 +177,8 @@ def test_toeplitz_match_no_toeplitz_GP_lat_prior():
     assert torch.allclose(sample1, sample_toeplitz1)
     assert torch.allclose(prms1, prms_toeplitz1)
     assert torch.allclose(sample2, sample_toeplitz2)
-    assert torch.allclose(prms2, sym_toeplitz(prms_toeplitz2))
+    assert torch.allclose(prms2[..., 0], prms_toeplitz2)
+    assert torch.allclose(prms2[..., 0, :], prms_toeplitz2)
 
 
 if __name__ == '__main__':
