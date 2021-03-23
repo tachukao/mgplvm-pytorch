@@ -114,7 +114,7 @@ class EP_GP(Rdist):
             dts_sq = dts_sq.sum(-3)[:, None, ...].to(ell_half.device)
             #(n_samples x d x m x m)
             K_half = sig_sqr_half[..., None] * torch.exp(
-                -dts_sq / (2 * torch.square(ell_half[..., None])))
+                K_half = sym_toeplitz(K_half)
             mu = K_half @ nu[..., None]  #(n_samples x d x m x 1)
 
         return mu[..., 0].transpose(-1, -2), K_half
