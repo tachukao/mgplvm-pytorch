@@ -6,7 +6,7 @@ from ..utils import softplus, inv_softplus
 from ..manifolds.base import Manifold
 from .common import Rdist
 from typing import Optional
-from ..fast_utils.toeplitz import sym_toeplitz_matmul, sym_toeplitz
+from ..fast_utils.toeplitz import sym_toeplitz_matmul
 
 
 class EP_GP(Rdist):
@@ -99,18 +99,23 @@ class EP_GP(Rdist):
         sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2)
                                                             )  #(1 x d x 1)
         
-        # (n_samples x d x m)
-        K_half = sig_sqr_half * torch.exp(-self.dts_sq.to(ell_half.device) / (2 * torch.square(ell_half)))
+        
 
         # the if and else do the same matmul, but sym_toeplitz takes advantage of structure
         if self.use_fast_toeplitz:
+            # (n_samples x d x m)
+            K_half = sig_sqr_half * torch.exp(-self.dts_sq.to(ell_half.device) / (2 * torch.square(ell_half)))
             #(n_samples x d x m x 1)
             mu = sym_toeplitz_matmul(K_half, nu[...,None])
 
         else:
             #compute full TxT covariance matrix
+            #(n_samples x 1 x m x m)
+            dts_sq = torch.square(self.ts[..., None] - self.ts[..., None, :])
+            dts_sq = dts_sq.sum(-3)[:, None, ...].to(ell_half.device)
             #(n_samples x d x m x m)
-            K_half = sym_toeplitz(K_half)
+            K_half = sig_sqr_half[..., None] * torch.exp(
+                -dts_sq / (2 * torch.square(ell_half[..., None])))
             mu = K_half @ nu[..., None]  #(n_samples x d x m x 1)
 
         return mu[..., 0].transpose(-1, -2), K_half
