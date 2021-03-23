@@ -6,19 +6,7 @@ from ..utils import softplus, inv_softplus
 from ..manifolds.base import Manifold
 from .common import Rdist
 from typing import Optional
-
 from ..fast_utils.toeplitz import sym_toeplitz_matmul
-
-############ new approach ################
-
-# Class GP_efficient():
-
-#     sample()
-#     """
-#     input: n_mc
-#     output: n_mc samples from the posterior Q(X), KL between Q(X) and p(X)
-#     both should be differentiable
-#     """
 
 
 class EP_GP(Rdist):
@@ -77,15 +65,14 @@ class EP_GP(Rdist):
                                    requires_grad=True)
 
         ell = (torch.max(ts) - torch.min(ts)) / 20 if ell is None else ell
-        _ell = torch.ones(1, self.d, 1, 1) * ell
+        _ell = torch.ones(1, self.d, 1) * ell
         self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=True)
 
-        #pre-compute time differences #(n_samples x 1 x m x m)
-        self.dts_sq = torch.square(ts[..., None] - ts[..., None, :])
+        #pre-compute time differences (only need one row for the toeplitz stuff)
+        self.ts = ts
+        self.dts_sq = torch.square(ts - ts[..., :1])  #(n_samples x 1 x m)
         #sum over _input_ dimension, add an axis for _output_ dimension
-        self.dts_sq = self.dts_sq.sum(-3)[:, None, ...]
-        print('dt size:',
-              self.dts_sq.element_size() * self.dts_sq.nelement() / 1e6, 'mb')
+        self.dts_sq = self.dts_sq.sum(-2)[:, None, ...]  #(n_samples x 1 x m)
 
     @property
     def scale(self) -> torch.Tensor:
@@ -109,25 +96,27 @@ class EP_GP(Rdist):
 
         #K^(1/2) has sig variance sigma*2^1/4*pi^(-1/4)*ell^(-1/2) if K has sigma^2
         sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2)
-                                                            )  #(1 x d x 1 x 1)
-        #sig_sqr_half = 1
+                                                            )  #(1 x d x 1)
 
-        #(n_samples x d x m x m)
-        K_half = sig_sqr_half * torch.exp(-self.dts_sq /
-                                          (2 * torch.square(ell_half)))
         # the if and else do the same matmul, but sym_toeplitz takes advantage of structure
         if self.use_fast_toeplitz:
-            mu = sym_toeplitz_matmul(K_half[:, :, :, 0],
-                                     nu[..., None])  #(n_samples x d x m x 1)
+            # (n_samples x d x m)
+            K_half = sig_sqr_half * torch.exp(-self.dts_sq.to(ell_half.device) /
+                                              (2 * torch.square(ell_half)))
+            #(n_samples x d x m x 1)
+            mu = sym_toeplitz_matmul(K_half, nu[..., None])
+
         else:
+            #compute full TxT covariance matrix
+            #(n_samples x 1 x m x m)
+            dts_sq = torch.square(self.ts[..., None] - self.ts[..., None, :])
+            dts_sq = dts_sq.sum(-3)[:, None, ...].to(ell_half.device)
+            #(n_samples x d x m x m)
+            K_half = sig_sqr_half[..., None] * torch.exp(
+                -dts_sq / (2 * torch.square(ell_half[..., None])))
             mu = K_half @ nu[..., None]  #(n_samples x d x m x 1)
 
-        #multiply diagonal scale column wise to get cholesky factor
-        scale = self.scale
-        #scale = scale / scale * scale.mean()
-        K_half_S = K_half * scale[
-            ..., None, :]  # (n_samples x d x m x m) * (n_samples x d x 1 x m)
-        return mu[..., 0].transpose(-1, -2), K_half_S
+        return mu[..., 0].transpose(-1, -2), K_half
 
     def mvn(self, L, mu=None):
         """
@@ -154,19 +143,23 @@ class EP_GP(Rdist):
         lq = self.kl(batch_idxs=batch_idxs,
                      sample_idxs=sample_idxs)  #(n_samples x d)
 
-        #(n_samples x m x d), (n_samples x d x m x m)
-        mu, K_half_S = self.lat_prms(batch_idxs=batch_idxs,
-                                     sample_idxs=sample_idxs)
+        #(n_samples x m x d), (n_samples x d x m x m)/(n_samples x d x m)
+        mu, K_half = self.lat_prms(batch_idxs=batch_idxs,
+                                   sample_idxs=sample_idxs)
 
         # sample a batch with dims: (n_samples x d x m x n_mc)
-        rand = torch.randn((mu.shape[0], mu.shape[2], mu.shape[1],
-                            size[0])).to(K_half_S.device)
+        rand = torch.randn((mu.shape[0], mu.shape[2], mu.shape[1], size[0]))
+
+        #multiply by diagonal scale
+        scale = self.scale  # (n_samples, d, m)
+        Sv = scale[..., None] * rand.to(
+            scale.device)  #(n_samples x d x m x n_mc) S*v
 
         # the if and else do the same matmul, but sym_toeplitz takes advantage of structure
         if self.use_fast_toeplitz:
-            x = sym_toeplitz_matmul(K_half_S[:, :, :, 0], rand)
+            x = sym_toeplitz_matmul(K_half, Sv)
         else:
-            x = K_half_S @ rand
+            x = K_half @ Sv
 
         x = x.permute(-1, 0, 2, 1)  #(n_mc x n_samples x m x d)
         x = x + mu[None, ...]  #add mean
@@ -202,15 +195,18 @@ class EP_GP(Rdist):
         return [self._scale, self._ell]
 
     def lat_prms(self, Y=None, batch_idxs=None, sample_idxs=None):
-        mu, K_half_S = self.prms
+        mu, K_half = self.prms
         if batch_idxs is not None:
             mu = mu[:, batch_idxs, :]
-            K_half_S = K_half_S[..., :, batch_idxs][..., batch_idxs, :]
+            if self.use_fast_toeplitz:
+                K_half = K_half[..., batch_idxs]
+            else:
+                K_half = K_half[..., :, batch_idxs][..., batch_idxs, :]
         if sample_idxs is not None:
             mu = mu[sample_idxs, ...]
-            K_half_S = K_half_S[sample_idxs, ...]
+            K_half = K_half[sample_idxs, ...]
 
-        return mu, K_half_S
+        return mu, K_half
 
     def lat_gmu(self, Y=None, batch_idxs=None, sample_idxs=None):
         return self.lat_prms(Y=Y,
@@ -223,11 +219,9 @@ class EP_GP(Rdist):
                              sample_idxs=sample_idxs)[1]
 
     def msg(self, Y=None, batch_idxs=None, sample_idxs=None):
-        mu, gamma = self.lat_prms(Y=Y,
-                                  batch_idxs=batch_idxs,
-                                  sample_idxs=sample_idxs)
-        #gamma = gamma.diagonal(dim1=-1, dim2=-2)
-        #sig = torch.median(gamma).item()
+        mu, _ = self.lat_prms(Y=Y,
+                              batch_idxs=batch_idxs,
+                              sample_idxs=sample_idxs)
 
         mu_mag = torch.sqrt(torch.mean(mu**2)).item()
         sig = torch.median(self.scale).item()
