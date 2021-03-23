@@ -163,7 +163,7 @@ def test_toeplitz_match_no_toeplitz_GP_lat_prior():
     assert torch.allclose(sample1, sample_toeplitz1)
     assert torch.allclose(prms1, prms_toeplitz1)
     assert torch.allclose(sample2, sample_toeplitz2)
-    assert torch.allclose(prms2[..., 0], prms_toeplitz2)
+    assert torch.allclose(prms2, sym_toeplitz(prms_toeplitz2))
 
 
 if __name__ == '__main__':
