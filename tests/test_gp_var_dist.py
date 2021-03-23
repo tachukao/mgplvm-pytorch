@@ -4,6 +4,7 @@ import torch
 from torch import optim
 import mgplvm as mgp
 from sklearn.cross_decomposition import CCA
+from mgplvm.fast_utils.toeplitz import sym_toeplitz
 
 torch.set_default_dtype(torch.float64)
 device = mgp.utils.get_device()
