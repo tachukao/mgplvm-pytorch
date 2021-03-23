@@ -33,7 +33,7 @@ class BatchDataLoader(DataLoader):
                  batch_pool=None,
                  sample_pool=None,
                  shuffle_batch=False,
-                 shuffle_sample=False, 
+                 shuffle_sample=False,
                  overlap=0):
         super(BatchDataLoader, self).__init__(data)
         m = self.m

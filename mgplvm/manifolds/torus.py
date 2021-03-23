@@ -45,7 +45,7 @@ class Torus(Manifold):
             mudata = torch.randn(n_samples, m, d) * 0.1
             return mudata
         elif initialization in ['uniform_random']:
-            mudata = torch.rand(n_samples, m, d) * 2*np.pi
+            mudata = torch.rand(n_samples, m, d) * 2 * np.pi
             return mudata
         else:
             print('initialization not recognized')

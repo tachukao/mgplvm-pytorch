@@ -311,7 +311,7 @@ class Poisson(Likelihood):
     def msg(self):
         return " "
 
-    
+
 class ZIPoisson(Likelihood):
     """
     https://en.wikipedia.org/wiki/Zero-inflated_model
@@ -327,8 +327,8 @@ class ZIPoisson(Likelihood):
             d: Optional[Tensor] = None,
             fixed_c=True,
             fixed_d=False,
-            alpha: Optional[Tensor] = None, 
-            learn_alpha=True, 
+            alpha: Optional[Tensor] = None,
+            learn_alpha=True,
             n_gh_locs: Optional[int] = n_gh_locs):
         super().__init__(n, n_gh_locs)
         self.inv_link = inv_link
@@ -338,13 +338,15 @@ class ZIPoisson(Likelihood):
         self.c = nn.Parameter(data=c, requires_grad=not fixed_c)
         self.d = nn.Parameter(data=d, requires_grad=not fixed_d)
         self.n_gh_locs = n_gh_locs
-        
-        alpha = torch.zeros(n,) if alpha is None else alpha # zero inflation probability
+
+        alpha = torch.zeros(
+            n,) if alpha is None else alpha  # zero inflation probability
         self.alpha = nn.Parameter(alpha, requires_grad=learn_alpha)
 
     @property
     def prms(self):
-        return dists.transform_to(dists.constraints.interval(0., 1.))(self.alpha), self.c, self.d
+        return dists.transform_to(dists.constraints.interval(0., 1.))(
+            self.alpha), self.c, self.d
 
     def log_prob(self, lamb, y, alpha):
         #lambd: (n_mc, n_samples x n, m, n_gh)
@@ -353,10 +355,10 @@ class ZIPoisson(Likelihood):
         Y = y[None, ..., None]
         zero_Y = (Y == 0)
         alpha_ = alpha[None, None, :, None, None]
-        
-        alpha_logp = torch.log(1-alpha_) + p.log_prob(Y) # range -infty to 0
-        logp_0 = zero_Y*torch.log(alpha_ + torch.exp(alpha_logp) + 1e-12)
-        logp_rest = (~zero_Y)*alpha_logp
+
+        alpha_logp = torch.log(1 - alpha_) + p.log_prob(Y)  # range -infty to 0
+        logp_0 = zero_Y * torch.log(alpha_ + torch.exp(alpha_logp) + 1e-12)
+        logp_rest = (~zero_Y) * alpha_logp
         return logp_0 + logp_rest
 
     def dist(self, fs: Tensor):
@@ -393,8 +395,8 @@ class ZIPoisson(Likelihood):
         bern = dists.Bernoulli(probs=alpha_)
         dist = self.dist(f_samps)
         y_samps = dist.sample()
-        zero_inflates = 1-bern.sample()
-        return zero_inflates*y_samps
+        zero_inflates = 1 - bern.sample()
+        return zero_inflates * y_samps
 
     def dist_mean(self, fs: Tensor):
         """
@@ -408,8 +410,8 @@ class ZIPoisson(Likelihood):
         mean : Tensor
             means of the resulting ZIP distributions (n_mc x n_samples x n x m)
         """
-        alpha, _, _ = self.prms 
-        dist = (1-alpha)[None, None, :, None] * self.dist(fs)
+        alpha, _, _ = self.prms
+        dist = (1 - alpha)[None, None, :, None] * self.dist(fs)
         mean = dist.mean.detach()
         return mean
 
@@ -429,7 +431,7 @@ class ZIPoisson(Likelihood):
         Log likelihood : Tensor
             SVGP likelihood term per MC, neuron, sample (n_mc x n)
         """
-        alpha, c, d = self.prms     
+        alpha, c, d = self.prms
         fmu = c[..., None] * fmu + d[..., None]
         fvar = fvar * torch.square(c[..., None])
 
@@ -448,7 +450,7 @@ class ZIPoisson(Likelihood):
     @property
     def msg(self):
         return " "
-    
+
 
 class NegativeBinomial(Likelihood):
     name = "Negative binomial"

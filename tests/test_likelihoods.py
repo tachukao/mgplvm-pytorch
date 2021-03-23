@@ -38,7 +38,7 @@ def test_likelihood_runs():
             likelihoods.Poisson(n),
             # using the Gauss Hermite
             likelihoods.Poisson(n, inv_link=lambda x: torch.exp(x + 2)),
-            likelihoods.ZIPoisson(n), 
+            likelihoods.ZIPoisson(n),
             likelihoods.NegativeBinomial(n)
     ]:
         # specify manifold, kernel and rdist
