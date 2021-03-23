@@ -79,17 +79,23 @@ def train_cv(mod,
         grad[:, T1, ...] *= 0
         return grad
 
+    for p in mod.parameters():  #no gradients for the remaining parameters
+        p.requires_grad = False
+
+    if mod.lat_dist.name == 'EP_GP':
+        mod.lat_dist.nu.requires_grad = True
+        mod.lat_dist._scale.requires_grad = True
+        mask_Ts = None
+    else:
+        for p in mod.lat_dist.parameters(
+        ):  #only gradients for the latent distribution
+            p.requires_grad = True
+
     #mod.m, mod.svgp.m = m, m
     train_ps2 = update_params(train_ps,
                               neuron_idxs=N1,
                               mask_Ts=mask_Ts,
                               prior_m=None)
-
-    for p in mod.parameters():  #no gradients for the remaining parameters
-        p.requires_grad = False
-    for p in mod.lat_dist.parameters(
-    ):  #only gradients for the latent distribution
-        p.requires_grad = True
 
     train_model(mod, data, train_ps2)
 
@@ -126,6 +132,7 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False):
                                  axis=(0, -1))  #normalize by neuron variance
     norm_MSE = np.mean(norm_MSE)
 
+    #print('means:', np.mean(Ytest), np.mean(Ypred))
     var_cap = 1 - np.var(Ytest - Ypred) / np.var(Ytest)
 
     ### compute crossvalidated log likelihood ###

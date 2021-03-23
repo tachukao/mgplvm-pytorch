@@ -104,7 +104,7 @@ class EP_GP(Rdist):
             K_half = sig_sqr_half * torch.exp(-self.dts_sq.to(ell_half.device) /
                                               (2 * torch.square(ell_half)))
             #(n_samples x d x m x 1)
-            mu = sym_toeplitz_matmul(K_half, nu[..., None])
+            mu = sym_toeplitz_matmul(K_half, nu[..., None])  #mu = K_half * nu
 
         else:
             #compute full TxT covariance matrix
@@ -148,10 +148,18 @@ class EP_GP(Rdist):
                                    sample_idxs=sample_idxs)
 
         # sample a batch with dims: (n_samples x d x m x n_mc)
-        rand = torch.randn((mu.shape[0], mu.shape[2], mu.shape[1], size[0]))
+        rand = torch.randn(
+            (mu.shape[0], mu.shape[2], mu.shape[1], size[0]))  # v ~ N(0, 1)
 
         #multiply by diagonal scale
         scale = self.scale  # (n_samples, d, m)
+        if batch_idxs is not None:
+            scale = scale[..., batch_idxs]
+        if sample_idxs is not None:
+            scale = scale[sample_idxs, ...]
+
+        # sample from N(mu, (KS)^2)
+        # mu + K * S * v --> K*nu, K*S*v --> K(nu + S*v)
         Sv = scale[..., None] * rand.to(
             scale.device)  #(n_samples x d x m x n_mc) S*v
 
@@ -173,6 +181,8 @@ class EP_GP(Rdist):
         """
         #(n_samples x d x m), (n_samples x d x m)
         nu, S = self.nu, self.scale
+
+        ### this is probably not kosher since these parameters affect all time points ###
         if batch_idxs is not None:
             nu = nu[..., batch_idxs]
             S = S[..., batch_idxs]
