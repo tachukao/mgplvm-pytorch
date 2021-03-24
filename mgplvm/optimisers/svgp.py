@@ -69,7 +69,7 @@ def fit(dataset: Union[Tensor, DataLoader],
         neuron_idxs: Optional[List[int]] = None,
         prior_m=None,
         analytic_kl=False,
-       accumulated_gradient = True):
+       accumulate_gradient = True):
     '''
     Parameters
     ----------
@@ -117,10 +117,8 @@ def fit(dataset: Union[Tensor, DataLoader],
     n = n if neuron_idxs is None else len(neuron_idxs)
     for i in range(max_steps):
         loss_vals, kl_vals, svgp_vals = [], [], []
+        ramp = 1 - np.exp(-i / burnin)
         for sample_idxs, batch_idxs, batch in dataloader:
-            opt.zero_grad()
-            ramp = 1 - np.exp(-i / burnin)
-
             svgp_elbo, kl = model(batch,
                                   n_mc,
                                   batch_idxs=batch_idxs,
@@ -134,22 +132,25 @@ def fit(dataset: Union[Tensor, DataLoader],
             kl_vals.append(kl.item())
             svgp_vals.append(svgp_elbo.item())
             
-            if accumulated_gradient and (batch_idxs is not None):
+            if accumulate_gradient and (batch_idxs is not None):
                 loss *= len(batch_idxs)/m #scale so the total sum of losses is constant
             
             loss.backward()
             
-            if not accumulated_gradient:
+            if not accumulate_gradient:
                 opt.step() #update parameters for every batch
+                opt.zero_grad() #reset gradients
                 
-        if accumulated_gradient:
+        if accumulate_gradient:
             opt.step() #accumulate gradients across all batches, then update
+            opt.zero_grad() #reset gradients after all batches
             
         scheduler.step()
-        # terminate if stop is True
         print_progress(model, n, m, n_samples, i, np.mean(loss_vals),
                        np.mean(kl_vals), np.mean(svgp_vals), print_every, batch,
-                       batch_idxs, sample_idxs)
+                       None, None)
+        
+        # terminate if stop is True
         if stop is not None:
             if stop(model, i, np.mean(loss_vals)):
                 break
