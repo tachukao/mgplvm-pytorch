@@ -21,7 +21,8 @@ def training_params(**kwargs):
         'neuron_idxs': None,
         'mask_Ts': None,
         'n_mc': 32,
-        'prior_m': None
+        'prior_m': None,
+        'accumulated_gradient': True
     }
 
     for key, value in kwargs.items():
@@ -46,6 +47,7 @@ def train_model(mod, data, params):
                                       stop=params['callback'],
                                       neuron_idxs=params['neuron_idxs'],
                                       mask_Ts=params['mask_Ts'],
-                                      prior_m=params['prior_m']),
+                                      prior_m=params['prior_m'],
+                                     accumulated_gradient=params['accumulated_gradient']),
 
     return trained_mod
