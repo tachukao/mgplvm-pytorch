@@ -65,6 +65,7 @@ def test_svgplvm_LL():
 
     assert elbo < LL
 
+
 def test_lgplvm_LL():
     """
     test that Lgplvm and Lvgplvm run without explicit check for correctness
@@ -123,6 +124,4 @@ def test_lgplvm_LL():
 
 if __name__ == '__main__':
     test_lgplvm_LL()
-    test_svgp_batching()
-    test_svgplvm_batching()
     test_svgplvm_LL()

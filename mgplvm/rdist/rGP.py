@@ -172,7 +172,7 @@ class EP_GP(Rdist):
         if batch_idxs is not None:
             mu = mu[..., batch_idxs, :]
             x = x[..., batch_idxs, :]
-            
+
         x = x + mu[None, ...]  #add mean
 
         #(n_mc x n_samples x m x d), (n_samples x d)
@@ -195,10 +195,10 @@ class EP_GP(Rdist):
         LogTerm = 2 * (torch.log(S)).sum(-1)  #(n_samples x d)
 
         kl = 0.5 * (TrTerm + MeanTerm - DimTerm - LogTerm)
-        
+
         if batch_idxs is not None:
-            kl = kl*len(batch_idxs)/self.m #scale by batch size
-        
+            kl = kl * len(batch_idxs) / self.m  #scale by batch size
+
         return kl
 
     def gmu_parameters(self):
@@ -230,7 +230,7 @@ class EP_GP(Rdist):
                               batch_idxs=batch_idxs,
                               sample_idxs=sample_idxs)
         scale = self.scale
-        
+
         if batch_idxs is not None:
             mu = mu[:, batch_idxs, :]
             scale = scale[..., batch_idxs]

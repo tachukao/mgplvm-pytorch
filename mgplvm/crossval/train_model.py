@@ -39,18 +39,19 @@ def train_model(mod, data, params):
     dataloader = optimisers.data.BatchDataLoader(
         data, batch_size=params['batch_size'], batch_pool=params['batch_pool'])
 
-    trained_mod = optimisers.svgp.fit(dataloader,
-                                      mod,
-                                      optimizer=params['optimizer'],
-                                      max_steps=int(round(params['max_steps'])),
-                                      burnin=params['burnin'],
-                                      n_mc=params['n_mc'],
-                                      lrate=params['lrate'],
-                                      print_every=params['print_every'],
-                                      stop=params['callback'],
-                                      neuron_idxs=params['neuron_idxs'],
-                                      mask_Ts=params['mask_Ts'],
-                                      prior_m=params['prior_m'],
-                                     accumulate_gradient=params['accumulate_gradient']),
+    trained_mod = optimisers.svgp.fit(
+        dataloader,
+        mod,
+        optimizer=params['optimizer'],
+        max_steps=int(round(params['max_steps'])),
+        burnin=params['burnin'],
+        n_mc=params['n_mc'],
+        lrate=params['lrate'],
+        print_every=params['print_every'],
+        stop=params['callback'],
+        neuron_idxs=params['neuron_idxs'],
+        mask_Ts=params['mask_Ts'],
+        prior_m=params['prior_m'],
+        accumulate_gradient=params['accumulate_gradient']),
 
     return trained_mod

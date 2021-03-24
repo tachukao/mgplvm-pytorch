@@ -69,7 +69,7 @@ def fit(dataset: Union[Tensor, DataLoader],
         neuron_idxs: Optional[List[int]] = None,
         prior_m=None,
         analytic_kl=False,
-       accumulate_gradient = True):
+        accumulate_gradient=True):
     '''
     Parameters
     ----------
@@ -131,25 +131,26 @@ def fit(dataset: Union[Tensor, DataLoader],
             loss_vals.append(loss.item())
             kl_vals.append(kl.item())
             svgp_vals.append(svgp_elbo.item())
-            
+
             if accumulate_gradient and (batch_idxs is not None):
-                loss *= len(batch_idxs)/m #scale so the total sum of losses is constant
-            
+                loss *= len(batch_idxs
+                           ) / m  #scale so the total sum of losses is constant
+
             loss.backward()
-            
+
             if not accumulate_gradient:
-                opt.step() #update parameters for every batch
-                opt.zero_grad() #reset gradients
-                
+                opt.step()  #update parameters for every batch
+                opt.zero_grad()  #reset gradients
+
         if accumulate_gradient:
-            opt.step() #accumulate gradients across all batches, then update
-            opt.zero_grad() #reset gradients after all batches
-            
+            opt.step()  #accumulate gradients across all batches, then update
+            opt.zero_grad()  #reset gradients after all batches
+
         scheduler.step()
         print_progress(model, n, m, n_samples, i, np.mean(loss_vals),
                        np.mean(kl_vals), np.mean(svgp_vals), print_every, batch,
                        None, None)
-        
+
         # terminate if stop is True
         if stop is not None:
             if stop(model, i, np.mean(loss_vals)):
