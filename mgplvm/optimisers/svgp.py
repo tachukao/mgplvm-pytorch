@@ -69,7 +69,7 @@ def fit(dataset: Union[Tensor, DataLoader],
         neuron_idxs: Optional[List[int]] = None,
         prior_m=None,
         analytic_kl=False,
-       accmuluated_gradient = True):
+       accumulated_gradient = True):
     '''
     Parameters
     ----------
