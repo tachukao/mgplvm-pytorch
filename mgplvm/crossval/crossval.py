@@ -66,32 +66,27 @@ def train_cv(mod,
         N1 = np.random.permutation(np.arange(n))[:nn_train]
     split = {'Y': Y, 'N1': N1, 'T1': T1}
 
-    #mod.m, mod.svgp.m = len(T1), len(T1)
     train_ps1 = update_params(train_ps, batch_pool=T1, prior_m=len(T1))
-
-    #print(Y.shape, mod.lat_dist.prms[0].shape, mod.lat_dist.prms[1].shape)
-
     train_model(mod, data, train_ps1)
-
-    ### construct a mask for some of the time points ####
-    def mask_Ts(grad):
-        ''' used to 'mask' some gradients for cv'''
-        grad[:, T1, ...] *= 0
-        return grad
 
     for p in mod.parameters():  #no gradients for the remaining parameters
         p.requires_grad = False
 
-    if mod.lat_dist.name == 'EP_GP':
+    if 'EP_GP' in mod.lat_dist.name:
         mod.lat_dist.nu.requires_grad = True
         mod.lat_dist._scale.requires_grad = True
         mask_Ts = None
     else:
+
+        def mask_Ts(grad):
+            ''' used to 'mask' some gradients for cv'''
+            grad[:, T1, ...] *= 0
+            return grad
+
         for p in mod.lat_dist.parameters(
         ):  #only gradients for the latent distribution
             p.requires_grad = True
 
-    #mod.m, mod.svgp.m = m, m
     train_ps2 = update_params(train_ps,
                               neuron_idxs=N1,
                               mask_Ts=mask_Ts,

@@ -20,7 +20,7 @@ class EP_GP(Rdist):
                  mu=None,
                  initialization: Optional[str] = 'random',
                  Y=None,
-                 _scale=0.2,
+                 _scale=0.9,
                  ell=None,
                  use_fast_toeplitz=True):
         """
@@ -54,11 +54,8 @@ class EP_GP(Rdist):
         self.m = m
 
         #initialize GP mean
-        nu = torch.randn((n_samples, self.d, m)) * 1
+        nu = torch.randn((n_samples, self.d, m)) * 0.01
         self._nu = nn.Parameter(data=nu, requires_grad=True)  #m in the notes
-
-        #self._nu_s = nn.Parameter(data=torch.ones(1), requires_grad=True)
-        #self._nu_i = nn.Parameter(data=torch.zeros(1), requires_grad=True)
 
         #initialize covariance parameters
         _scale = torch.ones(n_samples, self.d, m) * _scale  #n_diag x T
@@ -82,7 +79,6 @@ class EP_GP(Rdist):
     @property
     def nu(self) -> torch.Tensor:
         return self._nu
-        #return self._nu_s * ( (self._nu - self._nu.mean()) / self._nu.std()) + self._nu_i
 
     @property
     def ell(self) -> torch.Tensor:

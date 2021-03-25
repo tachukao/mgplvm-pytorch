@@ -111,10 +111,12 @@ def fit(dataset: Union[Tensor, DataLoader],
         )
 
     n_samples = dataloader.n_samples
-    n = dataloader.n
-    m = dataloader.m
+    n = dataloader.n if neuron_idxs is None else len(neuron_idxs)
+    try:
+        m = dataloader.batch_pool_size
+    except AttributeError:
+        m = dataloader.m
 
-    n = n if neuron_idxs is None else len(neuron_idxs)
     for i in range(max_steps):
         loss_vals, kl_vals, svgp_vals = [], [], []
         ramp = 1 - np.exp(-i / burnin)
