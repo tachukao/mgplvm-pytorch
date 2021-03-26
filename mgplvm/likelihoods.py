@@ -349,16 +349,24 @@ class ZIPoisson(Likelihood):
             self.alpha), self.c, self.d
 
     def log_prob(self, lamb, y, alpha):
+        """
+        ..math::
+          :nowrap:
+          \\begin{eqnarray}
+          P(N=0) &= alpha + (1-\alpha) \text{Poisson}(N=0)
+          P(N>0) &= (1-\alpha) \text{Poisson}(N)
+          \\end{eqnarray}
+        """
         #lambd: (n_mc, n_samples x n, m, n_gh)
         #y: (n, n_samples x m)
         p = dists.Poisson(lamb)
         Y = y[None, ..., None]
-        zero_Y = (Y == 0)
+        zero_Y = (Y == 0) # where counts are 0
         alpha_ = alpha[None, None, :, None, None]
 
         alpha_logp = torch.log(1 - alpha_) + p.log_prob(Y)  # range -infty to 0
-        logp_0 = zero_Y * torch.log(alpha_ + torch.exp(alpha_logp) + 1e-12)
-        logp_rest = (~zero_Y) * alpha_logp
+        logp_0 = zero_Y * torch.log(alpha_ + torch.exp(alpha_logp) + 1e-12) # log probability of N=0 counts, stabilize with 1e-12
+        logp_rest = (~zero_Y) * alpha_logp # log probability of N>0 counts
         return logp_0 + logp_rest
 
     def dist(self, fs: Tensor):
@@ -371,7 +379,7 @@ class ZIPoisson(Likelihood):
         Returns
         -------
         dist : distribution
-            resulting Poisson distributions
+            resulting Poisson distributions (for use internally)
         """
         _, c, d = self.prms
         lambd = self.binsize * self.inv_link(c[..., None] * fs + d[..., None])
@@ -388,14 +396,14 @@ class ZIPoisson(Likelihood):
         Returns
         -------
         y_samps : Tensor
-            samples from the resulting Poisson distributions (n_mc x n_samples x n x m)
+            samples from the resulting ZIP distributions (n_mc x n_samples x n x m)
         """
         alpha, _, _ = self.prms
         alpha_ = alpha[None, None, :, None].expand(*f_samps.shape)
-        bern = dists.Bernoulli(probs=alpha_)
+        bern = dists.Bernoulli(probs=alpha_) # Bernoulli with p=alpha for additional zeros
         dist = self.dist(f_samps)
         y_samps = dist.sample()
-        zero_inflates = 1 - bern.sample()
+        zero_inflates = 1 - bern.sample() # locations additional zeros to Poisson
         return zero_inflates * y_samps
 
     def dist_mean(self, fs: Tensor):
