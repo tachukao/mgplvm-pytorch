@@ -10,6 +10,7 @@ class DataLoader:
         self.n = n
         self.n_samples = n_samples
         self.m = m
+        self.batch_pool_size = m
         self.data = data
 
     def __iter__(self):

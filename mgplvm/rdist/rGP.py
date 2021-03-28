@@ -20,7 +20,7 @@ class EP_GP(Rdist):
                  mu=None,
                  initialization: Optional[str] = 'random',
                  Y=None,
-                 _scale=0.2,
+                 _scale=0.9,
                  ell=None,
                  use_fast_toeplitz=True):
         """
@@ -51,13 +51,11 @@ class EP_GP(Rdist):
         self.use_fast_toeplitz = use_fast_toeplitz
         self.manif = manif
         self.d = manif.d
+        self.m = m
 
         #initialize GP mean
-        nu = torch.randn((n_samples, self.d, m)) * 1
+        nu = torch.randn((n_samples, self.d, m)) * 0.01
         self._nu = nn.Parameter(data=nu, requires_grad=True)  #m in the notes
-
-        #self._nu_s = nn.Parameter(data=torch.ones(1), requires_grad=True)
-        #self._nu_i = nn.Parameter(data=torch.zeros(1), requires_grad=True)
 
         #initialize covariance parameters
         _scale = torch.ones(n_samples, self.d, m) * _scale  #n_diag x T
@@ -81,7 +79,6 @@ class EP_GP(Rdist):
     @property
     def nu(self) -> torch.Tensor:
         return self._nu
-        #return self._nu_s * ( (self._nu - self._nu.mean()) / self._nu.std()) + self._nu_i
 
     @property
     def ell(self) -> torch.Tensor:
@@ -104,7 +101,7 @@ class EP_GP(Rdist):
             K_half = sig_sqr_half * torch.exp(-self.dts_sq.to(ell_half.device) /
                                               (2 * torch.square(ell_half)))
             #(n_samples x d x m x 1)
-            mu = sym_toeplitz_matmul(K_half, nu[..., None])
+            mu = sym_toeplitz_matmul(K_half, nu[..., None])  #mu = K_half * nu
 
         else:
             #compute full TxT covariance matrix
@@ -148,10 +145,16 @@ class EP_GP(Rdist):
                                    sample_idxs=sample_idxs)
 
         # sample a batch with dims: (n_samples x d x m x n_mc)
-        rand = torch.randn((mu.shape[0], mu.shape[2], mu.shape[1], size[0]))
+        rand = torch.randn(
+            (mu.shape[0], mu.shape[2], mu.shape[1], size[0]))  # v ~ N(0, 1)
 
         #multiply by diagonal scale
         scale = self.scale  # (n_samples, d, m)
+        if sample_idxs is not None:
+            scale = scale[sample_idxs, ...]
+
+        # sample from N(mu, (KS)^2)
+        # mu + K * S * v --> K*nu, K*S*v --> K(nu + S*v)
         Sv = scale[..., None] * rand.to(
             scale.device)  #(n_samples x d x m x n_mc) S*v
 
@@ -160,8 +163,12 @@ class EP_GP(Rdist):
             x = sym_toeplitz_matmul(K_half, Sv)
         else:
             x = K_half @ Sv
-
         x = x.permute(-1, 0, 2, 1)  #(n_mc x n_samples x m x d)
+
+        if batch_idxs is not None:
+            mu = mu[..., batch_idxs, :]
+            x = x[..., batch_idxs, :]
+
         x = x + mu[None, ...]  #add mean
 
         #(n_mc x n_samples x m x d), (n_samples x d)
@@ -173,9 +180,7 @@ class EP_GP(Rdist):
         """
         #(n_samples x d x m), (n_samples x d x m)
         nu, S = self.nu, self.scale
-        if batch_idxs is not None:
-            nu = nu[..., batch_idxs]
-            S = S[..., batch_idxs]
+
         if sample_idxs is not None:
             nu = nu[sample_idxs, ...]
             S = S[sample_idxs, ...]
@@ -186,6 +191,10 @@ class EP_GP(Rdist):
         LogTerm = 2 * (torch.log(S)).sum(-1)  #(n_samples x d)
 
         kl = 0.5 * (TrTerm + MeanTerm - DimTerm - LogTerm)
+
+        if batch_idxs is not None:
+            kl = kl * len(batch_idxs) / self.m  #scale by batch size
+
         return kl
 
     def gmu_parameters(self):
@@ -196,12 +205,6 @@ class EP_GP(Rdist):
 
     def lat_prms(self, Y=None, batch_idxs=None, sample_idxs=None):
         mu, K_half = self.prms
-        if batch_idxs is not None:
-            mu = mu[:, batch_idxs, :]
-            if self.use_fast_toeplitz:
-                K_half = K_half[..., batch_idxs]
-            else:
-                K_half = K_half[..., :, batch_idxs][..., batch_idxs, :]
         if sample_idxs is not None:
             mu = mu[sample_idxs, ...]
             K_half = K_half[sample_idxs, ...]
@@ -222,9 +225,16 @@ class EP_GP(Rdist):
         mu, _ = self.lat_prms(Y=Y,
                               batch_idxs=batch_idxs,
                               sample_idxs=sample_idxs)
+        scale = self.scale
+
+        if batch_idxs is not None:
+            mu = mu[:, batch_idxs, :]
+            scale = scale[..., batch_idxs]
+        if sample_idxs is not None:
+            scale = scale[sample_idxs, ...]
 
         mu_mag = torch.sqrt(torch.mean(mu**2)).item()
-        sig = torch.median(self.scale).item()
+        sig = torch.median(scale).item()
 
         ell = self.ell.mean().item()
         string = (' |mu| {:.3f} | sig {:.3f} | prior_ell {:.3f} |').format(

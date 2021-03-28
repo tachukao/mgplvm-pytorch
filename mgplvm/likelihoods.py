@@ -34,7 +34,7 @@ def FA_init(Y, d: Optional[int] = None):
     mudata = pca.fit_transform(Y)  #m*n_samples x d
     sigmas = 1.5 * np.sqrt(pca.noise_variance_)
 
-    print('sigma:', np.mean(sigmas), np.std(Y))
+    #print('sigma:', np.mean(sigmas), np.std(Y))
 
     return torch.tensor(sigmas, dtype=torch.get_default_dtype())
 
