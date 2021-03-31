@@ -61,7 +61,7 @@ class Null(Lprior):
         g: (n_b x n_samples x mx x d)
         output: (n_b)
         '''
-        return 0 * torch.ones(g.shape[0])
+        return 0 * torch.ones(g.shape[0]).to(g.device)
 
     def prms(self):
         pass
