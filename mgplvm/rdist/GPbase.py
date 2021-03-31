@@ -96,9 +96,9 @@ class GPbase(Rdist):
         sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2))
 
         if sample_idxs is None:
-            dts = self.dts_sqr[...]
+            dts = self.dts_sq[...]
         else:
-            dts = self.dts_sqr[sample_idxs, ...]
+            dts = self.dts_sq[sample_idxs, ...]
 
         # (n_samples x d x m)
         K_half = sig_sqr_half * torch.exp(-dts / (2 * torch.square(ell_half)))
