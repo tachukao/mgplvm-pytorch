@@ -72,7 +72,7 @@ def train_cv(mod,
     for p in mod.parameters():  #no gradients for the remaining parameters
         p.requires_grad = False
 
-    if 'EP_GP' in mod.lat_dist.name:
+    if 'GP' in mod.lat_dist.name:
         mod.lat_dist.nu.requires_grad = True
         mod.lat_dist._scale.requires_grad = True
         mask_Ts = None

@@ -109,12 +109,10 @@ def load_model(params):
                                     n_z=n_z,
                                     ts=params['ts'])
         """
-        lat_dist = rdist.EP_GP(manif,
+        lat_dist = rdist.GP_diag(manif,
                                m,
                                n_samples,
                                params['ts'].to(device),
-                               Y=params['Y'],
-                               initialization=params['initialization'],
                                ell=params['prior_ell'])
         lprior: Lprior = lpriors.Null(manif)
 
