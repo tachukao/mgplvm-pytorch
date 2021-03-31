@@ -59,7 +59,7 @@ class GPbase(Rdist):
 
         #initialize length scale
         ell = (torch.max(ts) - torch.min(ts)) / 20 if ell is None else ell
-        _ell = torch.ones(1, self.d, 1) * ell
+        _ell = torch.ones(1, self.d, 1) * ell #/ (ts[0, 0, 1] - ts[0, 0, 0]) #scale by dt
         self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=True)
 
         #pre-compute time differences (only need one row for the toeplitz stuff)
@@ -84,8 +84,16 @@ class GPbase(Rdist):
     @property
     def prms(self):
         return self.nu, self.scale, self.ell
+    
+    @property
+    def lat_mu(self):
+        """return variational mean mu = K_half @ nu"""
+        nu = self.nu
+        K_half = self.K_half() #(n_samples x d x m)
+        mu = sym_toeplitz_matmul(K_half, nu[..., None])[..., 0]
+        return mu.transpose(-1, -2) #(n_samples x m x d)
 
-    def K_half(self, sample_idxs):
+    def K_half(self, sample_idxs = None):
         """compute one column of the square root of the prior matrix"""
         nu = self.nu  #mean parameters
 
