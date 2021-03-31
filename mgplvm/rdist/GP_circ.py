@@ -50,7 +50,7 @@ class GP_circ(GPbase):
         if self.m % 2 == 0:
             _c = torch.ones(n_samples, self.d, int(m / 2) + 1)
         else:
-            pass
+            _c = torch.ones(n_samples, self.d, int((m + 1) / 2))
         self._c = nn.Parameter(data=inv_softplus(_c), requires_grad=True)
 
     @property
@@ -102,15 +102,13 @@ class GP_circ(GPbase):
         DimTerm = S.shape[-1]
         LogSTerm = 2 * (torch.log(S)).sum(-1)  #(n_samples x d)
 
+        #c[0] + 2*c[1:end] (n_samples x d)
+        LogCTerm = 2 * (torch.log(c)).sum(-1) - torch.log(c[..., 0])
         if self.m % 2 == 0:
-            #c[0] + c[-1] + 2*c[1:-1] (n_samples x d)
-            LogCTerm = 2 * (torch.log(c)).sum(-1) - torch.log(
-                c[..., 0]) - torch.log(c[..., -1])
-        else:
-            pass
+            #c[0] + c[-1] + 2*c[1:-1]
+            LogCTerm = LogCTerm - torch.log(c[..., -1])
 
         kl = 0.5 * (TrTerm + MeanTerm - DimTerm - LogSTerm - LogCTerm)
-
         if batch_idxs is not None:  #scale by batch size
             kl = kl * len(batch_idxs) / self.m
 
