@@ -95,12 +95,11 @@ class GPbase(Rdist):
         #K^(1/2) has sig var sig*2^1/4*pi^(-1/4)*ell^(-1/2) if K has sig^2 (1 x d x 1)
         sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2))
 
-        dts = self.dts_sq
-        if sample_idxs is not None:
-            dts = dts[sample_idxs, ...]
-
         # (n_samples x d x m)
-        K_half = sig_sqr_half * torch.exp(-dts / (2 * torch.square(ell_half)))
+        K_half = sig_sqr_half * torch.exp(-self.dts_sqr /
+                                          (2 * torch.square(ell_half)))
+        if sample_idxs is not None:
+            K_half = K_half[sample_idxs, ...]
 
         return K_half
 
