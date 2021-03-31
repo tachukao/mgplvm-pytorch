@@ -37,7 +37,7 @@ class GP_circ(GPbase):
         We parameterize our posterior as N(K2 v, K2 SCCS K2) where K2@K2 = Kprior, S is diagonal and C is circulant
         """
 
-        super(GP_circ, self).__init__(manif, 1)
+        super(GP_circ, self).__init__(manif,m,n_samples,ts,_scale=_scale,ell=ell)
 
         assert m % 2 == 0 #need to provide support for odd m
         
@@ -67,7 +67,8 @@ class GP_circ(GPbase):
             scale = scale[sample_idxs, ...] #(n_samples x d x m)
             c = c[sample_idxs, ...] #(n_samples x d x m/2)
         
-        rv = rfft(v.transpose(-1, -2)) #Fourier transform (n_samples x d x n_mc x m/2)
+        #Fourier transform (n_samples x d x n_mc x m/2)
+        rv = rfft(v.transpose(-1, -2).to(scale.device)) 
         #inverse fourier transform of product (n_samples x d x m x n_mc)
         Cv = irfft( c[..., None, :] * rv ).transpose(-1, -2)
         
