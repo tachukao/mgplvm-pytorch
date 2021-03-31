@@ -42,7 +42,7 @@ class GPbase(Rdist):
         
         """
 
-        super(GPbase, self).__init__(manif, 1) #kmax = 1
+        super(GPbase, self).__init__(manif, 1)  #kmax = 1
 
         self.manif = manif
         self.d = manif.d
@@ -56,7 +56,7 @@ class GPbase(Rdist):
         _scale = torch.ones(n_samples, self.d, m) * _scale  #n_diag x T
         self._scale = nn.Parameter(data=inv_softplus(_scale),
                                    requires_grad=True)
-        
+
         #initialize length scale
         ell = (torch.max(ts) - torch.min(ts)) / 20 if ell is None else ell
         _ell = torch.ones(1, self.d, 1) * ell
@@ -80,7 +80,7 @@ class GPbase(Rdist):
     @property
     def ell(self) -> torch.Tensor:
         return softplus(self._ell)
-    
+
     @property
     def prms(self):
         return self.nu, self.scale, self.ell
@@ -93,25 +93,25 @@ class GPbase(Rdist):
         ell_half = self.ell / np.sqrt(2)
 
         #K^(1/2) has sig var sig*2^1/4*pi^(-1/4)*ell^(-1/2) if K has sig^2 (1 x d x 1)
-        sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2))  
-        
+        sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2))
+
         dts = self.dts_sq
         if sample_idxs is not None:
             dts = dts[sample_idxs, ...]
-    
+
         # (n_samples x d x m)
-        K_half = sig_sqr_half * torch.exp(-dts /(2 * torch.square(ell_half)))
-        
+        K_half = sig_sqr_half * torch.exp(-dts / (2 * torch.square(ell_half)))
+
         return K_half
-        
-    def I_v(self, v, sample_idxs = None):
+
+    def I_v(self, v, sample_idxs=None):
         """
         Compute I @ v for some vector v.
         This should be implemented for each class separately.
         v is (n_samples x d x m x n_mc) where n_samples is the number of sample_idxs
         """
         pass
-    
+
     def kl(self, batch_idxs=None, sample_idxs=None):
         """
         Compute KL divergence between prior and posterior.
@@ -134,27 +134,27 @@ class GPbase(Rdist):
         #compute KL analytically
         lq = self.kl(batch_idxs=batch_idxs,
                      sample_idxs=sample_idxs)  #(n_samples x d)
-        
-        K_half = self.K_half(sample_idxs = sample_idxs) #(n_samples x d x m)
+
+        K_half = self.K_half(sample_idxs=sample_idxs)  #(n_samples x d x m)
         n_samples, d, m = K_half.shape
-        
+
         # sample a batch with dims: (n_samples x d x m x n_mc)
         v = torch.randn(n_samples, d, m, size[0])  # v ~ N(0, 1)
         #compute I @ v (n_samples x d x m x n_mc)
-        I_v = self.I_v(v, sample_idxs = sample_idxs)
-        
-        nu = self.nu #mean parameter (n_samples, d, m)
+        I_v = self.I_v(v, sample_idxs=sample_idxs)
+
+        nu = self.nu  #mean parameter (n_samples, d, m)
         if sample_idxs is not None:
             nu = nu[sample_idxs, ...]
-        samp = nu[..., None]+I_v #add mean parameter to each sample
-        
+        samp = nu[..., None] + I_v  #add mean parameter to each sample
+
         #compute K@(I@v+nu)
-        x = sym_toeplitz_matmul(K_half, samp) #(n_samples x m x d x n_mc)
+        x = sym_toeplitz_matmul(K_half, samp)  #(n_samples x m x d x n_mc)
         x = x.permute(-1, 0, 2, 1)  #(n_mc x n_samples x m x d)
-        
-        if batch_idxs is not None: #only select some time points
+
+        if batch_idxs is not None:  #only select some time points
             x = x[..., batch_idxs, :]
-        
+
         #(n_mc x n_samples x m x d), (n_samples x d)
         return x, lq
 
@@ -169,8 +169,8 @@ class GPbase(Rdist):
         mu_mag = torch.sqrt(torch.mean(self.nu**2)).item()
         sig = torch.median(self.scale).item()
         ell = self.ell.mean().item()
-        
+
         string = (' |mu| {:.3f} | sig {:.3f} | prior_ell {:.3f} |').format(
             mu_mag, sig, ell)
-        
+
         return string

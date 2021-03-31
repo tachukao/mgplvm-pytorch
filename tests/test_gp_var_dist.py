@@ -39,9 +39,9 @@ def test_GP_lat_prior():
     print('Y:', Y.shape, np.std(Y), np.quantile(Y, 0.99))
 
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
-    
+
     for GP in [mgp.rdist.GP_diag, mgp.rdist.GP_circ]:
-    
+
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, dfit)
         #kernel = mgp.kernels.Linear(n, dfit)
@@ -52,7 +52,7 @@ def test_GP_lat_prior():
                                     Y=Y,
                                     Poisson=Poisson)
 
-        lat_dist = GP(manif,m,n_samples,torch.Tensor(ts))
+        lat_dist = GP(manif, m, n_samples, torch.Tensor(ts))
         _scale = torch.ones(n_samples, d, m) * .2 * (1 + torch.randn(m) / 100
                                                     )  #n_diag x T
         lat_dist._scale = nn.Parameter(data=inv_softplus(_scale),
@@ -68,8 +68,8 @@ def test_GP_lat_prior():
         else:
             likelihood = mgp.likelihoods.Gaussian(n, Y=Y, d=dfit)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
-                                 lprior).to(device)
+        mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood,
+                                 lat_dist, lprior).to(device)
 
         print(mod.lat_dist.name)
         ### test that training runs ###
@@ -98,4 +98,3 @@ def test_GP_lat_prior():
 
 if __name__ == '__main__':
     test_GP_lat_prior()
-

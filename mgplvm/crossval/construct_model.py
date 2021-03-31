@@ -110,10 +110,10 @@ def load_model(params):
                                     ts=params['ts'])
         """
         lat_dist = rdist.GP_diag(manif,
-                               m,
-                               n_samples,
-                               params['ts'].to(device),
-                               ell=params['prior_ell'])
+                                 m,
+                                 n_samples,
+                                 params['ts'].to(device),
+                                 ell=params['prior_ell'])
         lprior: Lprior = lpriors.Null(manif)
 
     elif params['prior'] == 'ARP':
