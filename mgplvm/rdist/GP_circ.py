@@ -69,13 +69,13 @@ class GP_circ(GPbase):
         if sample_idxs is not None:
             scale = scale[sample_idxs, ...]  #(n_samples x d x m)
             c = c[sample_idxs, ...]  #(n_samples x d x m/2)
-            
+
         #Fourier transform (n_samples x d x n_mc x m/2)
         rv = rfft(v.transpose(-1, -2).to(scale.device))
-        
+
         #inverse fourier transform of product (n_samples x d x m x n_mc)
-        Cv = irfft(c[..., None, :] * rv, n = self.m).transpose(-1, -2)
-        
+        Cv = irfft(c[..., None, :] * rv, n=self.m).transpose(-1, -2)
+
         #multiply by diagonal scale
         SCv = scale[..., None] * Cv
 
@@ -95,8 +95,9 @@ class GP_circ(GPbase):
             c = c[sample_idxs, ...]
 
         #n_samples x d x m
-        Cr = irfft(self.c, n = self.m)  #first row of C given by inverse Fourier transform
-        
+        Cr = irfft(self.c,
+                   n=self.m)  #first row of C given by inverse Fourier transform
+
         #(n_samples x d)
         TrTerm = torch.square(S).sum(-1) * torch.square(Cr).sum(-1)
         MeanTerm = torch.square(nu).sum(-1)  #(n_samples x d)
@@ -108,7 +109,7 @@ class GP_circ(GPbase):
         if self.m % 2 == 0:
             #c[0] + c[-1] + 2*c[1:-1]
             LogCTerm = LogCTerm - torch.log(c[..., -1])
-        LogCTerm = 2*LogCTerm #one for each C
+        LogCTerm = 2 * LogCTerm  #one for each C
 
         kl = 0.5 * (TrTerm + MeanTerm - DimTerm - LogSTerm - LogCTerm)
         if batch_idxs is not None:  #scale by batch size

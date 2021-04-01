@@ -80,4 +80,3 @@ class GP_diag(GPbase):
             kl = kl * len(batch_idxs) / self.m  #scale by batch size
 
         return kl
-    
