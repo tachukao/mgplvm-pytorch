@@ -361,12 +361,14 @@ class ZIPoisson(Likelihood):
         #y: (n, n_samples x m)
         p = dists.Poisson(lamb)
         Y = y[None, ..., None]
-        zero_Y = (Y == 0) # where counts are 0
+        zero_Y = (Y == 0)  # where counts are 0
         alpha_ = alpha[None, None, :, None, None]
 
         alpha_logp = torch.log(1 - alpha_) + p.log_prob(Y)  # range -infty to 0
-        logp_0 = zero_Y * torch.log(alpha_ + torch.exp(alpha_logp) + 1e-12) # log probability of N=0 counts, stabilize with 1e-12
-        logp_rest = (~zero_Y) * alpha_logp # log probability of N>0 counts
+        logp_0 = zero_Y * torch.log(
+            alpha_ + torch.exp(alpha_logp) +
+            1e-12)  # log probability of N=0 counts, stabilize with 1e-12
+        logp_rest = (~zero_Y) * alpha_logp  # log probability of N>0 counts
         return logp_0 + logp_rest
 
     def dist(self, fs: Tensor):
@@ -400,10 +402,12 @@ class ZIPoisson(Likelihood):
         """
         alpha, _, _ = self.prms
         alpha_ = alpha[None, None, :, None].expand(*f_samps.shape)
-        bern = dists.Bernoulli(probs=alpha_) # Bernoulli with p=alpha for additional zeros
+        bern = dists.Bernoulli(
+            probs=alpha_)  # Bernoulli with p=alpha for additional zeros
         dist = self.dist(f_samps)
         y_samps = dist.sample()
-        zero_inflates = 1 - bern.sample() # locations additional zeros to Poisson
+        zero_inflates = 1 - bern.sample(
+        )  # locations additional zeros to Poisson
         return zero_inflates * y_samps
 
     def dist_mean(self, fs: Tensor):
