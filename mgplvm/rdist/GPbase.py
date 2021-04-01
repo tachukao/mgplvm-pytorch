@@ -128,6 +128,17 @@ class GPbase(Rdist):
         This should be implemented for each class separately
         """
         pass
+    
+    def full_cov(self):
+        """Compute the full covariance Khalf @ I @ I @ Khalf"""
+        v = torch.diag_embed(torch.ones(self._scale.shape)) #(n_samples x d x m x m)
+        I = self.I_v(v) #(n_samples x d x m x m)
+        K_half = self.K_half()  #(n_samples x d x m)
+        
+        Khalf_I = sym_toeplitz_matmul(K_half, I)  #(n_samples x d x m x m)
+        K_post = Khalf_I @ Khalf_I.transpose(-1,-2) #Kpost = Khalf@I@I@Khalf
+        
+        return K_post.detach()
 
     def sample(self,
                size,
@@ -159,7 +170,7 @@ class GPbase(Rdist):
         samp = nu[..., None] + I_v  #add mean parameter to each sample
 
         #compute K@(I@v+nu)
-        x = sym_toeplitz_matmul(K_half, samp)  #(n_samples x m x d x n_mc)
+        x = sym_toeplitz_matmul(K_half, samp)  #(n_samples x d x m x n_mc)
         x = x.permute(-1, 0, 2, 1)  #(n_mc x n_samples x m x d)
 
         if batch_idxs is not None:  #only select some time points

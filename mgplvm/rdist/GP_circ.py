@@ -44,8 +44,6 @@ class GP_circ(GPbase):
                                       _scale=_scale,
                                       ell=ell)
 
-        assert m % 2 == 0  #need to provide support for odd m
-
         #initialize circulant parameters
         if self.m % 2 == 0:
             _c = torch.ones(n_samples, self.d, int(m / 2) + 1)
@@ -71,12 +69,13 @@ class GP_circ(GPbase):
         if sample_idxs is not None:
             scale = scale[sample_idxs, ...]  #(n_samples x d x m)
             c = c[sample_idxs, ...]  #(n_samples x d x m/2)
-
+            
         #Fourier transform (n_samples x d x n_mc x m/2)
         rv = rfft(v.transpose(-1, -2).to(scale.device))
+        
         #inverse fourier transform of product (n_samples x d x m x n_mc)
-        Cv = irfft(c[..., None, :] * rv).transpose(-1, -2)
-
+        Cv = irfft(c[..., None, :] * rv, n = self.m).transpose(-1, -2)
+        
         #multiply by diagonal scale
         SCv = scale[..., None] * Cv
 
@@ -95,9 +94,11 @@ class GP_circ(GPbase):
             S = S[sample_idxs, ...]
             c = c[sample_idxs, ...]
 
-        Cr = irfft(self.c)  #first row of C given by inverse Fourier transform
-        TrTerm = torch.square(S).sum(-1) * torch.square(Cr).sum(
-            -1)  #(n_samples x d)
+        #n_samples x d x m
+        Cr = irfft(self.c, n = self.m)  #first row of C given by inverse Fourier transform
+        
+        #(n_samples x d)
+        TrTerm = torch.square(S).sum(-1) * torch.square(Cr).sum(-1)
         MeanTerm = torch.square(nu).sum(-1)  #(n_samples x d)
         DimTerm = S.shape[-1]
         LogSTerm = 2 * (torch.log(S)).sum(-1)  #(n_samples x d)
@@ -107,33 +108,10 @@ class GP_circ(GPbase):
         if self.m % 2 == 0:
             #c[0] + c[-1] + 2*c[1:-1]
             LogCTerm = LogCTerm - torch.log(c[..., -1])
+        LogCTerm = 2*LogCTerm #one for each C
 
         kl = 0.5 * (TrTerm + MeanTerm - DimTerm - LogSTerm - LogCTerm)
         if batch_idxs is not None:  #scale by batch size
             kl = kl * len(batch_idxs) / self.m
 
         return kl
-
-    def full_cov(self):
-        """there is definitely a better way of doing this"""
-        c = self.c.detach()  # (n_samples, d, m/2)
-        scale = self.scale.detach()  # (n_samples, d, m)
-        K_half = self.prms[1].detach()  # (n_samples x d x m)
-        m = K_half.shape[-1]
-
-        full_K_half = torch.zeros(K_half.shape[0], K_half.shape[1], m,
-                                  m).to(c.device)
-        for i in range(m):
-            full_K_half[..., i, i:m] = K_half[..., 0:(m - i)]
-            for j in range(i):
-                full_K_half[..., i, i - j - 1] = K_half[..., j + 1]
-
-        SK = torch.diag_embed(scale) @ full_K_half
-        print('SK:', SK.shape)
-        print('fft:', rfft(SK).shape)
-        print('CSK fft:', (c[..., None, :] * rfft(SK)).shape)
-        CSK = irfft(c[..., None, :] * rfft(SK)).transpose(
-            -1, -2)  #(n_samples x d x m x m)
-        print('CSK:', CSK.shape)
-
-        return CSK.transpose(-1, -2) @ CSK
