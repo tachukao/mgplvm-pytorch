@@ -33,7 +33,6 @@ import warnings
 
 import torch
 
-from .. import settings
 from .deprecation import bool_compat
 from .warnings import NumericalWarning
 
@@ -119,13 +118,14 @@ def linear_cg(
     matmul_closure,
     rhs,
     n_tridiag=0,
-    tolerance=None,
+    tolerance=.01,
     eps=1e-10,
     stop_updating_after=1e-10,
-    max_iter=None,
-    max_tridiag_iter=None,
+    max_iter=1000,
+    max_tridiag_iter=20,
     initial_guess=None,
     preconditioner=None,
+    verbose=False,
 ):
     """
     Implements the linear conjugate gradients method for (approximately) solving systems of the form
@@ -156,22 +156,13 @@ def linear_cg(
         rhs = rhs.unsqueeze(-1)
 
     # Some default arguments
-    if max_iter is None:
-        max_iter = settings.max_cg_iterations.value()
-    if max_tridiag_iter is None:
-        max_tridiag_iter = settings.max_lanczos_quadrature_iterations.value()
     if initial_guess is None:
         initial_guess = torch.zeros_like(rhs)
-    if tolerance is None:
-        if settings._use_eval_tolerance.on():
-            tolerance = settings.eval_cg_tolerance.value()
-        else:
-            tolerance = settings.cg_tolerance.value()
     if preconditioner is None:
         preconditioner = _default_preconditioner
         precond = False
     else:
-        precond = True
+        precond = True # MGPLVM-GPYTORCH doesn't have other preconditioners. See gpytorch for example uses
 
     # If we are running m CG iterations, we obviously can't get more than m Lanczos coefficients
     if max_tridiag_iter > max_iter:
@@ -185,7 +176,7 @@ def linear_cg(
 
     # Get some constants
     num_rows = rhs.size(-2)
-    n_iter = min(max_iter, num_rows) if settings.terminate_cg_by_size.on() else max_iter
+    n_iter = max_iter
     n_tridiag_iter = min(max_tridiag_iter, num_rows)
     eps = torch.tensor(eps, dtype=rhs.dtype, device=rhs.device)
 
@@ -206,9 +197,8 @@ def linear_cg(
     # result <- x_{0}
     result = initial_guess.expand_as(residual).contiguous()
 
-    # Maybe log
-    if settings.verbose_linalg.on():
-        settings.verbose_linalg.logger.debug(
+    if verbose:
+        print(
             f"Running CG on a {rhs.shape} RHS for {n_iter} iterations (tol={tolerance}). Output: {result.shape}."
         )
 
@@ -346,9 +336,9 @@ def linear_cg(
         warnings.warn(
             "CG terminated in {} iterations with average residual norm {}"
             " which is larger than the tolerance of {} specified by"
-            " gpytorch.settings.cg_tolerance."
-            " If performance is affected, consider raising the maximum number of CG iterations by running code in"
-            " a gpytorch.settings.max_cg_iterations(value) context.".format(k + 1, residual_norm.mean(), tolerance),
+            " tolerance."
+            " If performance is affected, consider raising the maximum number of CG iterations by running code by"
+            " increasing the max_iter value.".format(k + 1, residual_norm.mean(), tolerance),
             NumericalWarning,
         )
 
