@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 This file taken from GPytorch https://github.com/cornellius-gp/gpytorch/blob/c74b8ed8d590fcb1d79808d9ee7cde168588ef99/gpytorch/utils/linear_cg.py
 
@@ -28,13 +27,9 @@ SOFTWARE.
 
 """
 
-
 import warnings
 
 import torch
-
-from .deprecation import bool_compat
-from .warnings import NumericalWarning
 
 
 def _default_preconditioner(x):
@@ -42,9 +37,9 @@ def _default_preconditioner(x):
 
 
 @torch.jit.script
-def _jit_linear_cg_updates(
-    result, alpha, residual_inner_prod, eps, beta, residual, precond_residual, mul_storage, is_zero, curr_conjugate_vec
-):
+def _jit_linear_cg_updates(result, alpha, residual_inner_prod, eps, beta,
+                           residual, precond_residual, mul_storage, is_zero,
+                           curr_conjugate_vec):
     # # Update result
     # # result_{k} = result_{k-1} + alpha_{k} p_vec_{k-1}
     result = torch.addcmul(result, alpha, curr_conjugate_vec, out=result)
@@ -162,17 +157,20 @@ def linear_cg(
         preconditioner = _default_preconditioner
         precond = False
     else:
-        precond = True # MGPLVM-GPYTORCH doesn't have other preconditioners. See gpytorch for example uses
+        precond = True  # MGPLVM-GPYTORCH doesn't have other preconditioners. See gpytorch for example uses
 
     # If we are running m CG iterations, we obviously can't get more than m Lanczos coefficients
     if max_tridiag_iter > max_iter:
-        raise RuntimeError("Getting a tridiagonalization larger than the number of CG iterations run is not possible!")
+        raise RuntimeError(
+            "Getting a tridiagonalization larger than the number of CG iterations run is not possible!"
+        )
 
     # Check matmul_closure object
     if torch.is_tensor(matmul_closure):
         matmul_closure = matmul_closure.matmul
     elif not callable(matmul_closure):
-        raise RuntimeError("matmul_closure must be a tensor, or a callable object!")
+        raise RuntimeError(
+            "matmul_closure must be a tensor, or a callable object!")
 
     # Get some constants
     num_rows = rhs.size(-2)
@@ -204,7 +202,9 @@ def linear_cg(
 
     # Check for NaNs
     if not torch.equal(residual, residual):
-        raise RuntimeError("NaNs encountered when trying to perform matrix-vector multiplication")
+        raise RuntimeError(
+            "NaNs encountered when trying to perform matrix-vector multiplication"
+        )
 
     # Sometime we're lucky and the preconditioner solves the system right away
     # Check for convergence
@@ -219,21 +219,39 @@ def linear_cg(
         # precon_residual{0} = M^-1 residual_{0}
         precond_residual = preconditioner(residual)
         curr_conjugate_vec = precond_residual
-        residual_inner_prod = precond_residual.mul(residual).sum(-2, keepdim=True)
+        residual_inner_prod = precond_residual.mul(residual).sum(-2,
+                                                                 keepdim=True)
 
         # Define storage matrices
         mul_storage = torch.empty_like(residual)
-        alpha = torch.empty(*batch_shape, 1, rhs.size(-1), dtype=residual.dtype, device=residual.device)
+        alpha = torch.empty(*batch_shape,
+                            1,
+                            rhs.size(-1),
+                            dtype=residual.dtype,
+                            device=residual.device)
         beta = torch.empty_like(alpha)
-        is_zero = torch.empty(*batch_shape, 1, rhs.size(-1), dtype=bool_compat, device=residual.device)
+        is_zero = torch.empty(*batch_shape,
+                              1,
+                              rhs.size(-1),
+                              dtype=bool,
+                              device=residual.device)
 
     # Define tridiagonal matrices, if applicable
     if n_tridiag:
-        t_mat = torch.zeros(
-            n_tridiag_iter, n_tridiag_iter, *batch_shape, n_tridiag, dtype=alpha.dtype, device=alpha.device
-        )
-        alpha_tridiag_is_zero = torch.empty(*batch_shape, n_tridiag, dtype=bool_compat, device=t_mat.device)
-        alpha_reciprocal = torch.empty(*batch_shape, n_tridiag, dtype=t_mat.dtype, device=t_mat.device)
+        t_mat = torch.zeros(n_tridiag_iter,
+                            n_tridiag_iter,
+                            *batch_shape,
+                            n_tridiag,
+                            dtype=alpha.dtype,
+                            device=alpha.device)
+        alpha_tridiag_is_zero = torch.empty(*batch_shape,
+                                            n_tridiag,
+                                            dtype=bool,
+                                            device=t_mat.device)
+        alpha_reciprocal = torch.empty(*batch_shape,
+                                       n_tridiag,
+                                       dtype=t_mat.dtype,
+                                       device=t_mat.device)
         prev_alpha_reciprocal = torch.empty_like(alpha_reciprocal)
         prev_beta = torch.empty_like(alpha_reciprocal)
 
@@ -263,7 +281,11 @@ def linear_cg(
 
             # Update residual
             # residual_{k} = residual_{k-1} - alpha_{k} mat p_vec_{k-1}
-            residual = torch.addcmul(residual, alpha, mvms, value=-1, out=residual)
+            residual = torch.addcmul(residual,
+                                     alpha,
+                                     mvms,
+                                     value=-1,
+                                     out=residual)
 
             # Update precond_residual
             # precon_residual{k} = M^-1 residual_{k}
@@ -301,7 +323,8 @@ def linear_cg(
         residual_norm.masked_fill_(rhs_is_zero, 0)
         torch.lt(residual_norm, stop_updating_after, out=has_converged)
 
-        if k >= 10 and bool(residual_norm.mean() < tolerance) and not (n_tridiag and k < n_tridiag_iter):
+        if k >= 10 and bool(residual_norm.mean() < tolerance) and not (
+                n_tridiag and k < n_tridiag_iter):
             tolerance_reached = True
             break
 
@@ -317,8 +340,13 @@ def linear_cg(
             if k == 0:
                 t_mat[k, k].copy_(alpha_reciprocal)
             else:
-                torch.addcmul(alpha_reciprocal, prev_beta, prev_alpha_reciprocal, out=t_mat[k, k])
-                torch.mul(prev_beta.sqrt_(), prev_alpha_reciprocal, out=t_mat[k, k - 1])
+                torch.addcmul(alpha_reciprocal,
+                              prev_beta,
+                              prev_alpha_reciprocal,
+                              out=t_mat[k, k])
+                torch.mul(prev_beta.sqrt_(),
+                          prev_alpha_reciprocal,
+                          out=t_mat[k, k - 1])
                 t_mat[k - 1, k].copy_(t_mat[k, k - 1])
 
                 if t_mat[k - 1, k].max() < 1e-6:
@@ -338,15 +366,16 @@ def linear_cg(
             " which is larger than the tolerance of {} specified by"
             " tolerance."
             " If performance is affected, consider raising the maximum number of CG iterations by running code by"
-            " increasing the max_iter value.".format(k + 1, residual_norm.mean(), tolerance),
-            NumericalWarning,
-        )
+            " increasing the max_iter value.".format(k + 1,
+                                                     residual_norm.mean(),
+                                                     tolerance),)
 
     if is_vector:
         result = result.squeeze(-1)
 
     if n_tridiag:
-        t_mat = t_mat[: last_tridiag_iter + 1, : last_tridiag_iter + 1]
-        return result, t_mat.permute(-1, *range(2, 2 + len(batch_shape)), 0, 1).contiguous()
+        t_mat = t_mat[:last_tridiag_iter + 1, :last_tridiag_iter + 1]
+        return result, t_mat.permute(-1, *range(2, 2 + len(batch_shape)), 0,
+                                     1).contiguous()
     else:
         return result
