@@ -14,26 +14,32 @@ device = mgp.utils.get_device()
 def test_K_half():
     """check that our implementation of Khalf for the RBF kernel is correct modulo boundary conditions"""
     n_samples, m, dfit = 1, 200, 1
-    
+
     ###generate K###
     ell = 10
     ts = np.array([np.arange(m) for nsamp in range(n_samples)])[:, None, :]
     dts_sq = (ts[..., None] - ts[..., None, :])**2  #(n_samples x 1 x m x m)
     dts_sq = np.sum(dts_sq, axis=-3)  #(n_samples x m x m)
-    K = torch.tensor(np.exp(-dts_sq / (2 * ell**2)))[0, ...] #n_samples x m x m
-    
+    K = torch.tensor(np.exp(-dts_sq / (2 * ell**2)))[0, ...]  #n_samples x m x m
+
     manif = mgp.manifolds.Euclid(m, dfit)
     #initialize with ground truth parameters
-    lat_dist = mgp.rdist.GPbase(manif, m, n_samples, torch.Tensor(ts), ell = ell, _scale=1)
-    
-    K_half = lat_dist.K_half(None).detach().cpu() # (n_samples x d x m)
-    K_half = sym_toeplitz(K_half[0, 0, :]) #m x m
-    K_num = K_half @ K_half #m x m
+    lat_dist = mgp.rdist.GPbase(manif,
+                                m,
+                                n_samples,
+                                torch.Tensor(ts),
+                                ell=ell,
+                                _scale=1)
+
+    K_half = lat_dist.K_half(None).detach().cpu()  # (n_samples x d x m)
+    K_half = sym_toeplitz(K_half[0, 0, :])  #m x m
+    K_num = K_half @ K_half  #m x m
 
     assert torch.allclose(K[90:110, 90:110], K_num[90:110, 90:110])
-    
+
     return
-    
+
+
 def test_GP_lat_prior():
     device = mgp.utils.get_device("cuda")  # get_device("cpu")
     d = 2  # dims of latent space
