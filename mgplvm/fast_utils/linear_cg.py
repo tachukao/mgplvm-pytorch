@@ -233,7 +233,7 @@ def linear_cg(
         is_zero = torch.empty(*batch_shape,
                               1,
                               rhs.size(-1),
-                              dtype=bool,
+                              dtype=torch.bool,
                               device=residual.device)
 
     # Define tridiagonal matrices, if applicable
@@ -246,7 +246,7 @@ def linear_cg(
                             device=alpha.device)
         alpha_tridiag_is_zero = torch.empty(*batch_shape,
                                             n_tridiag,
-                                            dtype=bool,
+                                            dtype=torch.bool,
                                             device=t_mat.device)
         alpha_reciprocal = torch.empty(*batch_shape,
                                        n_tridiag,
