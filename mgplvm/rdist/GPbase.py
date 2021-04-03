@@ -59,8 +59,7 @@ class GPbase(Rdist):
 
         #initialize length scale
         ell = (torch.max(ts) - torch.min(ts)) / 20 if ell is None else ell
-        _ell = torch.ones(1, self.d, 1) * ell / (ts[0, 0, 1] - ts[0, 0, 0]
-                                                )  #scale by dt
+        _ell = torch.ones(1, self.d, 1) * ell
         self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=True)
 
         #pre-compute time differences (only need one row for the toeplitz stuff)
@@ -69,6 +68,8 @@ class GPbase(Rdist):
         #sum over _input_ dimension, add an axis for _output_ dimension
         dts_sq = dts_sq.sum(-2)[:, None, ...]  #(n_samples x 1 x m)
         self.dts_sq = nn.Parameter(data=dts_sq, requires_grad=False)
+
+        self.dt = (ts[0, 0, 1] - ts[0, 0, 0]).item()  #scale by dt
 
     @property
     def scale(self) -> torch.Tensor:
@@ -102,7 +103,8 @@ class GPbase(Rdist):
         ell_half = self.ell / np.sqrt(2)
 
         #K^(1/2) has sig var sig*2^1/4*pi^(-1/4)*ell^(-1/2) if K has sig^2 (1 x d x 1)
-        sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2))
+        sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * self.ell**(
+            -1 / 2) * self.dt**(1 / 2)
 
         if sample_idxs is None:
             dts = self.dts_sq[:, ...]
