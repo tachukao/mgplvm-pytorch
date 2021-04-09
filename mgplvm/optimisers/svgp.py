@@ -118,6 +118,8 @@ def fit(dataset: Union[Tensor, DataLoader],
         loss_vals, kl_vals, svgp_vals = [], [], []
         ramp = 1 - np.exp(-i / burnin)
         for sample_idxs, batch_idxs, batch in dataloader:
+            weight = len(batch_idxs) / m
+            
             svgp_elbo, kl = model(batch,
                                   n_mc,
                                   batch_idxs=batch_idxs,
@@ -127,13 +129,12 @@ def fit(dataset: Union[Tensor, DataLoader],
                                   analytic_kl=analytic_kl)
 
             loss = (-svgp_elbo) + (ramp * kl)  # -LL
-            loss_vals.append(loss.item())
-            kl_vals.append(kl.item())
-            svgp_vals.append(svgp_elbo.item())
+            loss_vals.append(weight*loss.item())
+            kl_vals.append(weight*kl.item())
+            svgp_vals.append(weight*svgp_elbo.item())
 
             if accumulate_gradient and (batch_idxs is not None):
-                loss *= len(batch_idxs
-                           ) / m  #scale so the total sum of losses is constant
+                loss *= weight #scale so the total sum of losses is constant
 
             loss.backward()
 
@@ -146,11 +147,11 @@ def fit(dataset: Union[Tensor, DataLoader],
             opt.zero_grad()  #reset gradients after all batches
 
         scheduler.step()
-        print_progress(model, n, m, n_samples, i, np.mean(loss_vals),
-                       np.mean(kl_vals), np.mean(svgp_vals), print_every, batch,
+        print_progress(model, n, m, n_samples, i, np.sum(loss_vals),
+                       np.sum(kl_vals), np.sum(svgp_vals), print_every, batch,
                        None, None)
 
         # terminate if stop is True
         if stop is not None:
-            if stop(model, i, np.mean(loss_vals)):
+            if stop(model, i, np.sum(loss_vals)):
                 break

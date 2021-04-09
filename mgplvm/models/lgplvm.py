@@ -67,7 +67,8 @@ class Lvgplvm(Gplvm):
                  learn_neuron_scale=False,
                  ard=False,
                  learn_scale=None,
-                 Y=None):
+                 Y=None,
+                rel_scale = 1):
         """
         __init__ method for linear GPLVM with approximate posteriors and flexible noise models
         Parameters
@@ -84,6 +85,7 @@ class Lvgplvm(Gplvm):
                    Y=Y,
                    learn_neuron_scale=learn_neuron_scale,
                    ard=ard,
-                   learn_scale=learn_scale)
+                   learn_scale=learn_scale,
+                  rel_scale = rel_scale)
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)

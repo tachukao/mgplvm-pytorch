@@ -110,8 +110,13 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False):
     #generate prediction for held out data#
 
     Ytest = Y[:, N2, :][..., T2]  #(ntrial x N2 x T2)
-    latents = mod.lat_dist.prms[0].detach()[:, T2,
-                                            ...]  #latent means (ntrial, T2, d)
+    
+    #latent means (ntrial, T2, d)
+    if 'GP' in mod.lat_dist.name:
+        latents = mod.lat_dist.lat_mu.detach()[:, T2, ...] 
+    else:
+        latents = mod.lat_dist.prms[0].detach()[:, T2, ...]  
+        
     query = latents.transpose(-1, -2)  #(ntrial, d, m)
 
     if sample_mean:  #we don't have a closed form mean prediction so sample from (mu|GP) and average instead

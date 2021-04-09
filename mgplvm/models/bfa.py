@@ -232,7 +232,8 @@ class Bvfa(GpBase):
                  Y=None,
                  learn_neuron_scale=False,
                  ard=False,
-                 learn_scale=None):
+                 learn_scale=None,
+                rel_scale = 1):
         """
         __init__ method for Base Variational Factor Analysis 
         Parameters
@@ -277,11 +278,11 @@ class Bvfa(GpBase):
             C = torch.tensor(mod.components_.T)  # (n x d)
             #print(C.shape)
             if learn_scale:
-                _scale = torch.square(C).mean().sqrt()  #global scale
+                _scale = rel_scale*torch.square(C).mean().sqrt()  #global scale
             if learn_neuron_scale:
-                _neuron_scale = torch.square(C).mean(1).sqrt()  #per neuron
+                _neuron_scale = rel_scale*torch.square(C).mean(1).sqrt()  #per neuron
             if ard:
-                _dim_scale = torch.square(C).mean(0).sqrt()  #per latent
+                _dim_scale = rel_scale*torch.square(C).mean(0).sqrt()  #per latent
 
         self._scale = nn.Parameter(inv_softplus(_scale),
                                    requires_grad=learn_scale)
