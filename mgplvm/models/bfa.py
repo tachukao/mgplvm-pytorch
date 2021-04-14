@@ -345,7 +345,7 @@ class Bvfa(GpBase):
         e = torch.eye(self.d).to(q_mu.device)
         p_mu = torch.zeros(self.n, self.d).to(q_mu.device)
         prior = MultivariateNormal(p_mu, scale_tril=e)
-        return kl_divergence(q, prior)
+        return kl_divergence(q, prior) ##consider implementing this directly
 
     def elbo(self,
              y: Tensor,
