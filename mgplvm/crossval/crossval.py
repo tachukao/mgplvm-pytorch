@@ -100,7 +100,7 @@ def train_cv(mod,
     return mod, split
 
 
-def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False):
+def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False, sample_X = False):
     Y, T1, N1 = split['Y'], split['T1'], split['N1']
     n_samples, n, m = Y.shape
 
@@ -119,7 +119,23 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False):
         
     query = latents.transpose(-1, -2)  #(ntrial, d, m)
 
-    if sample_mean:  #we don't have a closed form mean prediction so sample from (mu|GP) and average instead
+    if sample_X: #note this only works when the data is structured as a single trial!
+        n_mc = round(np.sqrt(n_mc))
+        # g is shape (n_samples, n_mc, m, d)
+        g, lq = mod.lat_dist.sample(torch.Size([n_mc]),
+                             torch.tensor(Y).to(device),
+                             batch_idxs=None,
+                             sample_idxs=None)
+        print(g.shape)
+        assert g.shape[1] == 1 #assume there is only a single 'trial'
+
+        query = g[:, 0, ...].transpose(-1, -2) #now each sample is a 'trial'
+        Ypred = mod.svgp.sample(query, n_mc=n_mc, noise=False)
+        print(Ypred.shape)
+        Ypred = Ypred.mean(0).mean(0) #average over both sets of MC samples
+        Ypred = Ypred.detach().cpu().numpy()[N2, :][:, T2][None, ...]  #(1 x N2 x T2)
+            
+    elif sample_mean:  #we don't have a closed form mean prediction so sample from (mu|GP) and average instead
         #n_mc x n_samples x N x d
         Ypred = mod.svgp.sample(query, n_mc=n_mc, noise=False)
         Ypred = Ypred.mean(0).cpu().numpy()[:, N2, :]  #(ntrial x N2 x T2)

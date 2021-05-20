@@ -195,7 +195,7 @@ class ReLie(ReLieBase):
             string to specify type of initialization
             ('random'/'PCA'/'identity' depending on manifold)
         mu : Optional[np.ndarray]
-            initialization of the vartiational means (m x d2)
+            initialization of the vartiational means (n_samples x m x d2)
         Y : Optional[np.ndarray]
             data used to initialize latents (n x m)
             

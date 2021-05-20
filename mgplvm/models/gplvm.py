@@ -106,7 +106,7 @@ class Gplvm(nn.Module):
                                      kmax=kmax,
                                      analytic_kl=analytic_kl,
                                      prior=self.lprior)
-        # g is shape (n_samples, n_mc, m, d)
+        # g is shape (n_mc, n_samples, m, d)
         # lq is shape (n_mc x n_samples x m)
 
         #data = data if sample_idxs is None else data[..., sample_idxs, :, :]

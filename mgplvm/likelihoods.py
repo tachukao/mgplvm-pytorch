@@ -487,7 +487,7 @@ class NegativeBinomial(Likelihood):
         if total_count is None:
             if Y is None:
                 total_count = 4 * torch.ones(n,)
-            else:  #assume p = 0.5; mean = total_count
+            else:  #assume p = 0.5 (f=0); mean = total_count
                 total_count = torch.tensor(np.mean(Y, axis=(0, -1)))
 
         total_count = dists.transform_to(
