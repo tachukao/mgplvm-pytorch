@@ -126,6 +126,7 @@ def toeplitz_matmul(toeplitz_column, toeplitz_row, tensor):
     Returns:
         - tensor (n x p or b x n x p) - The result of the matrix multiply T * M.
     """
+
     if toeplitz_column.size() != toeplitz_row.size():
         raise RuntimeError(
             "c and r should have the same length (Toeplitz matrices are necessarily square)."
@@ -174,8 +175,19 @@ def toeplitz_matmul(toeplitz_column, toeplitz_row, tensor):
     fft_M = fft(temp_tensor.transpose(-1, -2).contiguous())
     fft_c = fft(c_r_rev).unsqueeze(-2).expand_as(fft_M)
     fft_product = fft_M.mul_(fft_c)
-
-    output = ifft(fft_product).real.transpose(-1, -2)
+    del fft_M
+    del fft_c
+    del temp_tensor
+    del c_r_rev
+    del r_reverse
+    del toeplitz_row
+    del toeplitz_column
+    del tensor
+    try:
+        output = ifft(fft_product).real.transpose(-1, -2)
+    except RuntimeError as e:
+        print(e)
+        print(torch.cuda.memory_summary(device=fft_product.device))
     output = output[..., :orig_size, :]
     return output
 

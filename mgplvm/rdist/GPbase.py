@@ -172,6 +172,9 @@ class GPbase(Rdist):
             nu = nu[sample_idxs, ...]
         samp = nu[..., None] + I_v  #add mean parameter to each sample
 
+        del v
+        del I_v
+
         #compute K@(I@v+nu)
         x = sym_toeplitz_matmul(K_half, samp)  #(n_samples x d x m x n_mc)
         x = x.permute(-1, 0, 2, 1)  #(n_mc x n_samples x m x d)

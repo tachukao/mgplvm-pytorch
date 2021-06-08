@@ -56,7 +56,9 @@ def train_cv(mod,
     """
 
     _, n, m = Y.shape
-    data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
+    data=Y
+    if not torch.is_tensor(data):
+        data = torch.tensor(data, device=device, dtype=torch.get_default_dtype())
     nt_train = int(round(m / 2)) if nt_train is None else nt_train
     nn_train = int(round(n / 2)) if nn_train is None else nn_train
 
@@ -133,7 +135,7 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False, sample_
         Ypred = mod.svgp.sample(query, n_mc=n_mc, noise=False)
         print(Ypred.shape)
         Ypred = Ypred.mean(0).mean(0) #average over both sets of MC samples
-        Ypred = Ypred.detach().cpu().numpy()[N2, :][:, T2][None, ...]  #(1 x N2 x T2)
+        Ypred = Ypred[N2, :][:, T2][None, ...]  #(1 x N2 x T2) #.detach().cpu().numpy()
             
     elif sample_mean:  #we don't have a closed form mean prediction so sample from (mu|GP) and average instead
         #n_mc x n_samples x N x d
