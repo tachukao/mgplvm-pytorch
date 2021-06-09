@@ -379,11 +379,12 @@ class Bvfa(GpBase):
 
         # prior KL(q(u) || p(u)) (1 x n) if tied_samples otherwise (n_samples x n)
         prior_kl = self.prior_kl(sample_idxs)
-        # predictive mean and var at x
-        f_mean, f_var = self.predict(x, full_cov=False, sample_idxs=sample_idxs)
         prior_kl = prior_kl.sum(-2)
         if not self.tied_samples:
             prior_kl = prior_kl * (self.n_samples / sample_size)
+        
+        # predictive mean and var at x
+        f_mean, f_var = self.predict(x, full_cov=False, sample_idxs=sample_idxs)
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
@@ -476,6 +477,7 @@ class Bvfa(GpBase):
         x = self.scale * self.dim_scale * x  #multiply each dimension by the prior scale
 
         mu = q_mu.matmul(x)  # n_b x n_samples x n x m
+        del q_mu
         l = x[..., None, :, :].transpose(-1, -2).matmul(
             q_sqrt)  # n_b x n_samples x m x d
         if not full_cov:

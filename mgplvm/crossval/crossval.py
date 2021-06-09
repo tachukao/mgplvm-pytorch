@@ -111,7 +111,7 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False, sample_
 
     #generate prediction for held out data#
 
-    Ytest = Y[:, N2, :][..., T2]  #(ntrial x N2 x T2)
+    Ytest = Y[:, N2, :][..., T2].detach().cpu().numpy()  #(ntrial x N2 x T2)
     
     #latent means (ntrial, T2, d)
     if 'GP' in mod.lat_dist.name:
@@ -135,7 +135,7 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False, sample_
         Ypred = mod.svgp.sample(query, n_mc=n_mc, noise=False)
         print(Ypred.shape)
         Ypred = Ypred.mean(0).mean(0) #average over both sets of MC samples
-        Ypred = Ypred[N2, :][:, T2][None, ...]  #(1 x N2 x T2) #.detach().cpu().numpy()
+        Ypred = Ypred[N2, :][:, T2][None, ...].detach().cpu().numpy()  #(1 x N2 x T2) #.detach().cpu().numpy()
             
     elif sample_mean:  #we don't have a closed form mean prediction so sample from (mu|GP) and average instead
         #n_mc x n_samples x N x d
@@ -158,9 +158,10 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False, sample_
     #mod.m = len(T2) #use correct scaling factor for the test data
     #mod.svgp.m = len(T2)
 
-    data = torch.tensor(Y, device=device)
+    data = torch.tensor(Y[:, :, T2], device=device)
+    del Y
     #(n_mc, n_samples, n), (n_mc, n_samples)
-    svgp_elbo, kl = mod.elbo(data[:, :, T2],
+    svgp_elbo, kl = mod.elbo(data,
                              n_mc,
                              batch_idxs=T2,
                              neuron_idxs=N2,
