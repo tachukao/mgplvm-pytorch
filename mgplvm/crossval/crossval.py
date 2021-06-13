@@ -23,6 +23,7 @@ def train_cv(mod,
              Y,
              device,
              train_ps,
+             test_max_steps = None,
              T1=None,
              N1=None,
              nt_train=None,
@@ -90,6 +91,7 @@ def train_cv(mod,
             p.requires_grad = True
 
     train_ps2 = update_params(train_ps,
+                              max_steps = test_max_steps,
                               neuron_idxs=N1,
                               mask_Ts=mask_Ts,
                               prior_m=None)
