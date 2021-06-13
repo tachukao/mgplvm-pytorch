@@ -60,6 +60,7 @@ def fit(dataset: Union[Tensor, DataLoader],
         model: SvgpLvm,
         optimizer=optim.Adam,
         n_mc: int = 32,
+        n_mc_mini: int = None,
         burnin: int = 100,
         lrate: float = 1E-3,
         max_steps: int = 1000,
@@ -100,6 +101,9 @@ def fit(dataset: Union[Tensor, DataLoader],
     opt = optimizer(params, lr=lrate)
 
     scheduler = LambdaLR(opt, lr_lambda=[lambda x: 1, fburn])
+    
+    if n_mc_mini is None:
+        n_mc_mini = n_mc
 
     if isinstance(dataset, torch.Tensor):
         dataloader = DataLoader(dataset)
@@ -120,23 +124,29 @@ def fit(dataset: Union[Tensor, DataLoader],
         for sample_idxs, batch_idxs, batch in dataloader:
             weight = len(batch_idxs) / m
             
-            svgp_elbo, kl = model(batch,
-                                  n_mc,
-                                  batch_idxs=batch_idxs,
-                                  sample_idxs=sample_idxs,
-                                  neuron_idxs=neuron_idxs,
-                                  m=prior_m,
-                                  analytic_kl=analytic_kl)
+            for j in range(n_mc//n_mc_mini + (1 if n_mc%n_mc_mini !=0 else 0)):
+                curr_mc=(n_mc%n_mc_mini) if j > n_mc//n_mc_mini - 1 else n_mc_mini
+                svgp_elbo, kl = model(batch,
+                                      curr_mc,
+                                      batch_idxs=batch_idxs,
+                                      sample_idxs=sample_idxs,
+                                      neuron_idxs=neuron_idxs,
+                                      m=prior_m,
+                                      analytic_kl=analytic_kl)
+                loss = ((-svgp_elbo) + (ramp * kl))*curr_mc/n_mc  # -LL
+                if j == 0:
+                    loss_vals.append(weight*loss.item())
+                    kl_vals.append(weight*kl.item())
+                    svgp_vals.append(weight*svgp_elbo.item())
+                else:
+                    loss_vals[-1]+=weight*loss.item()
+                    kl_vals[-1]+=weight*kl.item()
+                    svgp_vals[-1]+=weight*svgp_elbo.item()
 
-            loss = (-svgp_elbo) + (ramp * kl)  # -LL
-            loss_vals.append(weight*loss.item())
-            kl_vals.append(weight*kl.item())
-            svgp_vals.append(weight*svgp_elbo.item())
+                if accumulate_gradient and (batch_idxs is not None):
+                    loss *= weight #scale so the total sum of losses is constant
 
-            if accumulate_gradient and (batch_idxs is not None):
-                loss *= weight #scale so the total sum of losses is constant
-
-            loss.backward()
+                loss.backward()
 
             if not accumulate_gradient:
                 opt.step()  #update parameters for every batch

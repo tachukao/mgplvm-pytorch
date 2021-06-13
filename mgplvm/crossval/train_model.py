@@ -21,6 +21,7 @@ def training_params(**kwargs):
         'neuron_idxs': None,
         'mask_Ts': None,
         'n_mc': 32,
+        'n_mc_mini': None,
         'prior_m': None,
         'analytic_kl': False,
         'accumulate_gradient': True
@@ -47,6 +48,7 @@ def train_model(mod, data, params):
         max_steps=int(round(params['max_steps'])),
         burnin=params['burnin'],
         n_mc=params['n_mc'],
+        n_mc_mini = params['n_mc_mini'],
         lrate=params['lrate'],
         print_every=params['print_every'],
         stop=params['callback'],
