@@ -87,20 +87,15 @@ def train_cv_bgpfa(Y,
     
     ###rdist: ell
     ell0 = mod.lat_dist.ell.detach().cpu()
-    #ell0 = None
     lat_dist = GP_circ(manif, T, n_samples, fit_ts, _scale=lat_scale, ell = ell0) #initial ell ~200ms
     
     ###lik: sigma
     sigma = mod.obs.likelihood.sigma.detach().cpu()
-    #sigma = None
     lik = Gaussian(n, sigma = sigma)
 
     ###obs: q_mu, q_sqrt, _scale, _dim_scale, _neuron_scale
     q_mu, q_sqrt = mod.obs.q_mu.detach().cpu(), mod.obs.q_sqrt.detach().cpu()
-    #q_mu, q_sqrt = None, None
-    print(q_mu.shape, q_sqrt.shape)
     scale, dim_scale, neuron_scale = mod.obs.scale.detach().cpu(), mod.obs.dim_scale.detach().cpu().flatten(), mod.obs.neuron_scale.detach().cpu().flatten()
-    #scale, dim_scale, neuron_scale = None, None, None
     mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = True, learn_scale = False,
                 q_mu = q_mu, q_sqrt = q_sqrt, scale = scale, dim_scale = dim_scale, neuron_scale = neuron_scale).to(device)
     torch.cuda.empty_cache
@@ -108,12 +103,12 @@ def train_cv_bgpfa(Y,
     for p in mod.parameters():  #no gradients for the remaining parameters
         p.requires_grad = False
 
-    mod.lat_dist.nu.requires_grad = True
-    mod.lat_dist._scale.requires_grad = True
+    mod.lat_dist.nu.requires_grad = True #latent variational mean
+    mod.lat_dist._scale.requires_grad = True #latent variational covariance
     if 'circ' in mod.lat_dist.name:
-        mod.lat_dist._c.requires_grad = True
+        mod.lat_dist._c.requires_grad = True #latent variational covariance
 
-    train_ps2 = update_params(train_ps, neuron_idxs=N1)
+    train_ps2 = update_params(train_ps, neuron_idxs=N1, max_steps = int(round(train_ps['max_steps'])))
     train_model(mod, torch.tensor(Y2).to(device), train_ps2)
 
     if test:
