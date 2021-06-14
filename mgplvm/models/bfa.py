@@ -288,7 +288,6 @@ class Bvfa(GpBase):
                 _dim_scale = rel_scale*torch.square(C).mean(0).sqrt()  #per latent
         
         ##optionally provide these as params##
-        print(scale, dim_scale, neuron_scale)
         scale = _scale if scale is None else scale
         dim_scale = _dim_scale if dim_scale is None else dim_scale
         neuron_scale = _neuron_scale if neuron_scale is None else neuron_scale
