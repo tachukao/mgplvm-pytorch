@@ -58,8 +58,13 @@ class GPbase(Rdist):
                                    requires_grad=True)
 
         #initialize length scale
-        ell = (torch.max(ts) - torch.min(ts)) / 20 if ell is None else ell
-        _ell = torch.ones(1, self.d, 1) * ell
+        if ell is None:
+            ell = (torch.max(ts) - torch.min(ts)) / 20
+        else:
+            if type(ell) == float:
+                _ell = torch.ones(1, self.d, 1) * ell
+            else:
+                _ell = ell
         self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=True)
 
         #pre-compute time differences (only need one row for the toeplitz stuff)

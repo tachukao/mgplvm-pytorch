@@ -18,6 +18,7 @@ def update_params(params, **kwargs):
         newps[key] = value
     return newps
 
+print('loading')
 
 def train_cv(mod,
              Y,
@@ -54,7 +55,9 @@ def train_cv(mod,
         model trained via crossvalidation
 
     """
-
+    
+    print('training')
+    
     _, n, m = Y.shape
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     nt_train = int(round(m / 2)) if nt_train is None else nt_train
@@ -65,8 +68,19 @@ def train_cv(mod,
     if N1 is None:  # random shuffle of neurons
         N1 = np.random.permutation(np.arange(n))[:nn_train]
     split = {'Y': Y, 'N1': N1, 'T1': T1}
+    
+    print(N1, T1)
+#     T2 = not_in(np.arange(m), T1)
+    
+#     if 'GP' in mod.lat_dist.name:
+#         def mask_Ts(grad):
+#             ''' used to 'mask' some gradients for cv'''
+#             grad[..., T2] *= 0
+#             return grad
+#     else:
+#         mask_Ts = None
 
-    train_ps1 = update_params(train_ps, batch_pool=T1, prior_m=len(T1))
+    train_ps1 = update_params(train_ps, batch_pool=T1, prior_m=len(T1))#, mask_Ts = mask_Ts)
     train_model(mod, data, train_ps1)
 
     for p in mod.parameters():  #no gradients for the remaining parameters
@@ -75,6 +89,8 @@ def train_cv(mod,
     if 'GP' in mod.lat_dist.name:
         mod.lat_dist.nu.requires_grad = True
         mod.lat_dist._scale.requires_grad = True
+        if 'circ' in mod.lat_dist.name:
+            mod.lat_dist._c.requires_grad = True
         mask_Ts = None
     else:
 

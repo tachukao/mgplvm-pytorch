@@ -13,7 +13,10 @@ def sort_params(model, hook):
     '''apply burnin period to Sigma_Q and alpha^2
     allow for masking of certain conditions for use in crossvalidation'''
 
-    if not ('GP' in model.lat_dist.name):
+    if 'GP' in model.lat_dist.name:
+        model.lat_dist.nu.register_hook(hook)
+        model.lat_dist._scale.register_hook(hook)
+    else:
         for prm in model.lat_dist.parameters():
             prm.register_hook(hook)
 
