@@ -129,7 +129,7 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False, sample_
 
     #generate prediction for held out data#
 
-    Ytest = Y[:, N2, :][..., T2].detach().cpu().numpy()  #(ntrial x N2 x T2)
+    Ytest = Y[:, N2, :][..., T2]#.detach().cpu().numpy()  #(ntrial x N2 x T2)
     
     #latent means (ntrial, T2, d)
     if 'GP' in mod.lat_dist.name:

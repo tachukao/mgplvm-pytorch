@@ -15,6 +15,7 @@ def train_cv_bgpfa(Y,
              fit_ts,
             d_fit,
             ell,
+            test_max_steps = None,
              T1=None,
              N1=None,
              nt_train=None,
@@ -84,7 +85,7 @@ def train_cv_bgpfa(Y,
     
     if model in ['bgpfa', 'bGPFA']: ###Bayesian GPFA!
         if likelihood == 'Gaussian':
-            lik = Gaussian(n, Y=Y1, d = d_fit)
+            lik = Gaussian(n, Y=Y1)
         elif likelhood == 'NegativeBinomial':
             lik = NegativeBinomial(n, Y=Y1)
         mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = ard, learn_scale = (not ard), Y = Y1, rel_scale = rel_scale).to(device)
@@ -134,7 +135,7 @@ def train_cv_bgpfa(Y,
     if 'circ' in mod.lat_dist.name:
         mod.lat_dist._c.requires_grad = True #latent variational covariance
 
-    train_ps2 = update_params(train_ps, neuron_idxs=N1, max_steps = int(round(train_ps['max_steps'])))
+    train_ps2 = update_params(train_ps, neuron_idxs=N1, max_steps = test_max_steps)
     train_model(mod, torch.tensor(Y2).to(device), train_ps2)
 
     if test:
