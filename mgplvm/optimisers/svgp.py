@@ -138,13 +138,13 @@ def fit(dataset: Union[Tensor, DataLoader],
                                       analytic_kl=analytic_kl)
                 loss = ((-svgp_elbo) + (ramp * kl))*curr_mc/n_mc  # -LL
                 if j == 0:
-                    loss_vals.append(weight*loss.item())
-                    kl_vals.append(weight*kl.item())
-                    svgp_vals.append(weight*svgp_elbo.item())
+                    loss_vals.append(weight*loss.item()*curr_mc/n_mc)
+                    kl_vals.append(weight*kl.item()*curr_mc/n_mc)
+                    svgp_vals.append(weight*svgp_elbo.item()*curr_mc/n_mc)
                 else:
-                    loss_vals[-1]+=weight*loss.item()
-                    kl_vals[-1]+=weight*kl.item()
-                    svgp_vals[-1]+=weight*svgp_elbo.item()
+                    loss_vals[-1]+=weight*loss.item()*curr_mc/n_mc
+                    kl_vals[-1]+=weight*kl.item()*curr_mc/n_mc
+                    svgp_vals[-1]+=weight*svgp_elbo.item()*curr_mc/n_mc
 
                 if accumulate_gradient and (batch_idxs is not None):
                     loss *= weight #scale so the total sum of losses is constant
