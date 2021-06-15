@@ -44,6 +44,9 @@ def train_cv_bgpfa(Y,
         number of randomly selected conditions to use for training
     nn_train : Optional[int]
         number of randomly selected neurons to use for training
+    likelihood: Gaussian or NegativeBinomial
+    model: bgpfa or vgpfa
+    ard: True or False
 
     Returns
     -------
