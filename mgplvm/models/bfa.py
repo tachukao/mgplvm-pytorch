@@ -233,7 +233,10 @@ class Bvfa(GpBase):
                  learn_neuron_scale=False,
                  ard=False,
                  learn_scale=None,
-                rel_scale = 1):
+                rel_scale = 1,
+                scale = None,
+                dim_scale = None,
+                neuron_scale = None):
         """
         __init__ method for Base Variational Factor Analysis 
         Parameters
@@ -283,12 +286,17 @@ class Bvfa(GpBase):
                 _neuron_scale = rel_scale*torch.square(C).mean(1).sqrt()  #per neuron
             if ard:
                 _dim_scale = rel_scale*torch.square(C).mean(0).sqrt()  #per latent
+        
+        ##optionally provide these as params##
+        scale = _scale if scale is None else scale
+        dim_scale = _dim_scale if dim_scale is None else dim_scale
+        neuron_scale = _neuron_scale if neuron_scale is None else neuron_scale
 
-        self._scale = nn.Parameter(inv_softplus(_scale),
+        self._scale = nn.Parameter(inv_softplus(scale),
                                    requires_grad=learn_scale)
-        self._neuron_scale = nn.Parameter(inv_softplus(_neuron_scale),
+        self._neuron_scale = nn.Parameter(inv_softplus(neuron_scale),
                                           requires_grad=learn_neuron_scale)
-        self._dim_scale = nn.Parameter(inv_softplus(_dim_scale),
+        self._dim_scale = nn.Parameter(inv_softplus(dim_scale),
                                        requires_grad=ard)
 
         #### initialize variational distribution (should we initialize this to the Gaussian ground truth?)####
@@ -315,8 +323,8 @@ class Bvfa(GpBase):
             assert (q_mu.shape[0] == n_samples)
             assert (q_sqrt.shape[0] == n_samples)
 
-        self.q_mu = nn.Parameter(q_mu, requires_grad=True)
-        self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
+        self._q_mu = nn.Parameter(q_mu, requires_grad=True)
+        self._q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
 
         self.likelihood = likelihood
 
@@ -331,6 +339,14 @@ class Bvfa(GpBase):
     @property
     def dim_scale(self):
         return softplus(self._dim_scale)[:, None]
+    
+    @property
+    def q_mu(self):
+        return self._q_mu
+
+    @property
+    def q_sqrt(self):
+        return transform_to(constraints.lower_cholesky)(self._q_sqrt)
 
     def prior_kl(self, sample_idxs=None):
         """
@@ -488,7 +504,7 @@ class Bvfa(GpBase):
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
         q_mu = self.q_mu
-        q_sqrt = transform_to(constraints.lower_cholesky)(self.q_sqrt)
+        q_sqrt = self.q_sqrt
 
         #multiply the posterior by a scale factor for each neuron
         q_mu, q_sqrt = self.neuron_scale * q_mu, self.neuron_scale[
@@ -496,7 +512,7 @@ class Bvfa(GpBase):
         return q_mu, q_sqrt
 
     def g0_parameters(self):
-        return [self.q_mu, self.q_sqrt]
+        return [self._q_mu, self._q_sqrt]
 
     def g1_parameters(self):
         return list(
@@ -527,7 +543,8 @@ class Fa(GpBase):
                  d: int,
                  sigma: Optional[Tensor] = None,
                  learn_sigma=True,
-                 Y=None):
+                 Y=None,
+                C = None):
         """
         n: number of neurons
         d: number of latents
@@ -536,20 +553,22 @@ class Fa(GpBase):
         self.n = n
 
         if Y is None:
-            C = torch.randn(n, d) * d**(-0.5)  # TODO: FA init
-            sigma = torch.ones(n,) * 0.5  # TODO: FA init
+            _C = torch.randn(n, d) * d**(-0.5)  # TODO: FA init
+            _sigma = torch.ones(n,) * 0.5  # TODO: FA init
         else:
             n_samples, n, m = Y.shape
             mod = decomposition.FactorAnalysis(n_components=d)
             Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
             mudata = mod.fit_transform(Y)  #m*n_samples x d
-            sigma = torch.tensor(np.sqrt(mod.noise_variance_))
-            C = torch.tensor(mod.components_.T)
+            _sigma = torch.tensor(np.sqrt(mod.noise_variance_))
+            _C = torch.tensor(mod.components_.T)
 
+        sigma = _sigma if sigma is None else sigma
+        C = _C if C is None else C
+        
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
         self.C = nn.Parameter(data=C, requires_grad=True)
 
-        #self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
 
     @property
     def prms(self) -> Tensor:
