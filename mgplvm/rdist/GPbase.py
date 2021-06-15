@@ -61,7 +61,7 @@ class GPbase(Rdist):
         if ell is None:
             ell = (torch.max(ts) - torch.min(ts)) / 20
         else:
-            if type(ell) == float:
+            if type(ell) in [float, int]:
                 _ell = torch.ones(1, self.d, 1) * ell
             else:
                 _ell = ell

@@ -493,7 +493,7 @@ class NegativeBinomial(Likelihood):
         total_count = dists.transform_to(
             dists.constraints.greater_than_eq(0)).inv(total_count)
         assert (total_count is not None)
-        self.total_count = nn.Parameter(data=total_count,
+        self._total_count = nn.Parameter(data=total_count,
                                         requires_grad=not fixed_total_count)
 
         c = torch.ones(n,) if c is None else c
@@ -502,9 +502,12 @@ class NegativeBinomial(Likelihood):
         self.d = nn.Parameter(data=d, requires_grad=not fixed_d)
 
     @property
+    def total_count(self):
+        return dists.transform_to(dists.constraints.greater_than_eq(0))(self._total_count)
+    
+    @property
     def prms(self):
-        total_count = dists.transform_to(dists.constraints.greater_than_eq(0))(
-            self.total_count)
+        total_count = self.total_count
         return total_count, self.c, self.d
 
     def dist(self, fs: Tensor):

@@ -7,7 +7,7 @@ from ..manifolds import Euclid
 from ..likelihoods import Gaussian, NegativeBinomial
 from ..rdist import GP_circ, GP_diag
 from ..lpriors import Null
-from ..models import Lvgplvm
+from ..models import Lvgplvm, Lgplvm
 
 def train_cv_bgpfa(Y,
              device,
@@ -21,7 +21,10 @@ def train_cv_bgpfa(Y,
              nn_train=None,
              test=True,
             lat_scale = 1,
-            rel_scale = 1):
+            rel_scale = 1,
+            likelihood = 'Gaussian',
+            model = 'bgpfa',
+            ard = True):
     """
     Parameters
     ----------
@@ -74,14 +77,21 @@ def train_cv_bgpfa(Y,
     manif = Euclid(T, d_fit)
     lprior = Null(manif)
     lat_dist = GP_circ(manif, T, n_samples, fit_ts[..., T1], _scale=lat_scale, ell = ell) #initial ell ~200ms
-    lik = Gaussian(n, Y=Y1, d = d_fit)
     
-    mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = True, learn_scale = False, Y = Y1, rel_scale = rel_scale).to(device)
+    
+    if model in ['bgpfa', 'bGPFA']: ###Bayesian GPFA!
+        if likelihood == 'Gaussian':
+            lik = Gaussian(n, Y=Y1, d = d_fit)
+        elif likelhood == 'NegativeBinomial':
+            lik = NegativeBinomial(n, Y=Y1)
+        mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = ard, learn_scale = (not ard), Y = Y1, rel_scale = rel_scale).to(device)
+        
+    elif model in ['vgpfa', 'vGPFA']: #standard GPFA
+        mod = Lgplvm(n, T, d_fit, n_samples, lat_dist, lprior, Y = Y1, Bayesian = False).to(device)
     
     train_model(mod, torch.tensor(Y1).to(device), train_ps) ###initial training####
     
-    ### fit second model ###
-    #### parameters to initialize:
+    ### fit second model and copy over parameters ###
     Y2 = Y
     n_samples, n, T = Y2.shape
     
@@ -89,15 +99,28 @@ def train_cv_bgpfa(Y,
     ell0 = mod.lat_dist.ell.detach().cpu()
     lat_dist = GP_circ(manif, T, n_samples, fit_ts, _scale=lat_scale, ell = ell0) #initial ell ~200ms
     
-    ###lik: sigma
-    sigma = mod.obs.likelihood.sigma.detach().cpu()
-    lik = Gaussian(n, sigma = sigma)
-
-    ###obs: q_mu, q_sqrt, _scale, _dim_scale, _neuron_scale
-    q_mu, q_sqrt = mod.obs.q_mu.detach().cpu(), mod.obs.q_sqrt.detach().cpu()
-    scale, dim_scale, neuron_scale = mod.obs.scale.detach().cpu(), mod.obs.dim_scale.detach().cpu().flatten(), mod.obs.neuron_scale.detach().cpu().flatten()
-    mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = True, learn_scale = False,
-                q_mu = q_mu, q_sqrt = q_sqrt, scale = scale, dim_scale = dim_scale, neuron_scale = neuron_scale).to(device)
+    if model in ['bgpfa', 'bGPFA']: ###Bayesian GPFA!!!
+        if likelihood == 'Gaussian':
+            ###lik: sigma
+            sigma = mod.obs.likelihood.sigma.detach().cpu()
+            lik = Gaussian(n, sigma = sigma)
+        elif likelihood == 'NegativeBinomial':
+            #lik: c, d, total_count
+            c, d, total_count = [val.detach().cpu() for val in [mod.obs.likelihood.c, mod.obs.likelihood.d, mod.obs.likelihood.total_count]]
+            lik = NegativeBinomial(n, c=c, d=d, total_count=total_count)
+        
+        ###obs: q_mu, q_sqrt, _scale, _dim_scale, _neuron_scale
+        q_mu, q_sqrt = mod.obs.q_mu.detach().cpu(), mod.obs.q_sqrt.detach().cpu()
+        scale, dim_scale, neuron_scale = mod.obs.scale.detach().cpu(), mod.obs.dim_scale.detach().cpu().flatten(), mod.obs.neuron_scale.detach().cpu().flatten()
+        mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = ard, learn_scale = (not ard),
+                    q_mu = q_mu, q_sqrt = q_sqrt, scale = scale, dim_scale = dim_scale, neuron_scale = neuron_scale).to(device)
+        
+    elif model in ['vgpfa', 'vGPFA']: ##standard GPFA!!
+        ###obs: sigma, C
+        sigma = mod.obs.sigma.detach().cpu()
+        C = mod.obs.C.detach().cpu()
+        mod = Lgplvm(n, T, d_fit, n_samples, lat_dist, lprior, sigma = sigma, C=C, Bayesian = False).to(device)
+    
     torch.cuda.empty_cache
     
     for p in mod.parameters():  #no gradients for the remaining parameters

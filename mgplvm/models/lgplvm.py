@@ -34,7 +34,9 @@ class Lgplvm(Gplvm):
                  Y=None,
                  learn_neuron_scale=False,
                  ard=False,
-                 learn_scale=None):
+                 learn_scale=None,
+                sigma = None,
+                C = None):
         """
         __init__ method for linear GPLVM with exact posteriors and Gaussian noise
         Parameters
@@ -47,7 +49,7 @@ class Lgplvm(Gplvm):
                   Y=Y,
                   learn_neuron_scale=learn_neuron_scale,
                   ard=ard,
-                  learn_scale=learn_scale) if Bayesian else Fa(n, d, Y=Y)
+                  learn_scale=learn_scale) if Bayesian else Fa(n, d, Y=Y, sigma=sigma, C=C)
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)
 

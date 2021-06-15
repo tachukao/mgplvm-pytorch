@@ -541,7 +541,8 @@ class Fa(GpBase):
                  d: int,
                  sigma: Optional[Tensor] = None,
                  learn_sigma=True,
-                 Y=None):
+                 Y=None,
+                C = None):
         """
         n: number of neurons
         d: number of latents
@@ -550,20 +551,22 @@ class Fa(GpBase):
         self.n = n
 
         if Y is None:
-            C = torch.randn(n, d) * d**(-0.5)  # TODO: FA init
-            sigma = torch.ones(n,) * 0.5  # TODO: FA init
+            _C = torch.randn(n, d) * d**(-0.5)  # TODO: FA init
+            _sigma = torch.ones(n,) * 0.5  # TODO: FA init
         else:
             n_samples, n, m = Y.shape
             mod = decomposition.FactorAnalysis(n_components=d)
             Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
             mudata = mod.fit_transform(Y)  #m*n_samples x d
-            sigma = torch.tensor(np.sqrt(mod.noise_variance_))
-            C = torch.tensor(mod.components_.T)
+            _sigma = torch.tensor(np.sqrt(mod.noise_variance_))
+            _C = torch.tensor(mod.components_.T)
 
+        sigma = _sigma if sigma is None else sigma
+        C = _C if C is None else C
+        
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
         self.C = nn.Parameter(data=C, requires_grad=True)
 
-        #self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
 
     @property
     def prms(self) -> Tensor:
