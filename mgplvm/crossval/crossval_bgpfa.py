@@ -59,7 +59,7 @@ def train_cv_bgpfa(Y,
     first construct one model then save parameters and store a new model copying over the generative params
     """
     
-    print('training')
+    #print('training')
     
     _, n, m = Y.shape
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())

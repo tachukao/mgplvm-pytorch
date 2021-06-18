@@ -56,7 +56,7 @@ def train_cv(mod,
 
     """
     
-    print('training')
+    #print('training')
     
     _, n, m = Y.shape
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
@@ -69,16 +69,6 @@ def train_cv(mod,
         N1 = np.random.permutation(np.arange(n))[:nn_train]
     split = {'Y': Y, 'N1': N1, 'T1': T1}
     
-    print(N1, T1)
-#     T2 = not_in(np.arange(m), T1)
-    
-#     if 'GP' in mod.lat_dist.name:
-#         def mask_Ts(grad):
-#             ''' used to 'mask' some gradients for cv'''
-#             grad[..., T2] *= 0
-#             return grad
-#     else:
-#         mask_Ts = None
 
     train_ps1 = update_params(train_ps, batch_pool=T1, prior_m=len(T1))#, mask_Ts = mask_Ts)
     train_model(mod, data, train_ps1)
