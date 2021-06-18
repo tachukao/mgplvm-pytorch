@@ -72,7 +72,8 @@ def fit(dataset: Union[Tensor, DataLoader],
         neuron_idxs: Optional[List[int]] = None,
         prior_m=None,
         analytic_kl=False,
-        accumulate_gradient=True):
+        accumulate_gradient=True,
+        batch_mc = None):
     '''
     Parameters
     ----------
@@ -116,34 +117,44 @@ def fit(dataset: Union[Tensor, DataLoader],
     n_samples = dataloader.n_samples
     n = dataloader.n if neuron_idxs is None else len(neuron_idxs)
     m = dataloader.batch_pool_size
+    batch_mc = n_mc if batch_mc is None else batch_mc
+    mc_batches = [batch_mc for _ in range(n_mc // batch_mc)]
+    if (n_mc % batch_mc) > 0: mc_batches.append(n_mc % batch_mc)
+    assert np.sum(mc_batches) == n_mc
 
-    for i in range(max_steps):
+    for i in range(max_steps): #loop over iterations
         loss_vals, kl_vals, svgp_vals = [], [], []
         ramp = 1 - np.exp(-i / burnin)
-        for sample_idxs, batch_idxs, batch in dataloader:
-            weight = len(batch_idxs) / m
-            
-            svgp_elbo, kl = model(batch,
-                                  n_mc,
-                                  batch_idxs=batch_idxs,
-                                  sample_idxs=sample_idxs,
-                                  neuron_idxs=neuron_idxs,
-                                  m=prior_m,
-                                  analytic_kl=analytic_kl)
+        
+        for imc, mc in enumerate(mc_batches): #loop over mc samples
+        
+            for sample_idxs, batch_idxs, batch in dataloader: #loop over batches in T
+                weight = len(batch_idxs) / m #fraction of time points
+                mc_weight = mc/n_mc #fraction of MC samples
 
-            loss = (-svgp_elbo) + (ramp * kl)  # -LL
-            loss_vals.append(weight*loss.item())
-            kl_vals.append(weight*kl.item())
-            svgp_vals.append(weight*svgp_elbo.item())
+                svgp_elbo, kl = model(batch,
+                                      mc,
+                                      batch_idxs=batch_idxs,
+                                      sample_idxs=sample_idxs,
+                                      neuron_idxs=neuron_idxs,
+                                      m=prior_m,
+                                      analytic_kl=analytic_kl)
 
-            if accumulate_gradient and (batch_idxs is not None):
-                loss *= weight #scale so the total sum of losses is constant
+                loss = (-svgp_elbo) + (ramp * kl)  # -LL
+                loss_vals.append(weight*loss.item()*mc_weight)
+                kl_vals.append(weight*kl.item()*mc_weight)
+                svgp_vals.append(weight*svgp_elbo.item()*mc_weight)
 
-            loss.backward()
+                if accumulate_gradient:
+                    loss *= mc_weight
+                    if (batch_idxs is not None):
+                        loss *= weight #scale so the total sum of losses is constant
+                    
+                loss.backward() #compute gradients
 
-            if not accumulate_gradient:
-                opt.step()  #update parameters for every batch
-                opt.zero_grad()  #reset gradients
+                if not accumulate_gradient:
+                    opt.step()  #update parameters for every batch
+                    opt.zero_grad()  #reset gradients
 
         if accumulate_gradient:
             opt.step()  #accumulate gradients across all batches, then update
