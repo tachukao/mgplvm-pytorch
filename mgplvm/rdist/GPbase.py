@@ -78,6 +78,8 @@ class GPbase(Rdist):
 
     @property
     def scale(self) -> torch.Tensor:
+        #print(self._scale.shape, type(self._scale))
+        #print(softplus(self._scale).shape)
         return softplus(self._scale)
 
     @property
@@ -188,7 +190,7 @@ class GPbase(Rdist):
         return x, lq
 
     def gmu_parameters(self):
-        return [self.nu]
+        return [self._nu]
 
     def concentration_parameters(self):
         return [self._scale, self._ell]
