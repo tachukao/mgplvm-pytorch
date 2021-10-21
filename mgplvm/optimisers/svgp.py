@@ -129,7 +129,10 @@ def fit(dataset: Union[Tensor, DataLoader],
         for imc, mc in enumerate(mc_batches): #loop over mc samples
         
             for sample_idxs, batch_idxs, batch in dataloader: #loop over batches in T
-                weight = len(batch_idxs) / m #fraction of time points
+                if batch_idxs is None:
+                    weight = 1
+                else:
+                    weight = len(batch_idxs) / m #fraction of time points
                 mc_weight = mc/n_mc #fraction of MC samples
 
                 svgp_elbo, kl = model(batch,
