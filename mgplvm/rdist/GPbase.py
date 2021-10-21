@@ -72,6 +72,7 @@ class GPbase(Rdist):
         dts_sq = torch.square(ts - ts[..., :1])  #(n_samples x 1 x m)
         #sum over _input_ dimension, add an axis for _output_ dimension
         dts_sq = dts_sq.sum(-2)[:, None, ...]  #(n_samples x 1 x m)
+        #print('dts sqr:', dts_sq.shape)
         self.dts_sq = nn.Parameter(data=dts_sq, requires_grad=False)
 
         self.dt = (ts[0, 0, 1] - ts[0, 0, 0]).item()  #scale by dt
@@ -113,7 +114,7 @@ class GPbase(Rdist):
         sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * self.ell**(
             -1 / 2) * self.dt**(1 / 2)
 
-        if sample_idxs is None:
+        if (sample_idxs is None) or (self.dts_sq.shape[0] == 1):
             dts = self.dts_sq[:, ...]
         else:
             dts = self.dts_sq[sample_idxs, ...]

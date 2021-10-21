@@ -4,10 +4,11 @@ import torch
 from .train_model import train_model
 from .crossval import not_in, update_params
 from ..manifolds import Euclid
-from ..likelihoods import Gaussian, NegativeBinomial
+from ..likelihoods import Gaussian, NegativeBinomial, Poisson
 from ..rdist import GP_circ, GP_diag
 from ..lpriors import Null
 from ..models import Lvgplvm, Lgplvm
+
 
 def train_cv_bgpfa(Y,
              device,
@@ -24,7 +25,9 @@ def train_cv_bgpfa(Y,
             rel_scale = 1,
             likelihood = 'Gaussian',
             model = 'bgpfa',
-            ard = True):
+            ard = True,
+            Bayesian = True):
+    
     """
     Parameters
     ----------
@@ -82,15 +85,16 @@ def train_cv_bgpfa(Y,
     lat_dist = GP_circ(manif, T, n_samples, fit_ts[..., T1], _scale=lat_scale, ell = ell) #initial ell ~200ms
     
     
-    if model in ['bgpfa', 'bGPFA']: ###Bayesian GPFA!
+    if model in ['bgpfa', 'bGPFA', 'gpfa', 'GPFA"']: ###Bayesian GPFA!
         if likelihood == 'Gaussian':
             lik = Gaussian(n, Y=Y1, d = d_fit)
-        elif likelhood == 'NegativeBinomial':
+        elif likelihood == 'NegativeBinomial':
             lik = NegativeBinomial(n, Y=Y1)
-        mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = ard, learn_scale = (not ard), Y = Y1, rel_scale = rel_scale).to(device)
+        elif likelihood == 'Poisson':
+            lik = Poisson(n)
         
-    elif model in ['vgpfa', 'vGPFA']: #standard GPFA
-        mod = Lgplvm(n, T, d_fit, n_samples, lat_dist, lprior, Y = Y1, Bayesian = False).to(device)
+        mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = ard, learn_scale = (not ard), Y = Y1, rel_scale = rel_scale,
+                     Bayesian = Bayesian).to(device)
     
     train_model(mod, torch.tensor(Y1).to(device), train_ps) ###initial training####
     
@@ -100,9 +104,9 @@ def train_cv_bgpfa(Y,
     
     ###rdist: ell
     ell0 = mod.lat_dist.ell.detach().cpu()
-    lat_dist = GP_circ(manif, T, n_samples, fit_ts, _scale=lat_scale, ell = ell0) #initial ell ~200ms
+    lat_dist = GP_circ(manif, T, n_samples, fit_ts, _scale=lat_scale, ell = ell0)
     
-    if model in ['bgpfa', 'bGPFA']: ###Bayesian GPFA!!!
+    if model in ['bgpfa', 'bGPFA', 'gpfa', 'GPFA']: ###Bayesian GPFA!!!
         if likelihood == 'Gaussian':
             ###lik: sigma
             sigma = mod.obs.likelihood.sigma.detach().cpu()
@@ -111,18 +115,21 @@ def train_cv_bgpfa(Y,
             #lik: c, d, total_count
             c, d, total_count = [val.detach().cpu() for val in [mod.obs.likelihood.c, mod.obs.likelihood.d, mod.obs.likelihood.total_count]]
             lik = NegativeBinomial(n, c=c, d=d, total_count=total_count)
+        elif likelihood == 'Poisson':
+            lik = Poisson(n)
         
-        ###obs: q_mu, q_sqrt, _scale, _dim_scale, _neuron_scale
-        q_mu, q_sqrt = mod.obs.q_mu.detach().cpu(), mod.obs.q_sqrt.detach().cpu()
-        scale, dim_scale, neuron_scale = mod.obs.scale.detach().cpu(), mod.obs.dim_scale.detach().cpu().flatten(), mod.obs.neuron_scale.detach().cpu().flatten()
-        mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = ard, learn_scale = (not ard),
-                    q_mu = q_mu, q_sqrt = q_sqrt, scale = scale, dim_scale = dim_scale, neuron_scale = neuron_scale).to(device)
+        if Bayesian:
+            ###obs: q_mu, q_sqrt, _scale, _dim_scale, _neuron_scale
+            q_mu, q_sqrt = mod.obs.q_mu.detach().cpu(), mod.obs.q_sqrt.detach().cpu()
+            scale, dim_scale, neuron_scale = mod.obs.scale.detach().cpu(), mod.obs.dim_scale.detach().cpu().flatten(), mod.obs.neuron_scale.detach().cpu().flatten()
+            mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, ard = ard, learn_scale = (not ard),
+                        q_mu = q_mu, q_sqrt = q_sqrt, scale = scale, dim_scale = dim_scale, neuron_scale = neuron_scale,
+                         Bayesian = True).to(device)
         
-    elif model in ['vgpfa', 'vGPFA']: ##standard GPFA!!
-        ###obs: sigma, C
-        sigma = mod.obs.sigma.detach().cpu()
-        C = mod.obs.C.detach().cpu()
-        mod = Lgplvm(n, T, d_fit, n_samples, lat_dist, lprior, sigma = sigma, C=C, Bayesian = False).to(device)
+        else:
+            ###obs: C
+            lat_C = mod.obs.C.detach().cpu()
+            mod = Lvgplvm(n, T, d_fit, n_samples, lat_dist, lprior, lik, C = lat_C, Bayesian = False).to(device)
     
     torch.cuda.empty_cache
     

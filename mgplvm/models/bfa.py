@@ -682,3 +682,168 @@ class Fa(GpBase):
     @property
     def msg(self):
         return ''
+
+    
+    
+    
+class vFa(GpBase):
+    """
+    Variational non-Bayesian Factor Analysis
+    Allows for non-Gaussian noise
+    """
+
+    name = "vFa"
+
+    def __init__(self,
+                 n: int,
+                 d: int,
+                 m: int,
+                 n_samples: int,
+                 likelihood: Likelihood,
+                 Y=None,
+                 rel_scale = 1,
+                C = None):
+        """
+        n: number of neurons
+        d: number of latents
+        """
+        super().__init__()
+        self.n = n
+        self.m = m
+        self.n_samples = n_samples
+
+        if Y is None:
+            _C = torch.randn(n, d) * d**(-0.5)*rel_scale
+        else:
+            n_samples, n, m = Y.shape
+            mod = decomposition.FactorAnalysis(n_components=d)
+            Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
+            mudata = mod.fit_transform(Y)  #m*n_samples x d
+            _C = torch.tensor(mod.components_.T)*rel_scale
+
+        C = _C if C is None else C
+        
+        self.C = nn.Parameter(data=C, requires_grad=True)
+        self.likelihood = likelihood
+
+    def elbo(self,
+             y: Tensor,
+             x: Tensor,
+             sample_idxs: Optional[List[int]] = None,
+             m: Optional[int] = None) -> Tuple[Tensor, Tensor]:
+        """
+        Parameters
+        ----------
+        y : Tensor
+            data tensor with dimensions (n_samples x n x m)
+        x : Tensor (single kernel) or Tensor list (product kernels)
+            input tensor(s) with dimensions (n_mc x n_samples x d x m)
+
+        Returns
+        -------
+        lik, prior_kl : Tuple[torch.Tensor, torch.Tensor]
+            lik has dimensions (n_mc x n) 
+            prior_kl has dimensions (n) and is zero
+        """
+        
+        assert (x.shape[-3] == y.shape[-3])
+        assert (x.shape[-1] == y.shape[-1])
+        batch_size = x.shape[-1]
+        sample_size = x.shape[-3]
+
+        # predictive mean and var at x
+        f_mean = self.C @ x  #(... x n x m)
+        
+        if sample_idxs is not None:
+            f_mean = f_mean[:, sample_idxs, ...]
+        f_var = torch.zeros(f_mean.shape).to(f_mean.device)+1e-12
+
+        #(n_mc, n_samles, n)
+        lik = self.likelihood.variational_expectation(y, f_mean, f_var)
+        # scale is (m / batch_size) * (self.n_samples / sample size)
+        # to compute an unbiased estimate of the likelihood of the full dataset
+        m = (self.m if m is None else m)
+        scale = (m / batch_size) * (self.n_samples / sample_size)
+        lik = lik.sum(-2)
+        lik = lik * scale
+        
+        prior_kl = torch.zeros(1, lik.shape[-1]).to(lik.device) #not Bayesian; no prior term (1xn)
+        return lik, prior_kl
+
+    def predict(self, xstar, full_cov=False):
+        """
+        compute posterior p(f* | x, y, C) = N(C@x*, Sig)
+        """
+        mu = self.C @ xstar  #(n_samples x n x m)
+        cov = torch.zeros(mu.shape)  #p(f|C, x) is a delta function
+        if not full_cov:
+            return mu, cov
+        else:
+            return mu, torch.diag_embed(cov)
+
+    def sample(self,
+               query: Tensor,
+               n_mc: int = 1000,
+               square: bool = False,
+               noise: bool = True):
+        """
+        Parameters
+        ----------
+        query : Tensor (single kernel)
+            test input tensor with dimensions (n_samples x d x m)
+        n_mc : int
+            numper of samples to return
+        square : bool
+            determines whether to square the output
+        noise : bool
+            determines whether we also sample explicitly from the noise model or simply return samples of the mean
+
+        Returns
+        -------
+        y_samps : Tensor
+            samples from the model (n_mc x n_samples x d x m)
+        """
+
+        query = query[None, ...]  #add batch dimension (1 x n_samples x d x m)
+
+        mu, _ = self.predict(query, False)  #1xn_samplesxnxm, 1xn_samplesxnxm
+        # remove batch dimension
+        mu = mu[0]  #n_samples x n x m,
+        #sample from p(f|x) which is a delta function for FA
+        f_samps = mu
+
+        if noise:
+            #sample from observation function p(y|f)
+            dist = Normal(loc=f_samps, scale=self.sigma[..., None])
+            y_samps = dist.sample(n_mc)  #n_mc x n_samples x n x m
+        else:
+            #compute mean observations mu(f) for each f
+            y_samps = torch.ones(
+                n_mc, mu.shape[0], mu.shape[1], mu.shape[2]).to(
+                    query.device) * f_samps  #n_mc x n_samples x n x m
+
+        if square:
+            y_samps = y_samps**2
+
+        return y_samps
+    
+    @property
+    def prms(self) -> Tensor:
+        return self.C
+
+    def g0_parameters(self):
+        return []
+
+    def g1_parameters(self):
+        return list(
+            itertools.chain.from_iterable([
+                self.likelihood.parameters(),
+                [self.C]
+            ]))
+
+    @property
+    def msg(self):
+        newmsg = ('C norm {:.3f} |').format(
+            (self.C**2).mean().item())
+        return newmsg + self.likelihood.msg
+    

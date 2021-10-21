@@ -16,7 +16,7 @@ from ..lpriors.common import Lprior
 from ..rdist import Rdist
 from .gp_base import GpBase
 
-from .bfa import Fa, Bfa, Bvfa
+from .bfa import Fa, Bfa, Bvfa, vFa
 from .gplvm import Gplvm
 
 
@@ -71,6 +71,8 @@ class Lvgplvm(Gplvm):
                  learn_scale=None,
                  Y=None,
                 rel_scale = 1,
+                 Bayesian = True,
+                 C = None,
                 q_mu = None, q_sqrt = None, scale = None, dim_scale = None, neuron_scale = None):
         """
         __init__ method for linear GPLVM with approximate posteriors and flexible noise models
@@ -79,17 +81,28 @@ class Lvgplvm(Gplvm):
         """
 
         #observation model (P(Y|X))
-        obs = Bvfa(n,
-                   d,
-                   m,
-                   n_samples,
-                   likelihood,
-                   tied_samples=tied_samples,
-                   Y=Y,
-                   learn_neuron_scale=learn_neuron_scale,
-                   ard=ard,
-                   learn_scale=learn_scale,
-                  rel_scale = rel_scale,
-                  q_mu = q_mu, q_sqrt = q_sqrt, scale = scale, dim_scale = dim_scale, neuron_scale = neuron_scale)
+        
+        if Bayesian:
+            obs = Bvfa(n,
+                       d,
+                       m,
+                       n_samples,
+                       likelihood,
+                       tied_samples=tied_samples,
+                       Y=Y,
+                       learn_neuron_scale=learn_neuron_scale,
+                       ard=ard,
+                       learn_scale=learn_scale,
+                      rel_scale = rel_scale,
+                      q_mu = q_mu, q_sqrt = q_sqrt, scale = scale, dim_scale = dim_scale, neuron_scale = neuron_scale)
+        else:
+            obs = vFa(n,
+                 d,
+                 m,
+                 n_samples,
+                 likelihood,
+                rel_scale = rel_scale,
+                 Y=Y,
+                C = C)
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)

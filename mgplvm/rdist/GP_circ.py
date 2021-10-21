@@ -66,6 +66,7 @@ class GP_circ(GPbase):
         v is (n_samples x d x m x n_mc) where n_samples is the number of sample_idxs
         """
         scale, c = self.scale, self.c
+        #print(len(sample_idxs), sample_idxs, scale.shape, c.shape)
         if sample_idxs is not None:
             scale = scale[sample_idxs, ...]  #(n_samples x d x m)
             c = c[sample_idxs, ...]  #(n_samples x d x m/2)
