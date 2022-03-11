@@ -11,6 +11,13 @@ This is a library for learning Gaussian process latent variable models (GPLVMs) 
    install
    example
 
+.. toctree::   
+   :maxdepth: 1
+   :glob:
+   :caption: Examples
+
+   notebooks/Example
+
   
 .. toctree::
    :maxdepth: 3
@@ -19,11 +26,6 @@ This is a library for learning Gaussian process latent variable models (GPLVMs) 
 
    mgplvm/mgplvm
 
-.. toctree::
-   :maxdepth:1
-   :caption: References
-
-   references
 
 
 Indices and tables

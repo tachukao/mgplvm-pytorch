@@ -35,6 +35,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
     'numpydoc',
+    'nbsphinx',
     'sphinx_autodoc_typehints',
 ]
 
