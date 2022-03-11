@@ -40,6 +40,8 @@ py.test
 ## References
 
 1. [mGPLVM paper](https://papers.nips.cc/paper/2020/file/fedc604da8b0f9af74b6cfc0fab2163c-Paper.pdf)
+
+```
 @inproceedings{jensen2020manifold,
  author = {Jensen, Kristopher and Kao, Ta-Chu and Tripodi, Marco and Hennequin, Guillaume},
  booktitle = {Advances in Neural Information Processing Systems},
@@ -49,10 +51,12 @@ py.test
  volume = {33},
  year = {2020}
 }
+```
  
 
 2. [bGPFA paper](https://www.biorxiv.org/content/10.1101/2021.06.03.446788v1)
 
+```
 @inproceedings{
    jensen2021scalable,
    title={Scalable Bayesian {GPFA} with automatic relevance determination and discrete noise models},
@@ -61,3 +65,4 @@ py.test
    editor={A. Beygelzimer and Y. Dauphin and P. Liang and J. Wortman Vaughan},
    year={2021},
 }
+```
