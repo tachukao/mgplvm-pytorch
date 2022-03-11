@@ -73,7 +73,7 @@ def fit(dataset: Union[Tensor, DataLoader],
         prior_m=None,
         analytic_kl=False,
         accumulate_gradient=True,
-        batch_mc = None):
+        batch_mc=None):
     '''
     Parameters
     ----------
@@ -119,21 +119,22 @@ def fit(dataset: Union[Tensor, DataLoader],
     m = dataloader.batch_pool_size
     batch_mc = n_mc if batch_mc is None else batch_mc
     mc_batches = [batch_mc for _ in range(n_mc // batch_mc)]
-    if (n_mc % batch_mc) > 0: mc_batches.append(n_mc % batch_mc)
+    if (n_mc % batch_mc) > 0:
+        mc_batches.append(n_mc % batch_mc)
     assert np.sum(mc_batches) == n_mc
 
-    for i in range(max_steps): #loop over iterations
+    for i in range(max_steps):  #loop over iterations
         loss_vals, kl_vals, svgp_vals = [], [], []
         ramp = 1 - np.exp(-i / burnin)
-        
-        for imc, mc in enumerate(mc_batches): #loop over mc samples
-        
-            for sample_idxs, batch_idxs, batch in dataloader: #loop over batches in T
+
+        for imc, mc in enumerate(mc_batches):  #loop over mc samples
+
+            for sample_idxs, batch_idxs, batch in dataloader:  #loop over batches in T
                 if batch_idxs is None:
                     weight = 1
                 else:
-                    weight = len(batch_idxs) / m #fraction of time points
-                mc_weight = mc/n_mc #fraction of MC samples
+                    weight = len(batch_idxs) / m  #fraction of time points
+                mc_weight = mc / n_mc  #fraction of MC samples
 
                 svgp_elbo, kl = model(batch,
                                       mc,
@@ -144,16 +145,16 @@ def fit(dataset: Union[Tensor, DataLoader],
                                       analytic_kl=analytic_kl)
 
                 loss = (-svgp_elbo) + (ramp * kl)  # -LL
-                loss_vals.append(weight*loss.item()*mc_weight)
-                kl_vals.append(weight*kl.item()*mc_weight)
-                svgp_vals.append(weight*svgp_elbo.item()*mc_weight)
+                loss_vals.append(weight * loss.item() * mc_weight)
+                kl_vals.append(weight * kl.item() * mc_weight)
+                svgp_vals.append(weight * svgp_elbo.item() * mc_weight)
 
                 if accumulate_gradient:
                     loss *= mc_weight
                     if (batch_idxs is not None):
-                        loss *= weight #scale so the total sum of losses is constant
-                    
-                loss.backward() #compute gradients
+                        loss *= weight  #scale so the total sum of losses is constant
+
+                loss.backward()  #compute gradients
 
                 if not accumulate_gradient:
                     opt.step()  #update parameters for every batch

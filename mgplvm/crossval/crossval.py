@@ -18,7 +18,9 @@ def update_params(params, **kwargs):
         newps[key] = value
     return newps
 
+
 print('loading')
+
 
 def train_cv(mod,
              Y,
@@ -55,9 +57,9 @@ def train_cv(mod,
         model trained via crossvalidation
 
     """
-    
+
     #print('training')
-    
+
     _, n, m = Y.shape
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     nt_train = int(round(m / 2)) if nt_train is None else nt_train
@@ -68,9 +70,9 @@ def train_cv(mod,
     if N1 is None:  # random shuffle of neurons
         N1 = np.random.permutation(np.arange(n))[:nn_train]
     split = {'Y': Y, 'N1': N1, 'T1': T1}
-    
 
-    train_ps1 = update_params(train_ps, batch_pool=T1, prior_m=len(T1))#, mask_Ts = mask_Ts)
+    train_ps1 = update_params(train_ps, batch_pool=T1,
+                              prior_m=len(T1))  #, mask_Ts = mask_Ts)
     train_model(mod, data, train_ps1)
 
     for p in mod.parameters():  #no gradients for the remaining parameters
@@ -106,7 +108,13 @@ def train_cv(mod,
     return mod, split
 
 
-def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False, sample_X = False):
+def test_cv(mod,
+            split,
+            device,
+            n_mc=32,
+            Print=False,
+            sample_mean=False,
+            sample_X=False):
     Y, T1, N1 = split['Y'], split['T1'], split['N1']
     n_samples, n, m = Y.shape
 
@@ -116,31 +124,32 @@ def test_cv(mod, split, device, n_mc=32, Print=False, sample_mean=False, sample_
     #generate prediction for held out data#
 
     Ytest = Y[:, N2, :][..., T2]  #(ntrial x N2 x T2)
-    
+
     #latent means (ntrial, T2, d)
     if 'GP' in mod.lat_dist.name:
-        latents = mod.lat_dist.lat_mu.detach()[:, T2, ...] 
+        latents = mod.lat_dist.lat_mu.detach()[:, T2, ...]
     else:
-        latents = mod.lat_dist.prms[0].detach()[:, T2, ...]  
-        
+        latents = mod.lat_dist.prms[0].detach()[:, T2, ...]
+
     query = latents.transpose(-1, -2)  #(ntrial, d, m)
 
-    if sample_X: #note this only works when the data is structured as a single trial!
+    if sample_X:  #note this only works when the data is structured as a single trial!
         n_mc = round(np.sqrt(n_mc))
         # g is shape (n_samples, n_mc, m, d)
         g, lq = mod.lat_dist.sample(torch.Size([n_mc]),
-                             torch.tensor(Y).to(device),
-                             batch_idxs=None,
-                             sample_idxs=None)
+                                    torch.tensor(Y).to(device),
+                                    batch_idxs=None,
+                                    sample_idxs=None)
         print(g.shape)
-        assert g.shape[1] == 1 #assume there is only a single 'trial'
+        assert g.shape[1] == 1  #assume there is only a single 'trial'
 
-        query = g[:, 0, ...].transpose(-1, -2) #now each sample is a 'trial'
+        query = g[:, 0, ...].transpose(-1, -2)  #now each sample is a 'trial'
         Ypred = mod.svgp.sample(query, n_mc=n_mc, noise=False)
         print(Ypred.shape)
-        Ypred = Ypred.mean(0).mean(0) #average over both sets of MC samples
-        Ypred = Ypred.detach().cpu().numpy()[N2, :][:, T2][None, ...]  #(1 x N2 x T2)
-            
+        Ypred = Ypred.mean(0).mean(0)  #average over both sets of MC samples
+        Ypred = Ypred.detach().cpu().numpy()[N2, :][:, T2][None,
+                                                           ...]  #(1 x N2 x T2)
+
     elif sample_mean:  #we don't have a closed form mean prediction so sample from (mu|GP) and average instead
         #n_mc x n_samples x N x d
         Ypred = mod.svgp.sample(query, n_mc=n_mc, noise=False)

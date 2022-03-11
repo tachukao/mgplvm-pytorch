@@ -56,6 +56,6 @@ def train_model(mod, data, params):
         prior_m=params['prior_m'],
         analytic_kl=params['analytic_kl'],
         accumulate_gradient=params['accumulate_gradient'],
-        batch_mc = params['batch_mc'])
+        batch_mc=params['batch_mc'])
 
     return trained_mod

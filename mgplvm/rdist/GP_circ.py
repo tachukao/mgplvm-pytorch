@@ -79,7 +79,7 @@ class GP_circ(GPbase):
 
         #multiply by diagonal scale
         SCv = scale[..., None] * Cv
-        
+
         #print(Cv.shape, SCv.shape)
 
         return SCv
@@ -119,6 +119,6 @@ class GP_circ(GPbase):
             kl = kl * len(batch_idxs) / self.m
 
         return kl
-    
+
     def gmu_parameters(self):
         return [self._nu, self._c]

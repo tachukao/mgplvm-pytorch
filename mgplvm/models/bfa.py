@@ -233,10 +233,10 @@ class Bvfa(GpBase):
                  learn_neuron_scale=False,
                  ard=False,
                  learn_scale=None,
-                rel_scale = 1,
-                scale = None,
-                dim_scale = None,
-                neuron_scale = None):
+                 rel_scale=1,
+                 scale=None,
+                 dim_scale=None,
+                 neuron_scale=None):
         """
         __init__ method for Base Variational Factor Analysis 
         Parameters
@@ -281,12 +281,15 @@ class Bvfa(GpBase):
             C = torch.tensor(mod.components_.T)  # (n x d)
             #print(C.shape)
             if learn_scale:
-                _scale = rel_scale*torch.square(C).mean().sqrt()  #global scale
+                _scale = rel_scale * torch.square(
+                    C).mean().sqrt()  #global scale
             if learn_neuron_scale:
-                _neuron_scale = rel_scale*torch.square(C).mean(1).sqrt()  #per neuron
+                _neuron_scale = rel_scale * torch.square(C).mean(
+                    1).sqrt()  #per neuron
             if ard:
-                _dim_scale = rel_scale*torch.square(C).mean(0).sqrt()  #per latent
-        
+                _dim_scale = rel_scale * torch.square(C).mean(
+                    0).sqrt()  #per latent
+
         ##optionally provide these as params##
         scale = _scale if scale is None else scale
         dim_scale = _dim_scale if dim_scale is None else dim_scale
@@ -339,7 +342,7 @@ class Bvfa(GpBase):
     @property
     def dim_scale(self):
         return softplus(self._dim_scale)[:, None]
-    
+
     @property
     def q_mu(self):
         return self._q_mu
@@ -361,7 +364,7 @@ class Bvfa(GpBase):
         e = torch.eye(self.d).to(q_mu.device)
         p_mu = torch.zeros(self.n, self.d).to(q_mu.device)
         prior = MultivariateNormal(p_mu, scale_tril=e)
-        return kl_divergence(q, prior) ##consider implementing this directly
+        return kl_divergence(q, prior)  ##consider implementing this directly
 
     def elbo(self,
              y: Tensor,
@@ -542,7 +545,7 @@ class Fa(GpBase):
                  sigma: Optional[Tensor] = None,
                  learn_sigma=True,
                  Y=None,
-                C = None):
+                 C=None):
         """
         n: number of neurons
         d: number of latents
@@ -563,10 +566,9 @@ class Fa(GpBase):
 
         sigma = _sigma if sigma is None else sigma
         C = _C if C is None else C
-        
+
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
         self.C = nn.Parameter(data=C, requires_grad=True)
-
 
     @property
     def prms(self) -> Tensor:
@@ -683,9 +685,7 @@ class Fa(GpBase):
     def msg(self):
         return ''
 
-    
-    
-    
+
 class vFa(GpBase):
     """
     Variational non-Bayesian Factor Analysis
@@ -701,8 +701,8 @@ class vFa(GpBase):
                  n_samples: int,
                  likelihood: Likelihood,
                  Y=None,
-                 rel_scale = 1,
-                C = None):
+                 rel_scale=1,
+                 C=None):
         """
         n: number of neurons
         d: number of latents
@@ -713,16 +713,16 @@ class vFa(GpBase):
         self.n_samples = n_samples
 
         if Y is None:
-            _C = torch.randn(n, d) * d**(-0.5)*rel_scale
+            _C = torch.randn(n, d) * d**(-0.5) * rel_scale
         else:
             n_samples, n, m = Y.shape
             mod = decomposition.FactorAnalysis(n_components=d)
             Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
             mudata = mod.fit_transform(Y)  #m*n_samples x d
-            _C = torch.tensor(mod.components_.T)*rel_scale
+            _C = torch.tensor(mod.components_.T) * rel_scale
 
         C = _C if C is None else C
-        
+
         self.C = nn.Parameter(data=C, requires_grad=True)
         self.likelihood = likelihood
 
@@ -745,7 +745,7 @@ class vFa(GpBase):
             lik has dimensions (n_mc x n) 
             prior_kl has dimensions (n) and is zero
         """
-        
+
         assert (x.shape[-3] == y.shape[-3])
         assert (x.shape[-1] == y.shape[-1])
         batch_size = x.shape[-1]
@@ -753,10 +753,10 @@ class vFa(GpBase):
 
         # predictive mean and var at x
         f_mean = self.C @ x  #(... x n x m)
-        
+
         if sample_idxs is not None:
             f_mean = f_mean[:, sample_idxs, ...]
-        f_var = torch.zeros(f_mean.shape).to(f_mean.device)+1e-12
+        f_var = torch.zeros(f_mean.shape).to(f_mean.device) + 1e-12
 
         #(n_mc, n_samles, n)
         lik = self.likelihood.variational_expectation(y, f_mean, f_var)
@@ -766,8 +766,9 @@ class vFa(GpBase):
         scale = (m / batch_size) * (self.n_samples / sample_size)
         lik = lik.sum(-2)
         lik = lik * scale
-        
-        prior_kl = torch.zeros(1, lik.shape[-1]).to(lik.device) #not Bayesian; no prior term (1xn)
+
+        prior_kl = torch.zeros(1, lik.shape[-1]).to(
+            lik.device)  #not Bayesian; no prior term (1xn)
         return lik, prior_kl
 
     def predict(self, xstar, full_cov=False):
@@ -826,7 +827,7 @@ class vFa(GpBase):
             y_samps = y_samps**2
 
         return y_samps
-    
+
     @property
     def prms(self) -> Tensor:
         return self.C
@@ -836,14 +837,10 @@ class vFa(GpBase):
 
     def g1_parameters(self):
         return list(
-            itertools.chain.from_iterable([
-                self.likelihood.parameters(),
-                [self.C]
-            ]))
+            itertools.chain.from_iterable(
+                [self.likelihood.parameters(), [self.C]]))
 
     @property
     def msg(self):
-        newmsg = ('C norm {:.3f} |').format(
-            (self.C**2).mean().item())
+        newmsg = ('C norm {:.3f} |').format((self.C**2).mean().item())
         return newmsg + self.likelihood.msg
-    

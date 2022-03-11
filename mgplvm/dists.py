@@ -4,6 +4,7 @@ from torch.distributions import constraints
 from torch.distributions.distribution import Distribution
 from torch.distributions.utils import broadcast_all, probs_to_logits, lazy_property, logits_to_probs
 
+
 class NegativeBinomial(Distribution):
     r"""
     Creates a Negative Binomial distribution, i.e. distribution
@@ -16,8 +17,10 @@ class NegativeBinomial(Distribution):
             valued count
         logits (Tensor): Event log-odds for probabilities of success
     """
-    arg_constraints = {'total_count': constraints.greater_than_eq(0),
-                       'logits': constraints.real}
+    arg_constraints = {
+        'total_count': constraints.greater_than_eq(0),
+        'logits': constraints.real
+    }
     support = constraints.nonnegative_integer
 
     def __init__(self, total_count, logits, validate_args=None):
@@ -29,7 +32,8 @@ class NegativeBinomial(Distribution):
         self.total_count = self.total_count.type_as(self.logits)
         self._param = self.logits
         batch_shape = self._param.size()
-        super(NegativeBinomial, self).__init__(batch_shape, validate_args=validate_args)
+        super(NegativeBinomial, self).__init__(batch_shape,
+                                               validate_args=validate_args)
 
     def expand(self, batch_shape, _instance=None):
         new = self._get_checked_instance(NegativeBinomial, _instance)
@@ -83,12 +87,11 @@ class NegativeBinomial(Distribution):
         # r*log(1-p) + y*log(p)
         log_unnormalized_prob = (self.total_count * F.logsigmoid(-self.logits) +
                                  value * F.logsigmoid(self.logits))
-        
+
         #-(gamma(y+r) - gamma(y+1) - gamma(r)) = log(binom(y+r-1, y)^(-1))
-        log_normalization = (-torch.lgamma(self.total_count + value) + torch.lgamma(1. + value) +
+        log_normalization = (-torch.lgamma(self.total_count + value) +
+                             torch.lgamma(1. + value) +
                              torch.lgamma(self.total_count))
-        
+
         # binom(y+r-1, y) (1-p)^r p^y"""
         return log_unnormalized_prob - log_normalization
-
-

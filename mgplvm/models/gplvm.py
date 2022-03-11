@@ -132,7 +132,8 @@ class Gplvm(nn.Module):
             # compute kl term for the latents (n_mc, n_samples) per batch
             prior = self.lprior(g, batch_idxs)  #(n_mc)
             #print('prior, lq shapes:', prior.shape, lq.shape)
-            kl = lq.sum(-1).sum(-1) - prior  #(n_mc) (sum q(g) over samples, conditions)
+            kl = lq.sum(-1).sum(
+                -1) - prior  #(n_mc) (sum q(g) over samples, conditions)
 
         #rescale KL to entire dataset (basically structured conditions)
         batch_size = m if batch_idxs is None else len(batch_idxs)

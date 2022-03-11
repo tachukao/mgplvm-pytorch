@@ -59,7 +59,8 @@ class GPbase(Rdist):
 
         #initialize length scale
         if ell is None:
-            _ell = torch.ones(1, self.d, 1) * (torch.max(ts) - torch.min(ts)) / 20
+            _ell = torch.ones(1, self.d,
+                              1) * (torch.max(ts) - torch.min(ts)) / 20
         else:
             if type(ell) in [float, int]:
                 _ell = torch.ones(1, self.d, 1) * ell
