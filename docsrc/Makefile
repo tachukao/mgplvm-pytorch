@@ -21,15 +21,8 @@ api:
 	rm -rf source/mgplvm/*
 	@$(SPHINXAPIDOC) -e -o "$(SOURCEDIR)/mgplvm" ../mgplvm/
 
-huh:
-	cd $(BUILDDIR)/html && 
-
 deploy: html
-	touch $(BUILDDIR)/html/.nojekyll
-	cd $(BUILDDIR)/html/; echo "enter BUILDDIR"; \
-		git add .; \
-		git commit -m "rebuilding site `date`"; \
-		git push origin gh-pages
+	cp -r build/html/* ../docs
 
 .PHONY: help clean api deploy Makefile
 
