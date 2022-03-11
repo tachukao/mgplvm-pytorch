@@ -1,11 +1,13 @@
 *.bat
 docsrc/source/mgplvm
+docsrc/source/notebooks/data
 build
 _build
 .vscode
 Mouse28-140313
 Mouse28-140313.*
 binned_data.pickled
+*.pickled
 *.tar.gz
 _cv_tmp
 cookie.txt
