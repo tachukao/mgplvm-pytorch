@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>(Bayesian) GPFA &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Supervised learning and decoding with manifold GPLVMs" href="mGPLVM_supervised.html" />
+    <link rel="prev" title="Example" href="../example.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">(Bayesian) GPFA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mGPLVM_supervised.html">Supervised learning and decoding with manifold GPLVMs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>(Bayesian) GPFA</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/bGPFA.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="(Bayesian)-GPFA">
+<h1>(Bayesian) GPFA<a class="headerlink" href="#(Bayesian)-GPFA" title="Permalink to this headline"></a></h1>
+<p><em>Kristopher T. Jensen &amp; Guillaume Hennequin (July 8, 2021)</em></p>
+<p>In this short example notebook, we fit Gaussian Process Factor Analysis (GPFA) to neural recordings from a continuous primate reaching task and run a couple of simple analyses. While the original GPFA framework was developed by Byron Yu et al. (2009), here we fit a recent Bayesian extension by Jensen &amp; Kao et al. (2021) that relies on automatic relevance determination to also learn the dimensionality of the latent embedding space.</p>
+<p>Bayesian GPFA is defined by the following generative model:</p>
+<div class="line-block">
+<div class="line"><span class="math notranslate nohighlight">\({\bf Y} \in \mathbb{R}^{N \times T}\)</span> (data)</div>
+<div class="line"><span class="math notranslate nohighlight">\({\bf X} \in \mathbb{R}^{D \times T}\)</span> (latent variables)</div>
+<div class="line"><span class="math notranslate nohighlight">\({\bf C} \in \mathbb{R}^{N \times D}\)</span> (readout matrix)</div>
+</div>
+<div class="line-block">
+<div class="line"><span class="math notranslate nohighlight">\({\bf x}_d \sim \mathcal{GP}(0, K_{\text{RBF}})\)</span></div>
+<div class="line"><span class="math notranslate nohighlight">\(c_{nd} \sim \mathcal{N}(c_{nd}; \mu = 0, \sigma^2 = s_d^2)\)</span></div>
+<div class="line"><span class="math notranslate nohighlight">\({y}_{nt |{\bf C}, {\bf X}} = p(y_{nt} | ({\bf CX})_{nt})\)</span></div>
+</div>
+<div class="line-block">
+<div class="line">We learn the scales <span class="math notranslate nohighlight">\(\{ s_d \}\)</span> by maximizing a lower bound (ELBO) on the model log marginal likelihood:</div>
+<div class="line">$:nbsphinx-math:<cite>mathcal{L}</cite> <span class="math">\leq `:nbsphinx-math:</span>log <cite>p ({:nbsphinx-math:</cite>bf Y`}) = <span class="math">\log `:nbsphinx-math:</span>int <cite>p({:nbsphinx-math:</cite>bf Y`} | {<span class="math">\bf C</span>}, {<span class="math">\bf X</span>}) p({<span class="math">\bf C</span>}) p({<span class="math">\bf X</span>}) , d{<span class="math">\bf C</span>} , d{<span class="math">\bf X</span>} $</div>
+<div class="line">This is achieved using variational inference which also provides an estimate of the posterior distribution over our latent variables that we can use for further analyses: <span class="math notranslate nohighlight">\(q({\bf X}) \approx p({\bf X} | {\bf Y})\)</span>.</div>
+</div>
+<p>See Jensen &amp; Kao et al. (2021) for further details about the generative model and inference procedure.</p>
+<p>We start by downloading an example dataset which was originally recorded by O’Doherty et al. (2018). Here we consider a single recording session where we have binned the data in 25 ms bins in advance. We have put this data on google drive for ease of access in this tutorial; note that the original dataset is available from <a class="reference external" href="https://zenodo.org/record/3854034#.YNCEy5P0nUI">https://zenodo.org/record/3854034#.YNCEy5P0nUI</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>mkdir -p data
+<span class="o">!</span>wget --no-check-certificate <span class="s1">&#39;https://drive.google.com/u/2/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download&#39;</span> -O data/test_data.tar.gz
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+--2022-03-11 18:46:48--  https://drive.google.com/u/2/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download
+Resolving drive.google.com (drive.google.com)... 142.250.178.14, 2a00:1450:4009:815::200e
+Connecting to drive.google.com (drive.google.com)|142.250.178.14|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://drive.google.com/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download [following]
+--2022-03-11 18:46:48--  https://drive.google.com/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download
+Reusing existing connection to drive.google.com:443.
+HTTP request sent, awaiting response... 303 See Other
+Location: https://doc-0o-08-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/7hq0frb0eijohoa79tamqhcijftlbjq5/1647024375000/03061924325282805644/*/1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-?e=download [following]
+Warning: wildcards not supported in HTTP.
+--2022-03-11 18:47:00--  https://doc-0o-08-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/7hq0frb0eijohoa79tamqhcijftlbjq5/1647024375000/03061924325282805644/*/1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-?e=download
+Resolving doc-0o-08-docs.googleusercontent.com (doc-0o-08-docs.googleusercontent.com)... 172.217.169.65, 2a00:1450:4009:819::2001
+Connecting to doc-0o-08-docs.googleusercontent.com (doc-0o-08-docs.googleusercontent.com)|172.217.169.65|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 4041709 (3.9M) [application/x-gzip]
+Saving to: ‘data/test_data.tar.gz’
+
+data/test_data.tar. 100%[===================&gt;]   3.85M  --.-KB/s    in 0.07s
+
+2022-03-11 18:47:00 (52.1 MB/s) - ‘data/test_data.tar.gz’ saved [4041709/4041709]
+
+</pre></div></div>
+</div>
+<p>We proceed to unzip the data and check that it has been correctly downloaded and decompressed. We should now have a ~110mb file named ‘Doherty_example.pickled’.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tar -xzvf data/test_data.tar.gz --directory data
+<span class="o">!</span>ls -ltrh data
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Doherty_example.pickled
+total 114M
+-rw-r--r-- 1 tck29 tck29grp 110M Jun 18  2021 Doherty_example.pickled
+-rw-r--r-- 1 tck29 tck29grp 3.9M Mar 11 18:47 test_data.tar.gz
+</pre></div></div>
+</div>
+<p>We proceed to install the Bayesian GPFA implementation used in Jensen &amp; Kao et al. This is freely available but the codebase is still under active development with ongoing work on other latent variable models (here we use the ‘bGPFA’ branch and ignore other models).</p>
+<p>That sets us up to actually run the code! We start by loading a few packages and setting some default parameters.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">mgplvm</span> <span class="k">as</span> <span class="nn">mgp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">FactorAnalysis</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">CubicSpline</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">gaussian_filter1d</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;font.size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.spines.right&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.spines.top&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_device</span><span class="p">()</span> <span class="c1"># use GPU if available, otherwise CPU</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+loading
+</pre></div></div>
+</div>
+<p>We proceed to load the data which we stored in a ‘pickle’ format. While we could fit the full 30 minute dataset, it would take a bit too long for a real-time tutorial so we subsample both the number of time points and neurons, restricting our analysis to a single epoch of ~20 reaches and only considering neurons with high firing rates.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;data/Doherty_example.pickled&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span> <span class="c1"># load example data</span>
+<span class="n">binsize</span> <span class="o">=</span> <span class="mi">25</span> <span class="c1"># binsize in ms</span>
+<span class="n">timepoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="mi">4500</span><span class="p">)</span> <span class="c1">#subsample ~40 seconds of data so things will run somewhat quicker</span>
+<span class="n">fit_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="n">timepoints</span><span class="p">],</span> <span class="s1">&#39;locs&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;locs&#39;</span><span class="p">][</span><span class="n">timepoints</span><span class="p">,</span> <span class="p">:],</span> <span class="s1">&#39;targets&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">][</span><span class="n">timepoints</span><span class="p">,</span> <span class="p">:],</span> <span class="s1">&#39;binsize&#39;</span><span class="p">:</span> <span class="n">binsize</span><span class="p">}</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">fit_data</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="c1"># these are the actual recordings and is the input to our model</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="n">fit_data</span><span class="p">[</span><span class="s1">&#39;targets&#39;</span><span class="p">]</span> <span class="c1"># these are the target locations</span>
+<span class="n">locs</span> <span class="o">=</span> <span class="n">fit_data</span><span class="p">[</span><span class="s1">&#39;locs&#39;</span><span class="p">]</span> <span class="c1"># these are the hand positions</span>
+
+<span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">axis</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="mf">0.025</span> <span class="o">&gt;</span> <span class="mi">8</span><span class="p">,</span> <span class="p">:]</span> <span class="c1">#subsample highly active neurons so things will run a bit quicker</span>
+<span class="n">ntrials</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span> <span class="c1"># Y should have shape: [number of trials (here 1) x neurons x time points]</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1"># put the data on our GPU/CPU</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="c1">#much easier to work in units of time bins here</span>
+<span class="n">fit_ts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">ts</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1"># put our time points on GPU/CPU</span>
+
+<span class="c1"># finally let&#39;s just identify bins where the target changes</span>
+<span class="n">deltas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">targets</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)])</span>
+<span class="n">switches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">deltas</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># change occurs during time bin s</span>
+<span class="n">dswitches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span> <span class="n">switches</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">switches</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span> <span class="c1"># when the target changes during a bin there will be two discontinuities</span>
+<span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">switches</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">inds</span><span class="p">[</span><span class="n">dswitches</span> <span class="o">&gt;</span> <span class="mf">1.5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># index of the bin where the target changes or the first bin with a new target</span>
+<span class="n">switches</span> <span class="o">=</span> <span class="n">switches</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>We also plot the data to visually inspect how the firing rates of different neurons seem to (co)vary over time.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### plot the activity we just loaded ###</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;Greys&#39;</span><span class="p">,</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;neuron&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Raw activity&#39;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">([])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_bGPFA_11_0.png" src="../_images/notebooks_bGPFA_11_0.png" />
+</div>
+</div>
+<p>In the following code snippet, we set a couple of model parameters relating to the optimization process or initialization. Most of the initialization is done directly from the data but it can be useful to include if we have prior knowledge about e.g. the timescale of the behavior we care about.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### set some parameters for fitting ###</span>
+<span class="n">ell0</span> <span class="o">=</span> <span class="mi">200</span><span class="o">/</span><span class="n">binsize</span> <span class="c1"># initial timescale (in bins) for each dimension. This could be the ~timescale of the behavior of interest (otherwise a few hundred ms is a reasonable default)</span>
+<span class="n">rho</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># sets the intial scale of each latent (s_d in Jensen &amp; Kao). rho=1 is a natural choice with Gaussian noise; less obvious with non-Gaussian noise but rho=1-5 works well empirically.</span>
+<span class="n">max_steps</span> <span class="o">=</span> <span class="mi">1001</span> <span class="c1"># number of training iterations</span>
+<span class="n">n_mc</span> <span class="o">=</span> <span class="mi">5</span> <span class="c1"># number of monte carlo samples per iteration</span>
+<span class="n">print_every</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1"># how often we print training progress</span>
+<span class="n">d_fit</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1"># lets fit up to 10 latent dimensions (in theory this could be up to the number of neurons; should be thought of as an upper bound to how high-dimensional the activity is)</span>
+</pre></div>
+</div>
+</div>
+<p>Having specified our parameters, we can construct the bGPFA model. In this particular library, we need to separately specify (i) the noise model, (ii) the latent manifold (see Jensen et al. 2020 for LVMs on non-Euclidean manifolds), (iii) the prior and variational distribution (for GPFA, these are both Gaussian processes), and (iv) the observation model (for GPFA this is linear but see e.g. Wu et al. 2017 for non-linear LVMs).</p>
+<p>For this dataset we use a negative binomial noise model which contains the Poisson model as a special case but also allows for overdispersed firing statistics.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### construct the actual model ###</span>
+<span class="n">ntrials</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span> <span class="c1"># Y should have shape: [number of trials (here 1) x neurons x time points]</span>
+<span class="n">lik</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">NegativeBinomial</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">)</span> <span class="c1"># we use a negative binomial noise model in this example (recommended for ephys data)</span>
+<span class="n">manif</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">Euclid</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">d_fit</span><span class="p">)</span> <span class="c1"># our latent variables live in a Euclidean space for bGPFA (see Jensen et al. 2020 for alternatives)</span>
+<span class="n">var_dist</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">rdist</span><span class="o">.</span><span class="n">GP_circ</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">ntrials</span><span class="p">,</span> <span class="n">fit_ts</span><span class="p">,</span> <span class="n">_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ell</span> <span class="o">=</span> <span class="n">ell0</span><span class="p">)</span> <span class="c1"># circulant variational GP posterior (c.f. Jensen &amp; Kao et al. 2021)</span>
+<span class="n">lprior</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">lpriors</span><span class="o">.</span><span class="n">Null</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span> <span class="c1"># here the prior is defined implicitly in our variational distribution, but if we wanted to fit e.g. Factor analysis this would be a Gaussian prior</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Lvgplvm</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">d_fit</span><span class="p">,</span> <span class="n">ntrials</span><span class="p">,</span> <span class="n">var_dist</span><span class="p">,</span> <span class="n">lprior</span><span class="p">,</span> <span class="n">lik</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="p">,</span> <span class="n">learn_scale</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ard</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">rel_scale</span> <span class="o">=</span> <span class="n">rho</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1">#create bGPFA model with ARD</span>
+<br/></pre></div>
+</div>
+</div>
+<p>This finally sets us up to train the model! We will train it for only 1000 iterations and with a fairly high learning rate so it will finish in a reasonable amount of time. We also define a function ‘cb()’ to intermittently print the learned scale parameters <span class="math notranslate nohighlight">\(\{ s_d \}\)</span> which will go to zero for dimensions that are discarded by the ARD procedure.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### training will proceed for 1000 iterations (this takes ~2 minutes) ###</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">cb</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;here we construct an (optional) function that helps us keep track of the training&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">dim_scale</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;iter:&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;time:&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="s1">&#39;log scales:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">sd</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">sd</span><span class="p">)],</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="c1"># helper function to specify training parameters</span>
+<span class="n">train_ps</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">training_params</span><span class="p">(</span><span class="n">max_steps</span> <span class="o">=</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">n_mc</span> <span class="o">=</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">lrate</span> <span class="o">=</span> <span class="mf">7.5e-2</span><span class="p">,</span> <span class="n">callback</span> <span class="o">=</span> <span class="n">cb</span><span class="p">,</span> <span class="n">print_every</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;fitting&#39;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="s1">&#39;neurons and&#39;</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="s1">&#39;time bins for&#39;</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="s1">&#39;iterations&#39;</span><span class="p">)</span>
+<span class="n">mod_train</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">train_ps</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+fitting 93 neurons and 1500 time bins for 1001 iterations
+iter: 0 time: 1s log scales: [-1.4 -2.  -2.2 -2.4 -2.4 -2.5 -2.6 -2.6 -2.7 -2.8]
+iter: 100 time: 17s log scales: [-1.5 -2.  -2.2 -2.4 -2.4 -2.5 -2.6 -2.7 -2.7 -2.8]
+iter: 200 time: 32s log scales: [-1.6 -1.7 -2.1 -2.3 -2.4 -2.5 -2.7 -2.9 -2.9 -3. ]
+iter: 300 time: 50s log scales: [-1.4 -1.8 -2.  -2.5 -2.5 -2.9 -2.9 -3.4 -3.5 -3.5]
+iter: 400 time: 65s log scales: [-1.3 -1.9 -2.  -2.6 -2.7 -3.2 -3.5 -4.3 -4.3 -4.4]
+iter: 500 time: 79s log scales: [-1.3 -1.9 -2.  -2.7 -2.8 -3.5 -4.4 -4.7 -4.8 -4.8]
+iter: 600 time: 93s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -4.1 -4.8 -5.  -5.1 -5.1]
+iter: 700 time: 107s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -4.7 -5.1 -5.2 -5.3 -5.3]
+iter: 800 time: 121s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -5.  -5.3 -5.4 -5.5 -5.5]
+iter: 900 time: 139s log scales: [-1.3 -2.  -2.1 -2.7 -2.8 -5.2 -5.5 -5.5 -5.6 -5.6]
+iter: 1000 time: 155s log scales: [-1.3 -2.  -2.1 -2.7 -2.8 -5.4 -5.6 -5.6 -5.7 -5.8]
+</pre></div></div>
+</div>
+<p>Now we’re ready to analyze our new model. We start by plotting the posterior mean against the prior scales <span class="math notranslate nohighlight">\({s_d}\)</span> to see how informative the different latent dimensions are (upper right corner indicates more informative dimensions).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### we start by plotting &#39;informative&#39; and &#39;discarded&#39; dimensions ###</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;plotting informative and discarded dimensions&#39;</span><span class="p">)</span>
+<span class="n">dim_scales</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">dim_scale</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="c1">#prior scales (s_d)</span>
+<span class="n">dim_scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">dim_scales</span><span class="p">)</span> <span class="c1">#take the log of the prior scales</span>
+<span class="n">nus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">nu</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span> <span class="c1">#magnitude of the variational mean</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dim_scales</span><span class="p">,</span> <span class="n">nus</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">80</span><span class="p">)</span> <span class="c1">#top right corner are informative, lower left discarded</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log \, s_d$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;latent mean scale&#39;</span><span class="p">,</span> <span class="n">labelpad</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+plotting informative and discarded dimensions
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_bGPFA_19_1.png" src="../_images/notebooks_bGPFA_19_1.png" />
+</div>
+</div>
+<p>We proceed to plot the posterior latent mean in the two most informative dimensions (i.e. the ones with the highest <span class="math notranslate nohighlight">\(s_d\)</span>) for a subset of the behavior. We contrast this with FA which yields discontinuous trajectories dominated by noise since the model is unable to share information across time bins.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### plot the inferred latent trajectories</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;plotting latent trajectories&#39;</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">lat_mu</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="c1"># extract inferred latents (&#39;mu&#39; has shape (ntrials x T x d_fit))</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">dim_scales</span><span class="p">)]</span> <span class="c1"># only consider the two most informative dimensions (c.f. Jensen &amp; Kao)</span>
+<span class="n">tplot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span> <span class="c1"># let&#39;s only plot a shorter period (here 2.s) so it doesn&#39;t get too cluttered</span>
+
+<span class="c1"># fit FA for comparison</span>
+<span class="n">fa</span> <span class="o">=</span> <span class="n">FactorAnalysis</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">Xfa</span> <span class="o">=</span> <span class="n">fa</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">))</span> <span class="c1"># sqrt the counts for variance stabilization (c.f. Yu et al. 2009)</span>
+
+<span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="c1"># which dimensions to plot</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">tplot</span><span class="p">,</span> <span class="n">i1</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">tplot</span><span class="p">,</span> <span class="n">i2</span><span class="p">],</span> <span class="n">c</span> <span class="o">=</span> <span class="n">tplot</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">80</span><span class="p">)</span> <span class="c1"># plot bGPFA latents</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">Xfa</span><span class="p">[</span><span class="n">tplot</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">Xfa</span><span class="p">[</span><span class="n">tplot</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span> <span class="o">=</span> <span class="n">tplot</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">80</span><span class="p">)</span> <span class="c1"># plot FA latents</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;latent dim 1&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;latent dim 2&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Bayesian GPFA&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;factor analysis&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># let&#39;s also print the learned timescales (sorted by the prior scales s_d)</span>
+<span class="n">taus</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">ell</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">dim_scales</span><span class="p">)]</span><span class="o">*</span><span class="n">binsize</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;learned timescales (ms):&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">taus</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+plotting latent trajectories
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_bGPFA_21_1.png" src="../_images/notebooks_bGPFA_21_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+learned timescales (ms): [135  98 311 626 254 502 236 294 247 321]
+</pre></div></div>
+</div>
+<p>To make sense of our latent trajectories, it may be useful to also take into account what’s actually occurring at the level of behavior. We therefore start by visualizing the hand kinematics during the period of reaching considered for the latent trajectories above. We can visualize both the position of the hand as it changes over time as well as the instantaneous velocity in the x and y directions.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">*</span><span class="n">fit_data</span><span class="p">[</span><span class="s1">&#39;binsize&#39;</span><span class="p">]</span> <span class="c1"># measured in ms</span>
+<span class="n">cs</span> <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">locs</span><span class="p">)</span> <span class="c1"># fit cubic spline to behavior</span>
+<span class="n">vels</span> <span class="o">=</span> <span class="n">cs</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># velocity (first derivative)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">locs</span><span class="p">[</span><span class="n">tplot</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">locs</span><span class="p">[</span><span class="n">tplot</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;k-&#39;</span><span class="p">)</span> <span class="c1"># plot position</span>
+
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">switches</span><span class="p">:</span> <span class="c1"># plot the targets</span>
+  <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">tplot</span><span class="p">:</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">targets</span><span class="p">[</span><span class="n">s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">targets</span><span class="p">[</span><span class="n">s</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;hand&#39;</span><span class="p">,</span> <span class="s1">&#39;target&#39;</span><span class="p">],</span> <span class="n">frameon</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">vels</span><span class="p">[</span><span class="n">tplot</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">vels</span><span class="p">[</span><span class="n">tplot</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;k-&#39;</span><span class="p">)</span> <span class="c1"># plot velocity</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;position&#39;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;velocity&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_bGPFA_23_0.png" src="../_images/notebooks_bGPFA_23_0.png" />
+</div>
+</div>
+<p>Finally we might ask whether our latent trajectories can predict the behavioral output. To investigate this, we train a linear decoder to predict the hand kinematics from the inferred firing rates <span class="math notranslate nohighlight">\(\hat{\bf Y}\)</span>. This can also be seen as a non-linear decoder from the latent trajectories <span class="math notranslate nohighlight">\({\bf X}\)</span> where the first layer of the decoder is giving by the learned observation model. We fit a decoder with different delays between neural activity and behavior from -150ms (activity lags
+behavior) to +250ms (activity precedes behavior). We do this to find the ‘optimal delay’ between neural activity and behavior and show that cortical activity seems to predict behavior ~100 ms into the future.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### finally let&#39;s do a simple decoding analysis ###</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;running decoding analysis&#39;</span><span class="p">)</span>
+<span class="n">Ypreds</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># decode from the inferred firing rates (this is a non-linear decoder from latents)</span>
+<span class="n">query</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">lat_mu</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>  <span class="c1"># (ntrial, d_fit, T)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span> <span class="c1"># loop over mc samples to avoid memory issues</span>
+    <span class="n">Ypred</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">n_mc</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">Ypred</span> <span class="o">=</span> <span class="n">Ypred</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1"># (ntrial x n x T)</span>
+    <span class="n">Ypreds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Ypred</span><span class="p">)</span>
+<span class="n">Ypred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Ypreds</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span> <span class="c1"># T x n</span>
+
+<span class="n">delays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">150</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span> <span class="c1"># consider different behavioral delays</span>
+<span class="n">performance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">delays</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span> <span class="c1"># model performance</span>
+<span class="k">for</span> <span class="n">idelay</span><span class="p">,</span> <span class="n">delay</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">delays</span><span class="p">):</span>
+    <span class="n">vels</span> <span class="o">=</span> <span class="n">cs</span><span class="p">(</span><span class="n">ts</span><span class="o">+</span><span class="n">delay</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># velocity at time+delay</span>
+    <span class="k">for</span> <span class="n">itest</span><span class="p">,</span> <span class="n">Ytest</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">Ypred</span><span class="p">]):</span> <span class="c1"># bGPFA</span>
+      <span class="n">regs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Ytest</span><span class="p">[::</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="n">vels</span><span class="p">[::</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="c1"># fit x and y vel on half the data</span>
+      <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span><span class="n">regs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Ytest</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="n">vels</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span> <span class="c1"># score x and y vel on the other half</span>
+      <span class="n">performance</span><span class="p">[</span><span class="n">idelay</span><span class="p">,</span> <span class="n">itest</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span> <span class="c1"># save performance</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;plotting decoding&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">delays</span><span class="p">,</span> <span class="n">performance</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;k-&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">delays</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">performance</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])],</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">ls</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">delays</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delays</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;delay (ms)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;kinematic decoding&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+running decoding analysis
+plotting decoding
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_bGPFA_25_1.png" src="../_images/notebooks_bGPFA_25_1.png" />
+</div>
+</div>
+<p>In Jensen &amp; Kao et al. (2021), we carry out further analyses on multi-region recordings, preparatory dynamics and reaction times for bGPFA models fitted to the full reaching dataset which the interested reader can look at further. However, we hope that this short notebook has given an introduction to GPFA and its Bayesian extension as well as some insight into the possible use cases for such models.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../example.html" class="btn btn-neutral float-left" title="Example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mGPLVM_supervised.html" class="btn btn-neutral float-right" title="Supervised learning and decoding with manifold GPLVMs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

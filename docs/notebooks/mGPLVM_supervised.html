@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supervised learning and decoding with manifold GPLVMs &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm package" href="../mgplvm/mgplvm.html" />
+    <link rel="prev" title="(Bayesian) GPFA" href="bGPFA.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="bGPFA.html">(Bayesian) GPFA</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Supervised learning and decoding with manifold GPLVMs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Supervised learning and decoding with manifold GPLVMs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/mGPLVM_supervised.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="Supervised-learning-and-decoding-with-manifold-GPLVMs">
+<h1>Supervised learning and decoding with manifold GPLVMs<a class="headerlink" href="#Supervised-learning-and-decoding-with-manifold-GPLVMs" title="Permalink to this headline"></a></h1>
+<p><em>Kristopher T. Jensen (February, 2022); ktj21&#64;cam.ac.uk</em></p>
+<p>In this short example notebook, we fit mGPLVM as a <em>supervised</em> learning model (based on Jensen, Kao, Tripodi &amp; Henneuquin, NeurIPS 2020).</p>
+<div class="line-block">
+<div class="line">The general specification of mGPLVM is a latent variable model where the objective is to maximize the marginal likelihood: <span class="math notranslate nohighlight">\(p(Y) = \int p_{\theta}(Y|Z) p(Z) dZ\)</span>,</div>
+<div class="line">where <span class="math notranslate nohighlight">\(p(Y|Z)\)</span> is a Gaussian processes, <span class="math notranslate nohighlight">\(Y \in \mathbb{R}^{N \times T}\)</span> are neural recordings, and <span class="math notranslate nohighlight">\(Z \in T^1\)</span> are some latent variables on a circle (note that everything readily generalizes to higher-dimensional Euclidean and non-Euclidean manifolds).</div>
+</div>
+<div class="line-block">
+<div class="line">However, in the supervised setting, <span class="math notranslate nohighlight">\(p(Z)\)</span> is a <em>delta function</em> during training, and we can simply optimize the parameters <span class="math notranslate nohighlight">\(\theta\)</span> of the generative model <span class="math notranslate nohighlight">\(p_{\theta}(Y_{train}|Z_{train})\)</span> without worrying about inferring <span class="math notranslate nohighlight">\(Z\)</span>:</div>
+<div class="line"><span class="math notranslate nohighlight">\(\theta^* = \text{argmax}_\theta \left [ \log p_{\theta}(Y_{train}|Z_{train}) \right ].\)</span></div>
+</div>
+<div class="line-block">
+<div class="line">After training, we need to perform inference on the <em>test data</em> <span class="math notranslate nohighlight">\(Y^*\)</span> to find the latent variables <span class="math notranslate nohighlight">\(Z^*\)</span> given the training data <span class="math notranslate nohighlight">\(\{ Y_{train}, Z_{train} \}\)</span>. This takes the form</div>
+<div class="line"><span class="math notranslate nohighlight">\(p(Z^*|Y^*, \{Y_{train}, Z_{train}\}) \propto p_{\theta}(Y^* | Z^*, \{Y_{train}, Z_{train}\}) p(Z^*)\)</span>,</div>
+<div class="line">where <span class="math notranslate nohighlight">\(p_{\theta}(Y^* | Z^*, \{Y_{train}, Z_{train}\})\)</span> is given by the standard predictive GP equations. This is of course difficult, and we resort to variational inference using the mGPLVM machinery, but now with frozen generative parameters <span class="math notranslate nohighlight">\(\theta^*\)</span>.</div>
+</div>
+<div class="line-block">
+<div class="line">For the prior <span class="math notranslate nohighlight">\(p(Z^*)\)</span> we have two main options:</div>
+<div class="line">(i) we can assume a uniform, uninformative prior.</div>
+<div class="line">(ii) we can fit the prior to the training data. The simplest approach here is to define an autoregressive prior that matches the distribution over displacements in the training data. For continuous processes with high temporal resolution, this can be a very strong and useful prior!</div>
+</div>
+<p>See Jensen et al. (2020) for further details about the generative model and inference procedure. Further developments on auto-regressive priors and non-Gaussian noise models were presented at Cosyne 2021 but have not been published.</p>
+<p>We start by installing the mGPLVM implementation used in Jensen et al. This is freely available, but the codebase is still under active development with ongoing work on various latent variable models (here we use the ‘bGPFA’ branch which is most up-to-date).</p>
+<p>We proceed to load a few packages and set our random seed.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#@title Load packages</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">mgplvm</span> <span class="k">as</span> <span class="nn">mgp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">FactorAnalysis</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span><span class="p">,</span> <span class="n">RidgeCV</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">CubicSpline</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">gaussian_filter1d</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">binned_statistic</span><span class="p">,</span> <span class="n">pearsonr</span><span class="p">,</span> <span class="n">ttest_1samp</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;font.size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.spines.right&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.spines.top&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_device</span><span class="p">()</span> <span class="c1"># use GPU if available, otherwise CPU</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+loading
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1">#set the seed</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;torch._C.Generator at 0x7f52b00e2730&gt;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#@title Define plot functions</span>
+
+<span class="k">def</span> <span class="nf">plot_activity_heatmap</span><span class="p">(</span><span class="n">Y</span><span class="p">):</span>
+  <span class="c1">### plot the activity of our neurons ###</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;Greys&#39;</span><span class="p">,</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">))</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;neuron&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Raw activity&#39;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">25</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([])</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">([])</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">plot_tuning_curves</span><span class="p">(</span><span class="n">fit_thetas</span><span class="p">,</span> <span class="n">ys_noise</span><span class="p">,</span> <span class="n">plot_thetas</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">ys_lin</span><span class="p">,</span> <span class="n">ys_bins</span><span class="p">,</span> <span class="n">ys_gp</span><span class="p">,</span> <span class="n">xs_bins</span><span class="p">):</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mf">3.0</span><span class="p">))</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">fit_thetas</span><span class="p">,</span> <span class="n">ys_noise</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="s1">&#39;k-&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">,</span> <span class="n">ys_lin</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs_bins</span><span class="p">,</span> <span class="n">ys_bins</span><span class="p">,</span> <span class="s1">&#39;g-&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">,</span> <span class="n">ys_gp</span><span class="p">,</span> <span class="s1">&#39;m-&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="s1">&#39;binned&#39;</span><span class="p">,</span> <span class="s1">&#39;GP&#39;</span><span class="p">],</span> <span class="n">frameon</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ncol</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">loc</span> <span class="o">=</span> <span class="s1">&#39;upper center&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">])</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;activity&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">([])</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$-\pi$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$0$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\pi$&#39;</span><span class="p">])</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">cb</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;here we construct an (optional) function that helps us keep track of the training&quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">1999</span><span class="p">]:</span> <span class="c1">#iterations to plot</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;true latents&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;model latents&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">thetas_plot</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;iter = &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="n">mod</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">msg</span> <span class="o">+</span> <span class="n">mod</span><span class="o">.</span><span class="n">lprior</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span> <span class="n">loss</span><span class="o">/</span><span class="n">n_ts1</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">plot_final_thetas</span><span class="p">(</span><span class="n">thetas2</span><span class="p">,</span> <span class="n">thetas2_lin</span><span class="p">,</span> <span class="n">thetas2_mgplvm</span><span class="p">):</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">thetas2</span><span class="p">,</span> <span class="n">thetas2_lin</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">thetas2</span><span class="p">,</span> <span class="n">thetas2_mgplvm</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;k&quot;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="s1">&#39;mgplvm&#39;</span><span class="p">],</span> <span class="n">frameon</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ncol</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">loc</span> <span class="o">=</span> <span class="s1">&#39;upper center&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.25</span><span class="p">))</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;true theta&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;predicted theta&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">plot_final_errors</span><span class="p">(</span><span class="n">errs_lin</span><span class="p">,</span> <span class="n">errs_mgplvm</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">errs_lin</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">errs_mgplvm</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errs_lin</span><span class="p">),</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">lw</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errs_mgplvm</span><span class="p">),</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="s1">&#39;mgplvm&#39;</span><span class="p">],</span> <span class="n">frameon</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">plot_uncertainty_estimates</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">errs_by_uncertainty</span><span class="p">):</span>
+  <span class="c1">#xs, errs_by_uncertainty = xs**2, errs_by_uncertainty**2 #variances instead of stds</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">errs_by_uncertainty</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;k&quot;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="s2">&quot;k-&quot;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;uncertainty&quot;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;RMSE&quot;</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">])</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">([</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">])</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>In order to validate the method, we generate synthetic data from 40 neurons and 100 time points, assuming ‘Gaussian bump’-like tuning curves and Gaussian noise. We use this fairly sparse dataset to illustrate the data efficiency of this approach, but it would of course also work with more data. We also note that the codebase readily allows for Poisson or negative binomial noise models.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### generate some synthetic data ###</span>
+
+<span class="n">n_ts</span> <span class="o">=</span> <span class="mi">600</span> <span class="c1">#total time points</span>
+<span class="n">n_ts1</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1">#training time points</span>
+<span class="n">n_neurons</span> <span class="o">=</span> <span class="mi">40</span> <span class="c1">#number of neurons</span>
+
+<span class="n">thetas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_ts</span><span class="p">)</span> <span class="c1">#generate a sequence of angles as an autoregressive process</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_ts</span><span class="p">):</span>
+  <span class="n">thetas</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">thetas</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">())</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+<span class="n">prefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">))</span> <span class="c1">#preferred orientations</span>
+<span class="n">deltas</span> <span class="o">=</span> <span class="n">prefs</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">thetas</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="c1">#difference from head direction</span>
+<span class="n">gs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">)</span> <span class="c1">#scale variables</span>
+<span class="n">kappas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">)</span> <span class="c1">#concentration parameters</span>
+<span class="c1">#generate activity</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">gs</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="n">kappas</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">deltas</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">)</span> <span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_ts</span><span class="p">))</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+<span class="c1">#split into train and test</span>
+<span class="n">Y1</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_ts1</span><span class="p">]</span> <span class="c1">#train</span>
+<span class="n">thetas1</span> <span class="o">=</span> <span class="n">thetas</span><span class="p">[:</span><span class="n">n_ts1</span><span class="p">]</span>
+<span class="n">Y2</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">n_ts1</span><span class="p">:]</span> <span class="c1">#test</span>
+
+<span class="c1">### plot the training data we just generated ###</span>
+<span class="n">plot_activity_heatmap</span><span class="p">(</span><span class="n">Y1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_7_0.png" src="../_images/notebooks_mGPLVM_supervised_7_0.png" />
+</div>
+</div>
+<p>In this next code snippet, we consider why fitting this GPLVM-based model might be a good idea. To do this, we consider an example neuron from above and try to approximate its tuning using three different approached.</p>
+<p>The first is by assuming linearity in <span class="math notranslate nohighlight">\([\cos\theta, \sin \theta]\)</span> which is what many linear decoders of angles do. However, this enforces a sinusoidal tuning curve which does not fit the data well.</p>
+<p>The second is to bin the data and construct an empirical tuning curve as the average activity in each bin (note that this corresponds to a Gaussian noise model, and we could equally well use non-Gaussian noise models). However, this requires us to specify <em>a priori</em> what the resolution is, and it leads to non-intuitive discontinuities. This is the approach taken by many standard Bayesian decoders. In fact, this is equivalent to fitting a Gaussian Process with a kernel that is constant within
+each bin and discontinuous between bins.</p>
+<p>Alternatively, we can posit that the expected similarity of neural activity is not discrete but rather a function of distance on the circle. We do this by fitting a Gaussian process to the data with a kernel that ensures smoothness/continuity on the circle. Importantly, the length scale can now be learned directly from the data and there are no discontinuities. This is particularly important in the limited-data regime, and we see that this model fits the data better.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_thetas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span> <span class="c1">#values to use for plotting</span>
+<span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span> <span class="c1">#only record a subset of angles</span>
+
+<span class="k">for</span> <span class="n">example</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">example</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1">#single neuron</span>
+    <span class="n">ys</span> <span class="o">=</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="mf">2.3</span><span class="o">*</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">)</span> <span class="p">)</span> <span class="c1">#tuning curve</span>
+    <span class="n">ell</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.3</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">ys1</span> <span class="o">=</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="mi">4</span><span class="o">*</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">plot_thetas</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">)</span> <span class="p">)</span> <span class="c1">#tuning curve</span>
+    <span class="n">ys2</span> <span class="o">=</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="mi">4</span><span class="o">*</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">plot_thetas</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">)</span> <span class="p">)</span> <span class="c1">#tuning curve</span>
+    <span class="n">ys</span> <span class="o">=</span> <span class="n">ys1</span><span class="o">+</span><span class="n">ys2</span>
+    <span class="n">ell</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+  <span class="n">ys_noise</span> <span class="o">=</span> <span class="p">(</span><span class="n">ys</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">)))[</span><span class="n">inds</span><span class="p">]</span> <span class="c1">#noisy data</span>
+  <span class="n">fit_thetas</span> <span class="o">=</span> <span class="n">plot_thetas</span><span class="p">[</span><span class="n">inds</span><span class="p">]</span> <span class="c1">#supervised angles for our noisy data</span>
+
+  <span class="c1">### fit the linear model ###</span>
+  <span class="n">cs_plot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span> <span class="c1">#cos/sin</span>
+  <span class="n">cs_fit</span> <span class="o">=</span> <span class="n">cs_plot</span><span class="p">[</span><span class="n">inds</span><span class="p">,</span> <span class="p">:]</span> <span class="c1">#for our noisy data data</span>
+  <span class="n">clf_single</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="mi">10</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">51</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">cs_fit</span><span class="p">,</span> <span class="n">ys_noise</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span> <span class="c1">#crossvalidated ridge regression</span>
+  <span class="n">ys_lin</span> <span class="o">=</span> <span class="n">clf_single</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">cs_plot</span><span class="p">)</span> <span class="c1">#fitted tuning curve</span>
+
+  <span class="c1">### binned decoder ###</span>
+  <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="c1">#assume 11 bins for now</span>
+  <span class="n">ys_bins</span> <span class="o">=</span> <span class="n">binned_statistic</span><span class="p">(</span><span class="n">fit_thetas</span><span class="p">,</span> <span class="n">ys_noise</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#activity in each bin</span>
+  <span class="n">ys_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">ys_bins</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1">#expand for plotting</span>
+  <span class="n">xs_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1">#expand for plotting</span>
+
+  <span class="c1">### fit out GP-based model ###</span>
+  <span class="k">def</span> <span class="nf">K</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">ell</span> <span class="o">=</span> <span class="mf">0.75</span><span class="p">,</span> <span class="n">sig</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;for illustration purposes, we pick some reasonable parameters but these could be learned from data&#39;&#39;&#39;</span>
+    <span class="n">Kmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">x2</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">ell</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">sig</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">x1</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">x2</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span> <span class="n">Kmat</span> <span class="o">+=</span> <span class="n">sig</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fit_thetas</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Kmat</span>
+  <span class="c1">#GP inference</span>
+  <span class="n">ys_gp</span> <span class="o">=</span> <span class="n">K</span><span class="p">(</span><span class="n">plot_thetas</span><span class="p">,</span> <span class="n">fit_thetas</span><span class="p">,</span> <span class="n">sig</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ell</span> <span class="o">=</span> <span class="n">ell</span><span class="p">)</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">K</span><span class="p">(</span><span class="n">fit_thetas</span><span class="p">,</span> <span class="n">fit_thetas</span><span class="p">,</span> <span class="n">ell</span> <span class="o">=</span> <span class="n">ell</span><span class="p">))</span> <span class="o">@</span> <span class="n">ys_noise</span>
+  <span class="n">ys_gp</span> <span class="o">=</span> <span class="n">ys_gp</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+  <span class="c1">### plot result ###</span>
+  <span class="n">plot_tuning_curves</span><span class="p">(</span><span class="n">fit_thetas</span><span class="p">,</span> <span class="n">ys_noise</span><span class="p">,</span> <span class="n">plot_thetas</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">ys_lin</span><span class="p">,</span> <span class="n">ys_bins</span><span class="p">,</span> <span class="n">ys_gp</span><span class="p">,</span> <span class="n">xs_bins</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_9_0.png" src="../_images/notebooks_mGPLVM_supervised_9_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_9_1.png" src="../_images/notebooks_mGPLVM_supervised_9_1.png" />
+</div>
+</div>
+<p>Having gained some intuition for the benefits of Gaussian process-based models, we are ready to construct our full mGPLVM for decoding. In the following code snippet, we set a couple of model parameters relating to the optimization process and initialization. Most of the initialization is done directly from the data, but it can be useful to include if we have prior knowledge about e.g. the timescale of the behavior we care about.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### set some parameters for fitting ###</span>
+<span class="n">max_steps</span> <span class="o">=</span> <span class="mi">1001</span> <span class="c1"># number of training iterations</span>
+<span class="n">n_mc</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># number of monte carlo samples per iteration (since the latents are a delta function, we only need 1)</span>
+<span class="n">print_every</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1"># how often we print training progress</span>
+<span class="n">d_latent</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># specify the dimensionality of the space</span>
+<span class="n">n_z</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1">#number of inducing points; performance increases with more inducing points</span>
+</pre></div>
+</div>
+</div>
+<p>Having specified our parameters, we can construct the mGPLVM model. In this particular library, we need to separately specify (i) the noise model, (ii) the latent manifold (see Jensen et al. 2020 for various manifolds), (iii) the prior and variational distribution, and (iv) the GP kernel.</p>
+<p>For this dataset we use a Gaussian noise model, but we can easily swap in a count-based model. Note how we set the latent distribution to be centered at the ground truth thetas and have a very small standard deviation (1e-5; effectively a delta function).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### construct the actual model ###</span>
+<span class="n">n_trials</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_ts1</span> <span class="o">=</span> <span class="n">Y1</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">Y1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">manif</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="n">n_ts1</span><span class="p">,</span> <span class="n">d_latent</span><span class="p">)</span> <span class="c1"># our latent variables live on a ring (see Jensen et al. 2020 for alternatives)</span>
+<span class="n">likelihood</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">Y1</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">d_latent</span><span class="p">)</span> <span class="c1">#Gaussian noise</span>
+<span class="n">mu</span> <span class="o">=</span> <span class="n">thetas1</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="c1">#ground truth thetas for training</span>
+<span class="n">lat_dist</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">rdist</span><span class="o">.</span><span class="n">ReLie</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">n_ts1</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">diagonal</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="p">)</span> <span class="c1">#latent distribution</span>
+
+<span class="n">lprior</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">lpriors</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span> <span class="c1">#note that we could also learn the generative parameters of a parametric prior</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">QuadExp</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">manif</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">Y1</span><span class="p">,</span> <span class="n">ell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">)</span><span class="o">*</span><span class="mi">1</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="mf">0.7</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">))</span> <span class="c1">#squared exponential kernel</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">manif</span><span class="o">.</span><span class="n">inducing_points</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_z</span><span class="p">)</span> <span class="c1">#inducing points</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">SvgpLvm</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_ts1</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">lat_dist</span><span class="p">,</span> <span class="n">lprior</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1">#construct model</span>
+</pre></div>
+</div>
+</div>
+<p>We are now ready to actually learn the generative parameters!</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">thetas_plot</span> <span class="o">=</span> <span class="n">thetas1</span>
+
+<span class="c1">#note that the &#39;mask_Ts&#39; function is a mask applied to the gradients for the variational distribution</span>
+<span class="c1">#by setting these gradients to zero, we are imposing the ground truth latents and doing supervised training</span>
+<span class="n">train_params</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">training_params</span><span class="p">(</span><span class="n">max_steps</span> <span class="o">=</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">n_mc</span> <span class="o">=</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">lrate</span> <span class="o">=</span> <span class="mf">5e-2</span><span class="p">,</span> <span class="n">callback</span> <span class="o">=</span> <span class="n">cb</span><span class="p">,</span> <span class="n">burnin</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">mask_Ts</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">*</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;fitting&#39;</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">,</span> <span class="s1">&#39;neurons and&#39;</span><span class="p">,</span> <span class="n">n_ts1</span><span class="p">,</span> <span class="s1">&#39;time bins for&#39;</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="s1">&#39;iterations&#39;</span><span class="p">)</span>
+<span class="n">mod_train</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">data1</span><span class="p">,</span> <span class="n">train_params</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+fitting 40 neurons and 100 time bins for 1001 iterations
+iter   0 | elbo -3.913 | kl 0.298 | loss 3.913 | |mu| 3.944 | sig 0.000 | scale 0.700 | ell 1.000 | lik_sig 0.836 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_15_1.png" src="../_images/notebooks_mGPLVM_supervised_15_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.944 | sig 0.000 | scale 0.700 | ell 1.000 | lik_sig 0.836 | 156.5077596119108
+iter  50 | elbo -1.042 | kl 0.297 | loss 1.230 | |mu| 3.944 | sig 0.000 | scale 0.665 | ell 1.155 | lik_sig 0.824 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_15_3.png" src="../_images/notebooks_mGPLVM_supervised_15_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.944 | sig 0.000 | scale 0.665 | ell 1.155 | lik_sig 0.824 | 49.20838659291221
+iter 100 | elbo -0.839 | kl 0.300 | loss 1.098 | |mu| 3.944 | sig 0.000 | scale 0.630 | ell 1.239 | lik_sig 0.527 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_15_5.png" src="../_images/notebooks_mGPLVM_supervised_15_5.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.944 | sig 0.000 | scale 0.630 | ell 1.239 | lik_sig 0.527 | 43.92970483518675
+iter 150 | elbo -0.801 | kl 0.298 | loss 1.084 | |mu| 3.944 | sig 0.000 | scale 0.595 | ell 1.258 | lik_sig 0.509 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_15_7.png" src="../_images/notebooks_mGPLVM_supervised_15_7.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.944 | sig 0.000 | scale 0.595 | ell 1.258 | lik_sig 0.509 | 43.35320325162631
+iter 300 | elbo -0.786 | kl 0.301 | loss 1.086 | |mu| 3.944 | sig 0.000 | scale 0.540 | ell 1.232 | lik_sig 0.497 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_15_9.png" src="../_images/notebooks_mGPLVM_supervised_15_9.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.944 | sig 0.000 | scale 0.540 | ell 1.232 | lik_sig 0.497 | 43.42028686358447
+iter 500 | elbo -0.783 | kl 0.298 | loss 1.081 | |mu| 3.944 | sig 0.000 | scale 0.506 | ell 1.202 | lik_sig 0.495 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_15_11.png" src="../_images/notebooks_mGPLVM_supervised_15_11.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.944 | sig 0.000 | scale 0.506 | ell 1.202 | lik_sig 0.495 | 43.23680521531759
+iter 1000 | elbo -0.782 | kl 0.301 | loss 1.082 | |mu| 3.944 | sig 0.000 | scale 0.464 | ell 1.099 | lik_sig 0.494 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_15_13.png" src="../_images/notebooks_mGPLVM_supervised_15_13.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.944 | sig 0.000 | scale 0.464 | ell 1.099 | lik_sig 0.494 | 43.2871049544688
+</pre></div></div>
+</div>
+<p>We proceed to train a simple linear model which we will use as a baseline. We also use the predictions of the linear model for initialization.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## first fit a linear model (we will use this for initialization and comparison) ##</span>
+<span class="n">Y2</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">n_ts1</span><span class="p">:]</span> <span class="c1">#test data</span>
+<span class="n">thetas2</span> <span class="o">=</span> <span class="n">thetas</span><span class="p">[</span><span class="n">n_ts1</span><span class="p">:]</span> <span class="c1">#true test angles</span>
+<span class="n">Z1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetas1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetas1</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span> <span class="c1">#true training cos/sin</span>
+<span class="n">Z2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetas2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetas2</span><span class="p">)])</span><span class="o">.</span><span class="n">T</span> <span class="c1">#true test cos/sin</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Y1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Z1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">alphas</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">51</span><span class="p">))</span> <span class="c1">#possible regularization strengths</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="n">alphas</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Z1</span><span class="p">)</span> <span class="c1">#crossvalidated ridge regression</span>
+<span class="n">Z2_pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Y2</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="c1">#predict test data</span>
+<span class="n">Z2_pred</span> <span class="o">=</span> <span class="n">Z2_pred</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Z2_pred</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span> <span class="o">=</span> <span class="kc">True</span><span class="p">))</span> <span class="c1">#normalize</span>
+<span class="n">thetas2_lin</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">Z2_pred</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">Z2_pred</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="c1">#predicted angles</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(1, 40, 100) (100, 2)
+</pre></div></div>
+</div>
+<p>We’re now ready for the prediction step. Here we copy over all parameters from our previous model apart from the variational distribution which we define anew.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### now we want to do decoding ###</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_ts2</span> <span class="o">=</span> <span class="n">Y2</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">manif2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="n">n_ts2</span><span class="p">,</span> <span class="n">d_latent</span><span class="p">)</span> <span class="c1"># latent manifold is still a circle</span>
+
+<span class="c1">#compute displacements to use a better prior</span>
+<span class="n">displacements</span> <span class="o">=</span> <span class="n">thetas1</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">thetas1</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">displacements</span><span class="p">[</span><span class="n">displacements</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="n">displacements</span><span class="p">[</span><span class="n">displacements</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">displacements</span><span class="p">))</span> <span class="c1">#matches generative process</span>
+
+<span class="n">mu2</span> <span class="o">=</span> <span class="n">thetas2_lin</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="c1">#initialize from linear prediction</span>
+
+<span class="c1">#lprior2 = mgp.lpriors.Uniform(manif2) #uniform prior</span>
+<span class="c1">#let&#39;s assume some degree of continuity in the data</span>
+<span class="n">lprior2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">lpriors</span><span class="o">.</span><span class="n">Brownian</span><span class="p">(</span><span class="n">manif2</span><span class="p">,</span> <span class="n">fixed_brownian_c</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fixed_brownian_eta</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                              <span class="n">brownian_eta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d_latent</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">displacements</span><span class="p">))</span>
+
+<span class="n">lat_dist2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">rdist</span><span class="o">.</span><span class="n">ReLie</span><span class="p">(</span><span class="n">manif2</span><span class="p">,</span> <span class="n">n_ts2</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">diagonal</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="n">mu2</span><span class="p">)</span> <span class="c1">#variational distribution</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+1.0123699125250345
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#@title Construct inference model</span>
+<span class="n">data2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">Y2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1">#put data on device</span>
+<span class="n">mod2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">SvgpLvm</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_ts2</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">kernel</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">likelihood</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">lat_dist2</span><span class="p">,</span> <span class="n">lprior2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1">#use old generative model and new variational distribution</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">mod2</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>  <span class="c1">#no gradients for generative parameters</span>
+  <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">mod2</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span> <span class="c1">#only inference</span>
+  <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1">#copy over tuning curves (this summarizes p(Y*|Z*, {Y, Z}) from the training data in the SVGP framework)</span>
+<span class="n">mod2</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_mu</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_mu</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+<span class="n">mod2</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_sqrt</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_sqrt</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Finally we infer our new latents using the mGPLVM machinery!</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">thetas_plot</span> <span class="o">=</span> <span class="n">thetas2</span>
+
+<span class="c1"># helper function to specify training parameters. We now do not mask the gradients.</span>
+<span class="n">train_params2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">training_params</span><span class="p">(</span><span class="n">max_steps</span> <span class="o">=</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">n_mc</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">lrate</span> <span class="o">=</span> <span class="mf">2e-2</span><span class="p">,</span> <span class="n">print_every</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">callback</span> <span class="o">=</span> <span class="n">cb</span><span class="p">,</span> <span class="n">burnin</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mask_Ts</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">*</span><span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;fitting&#39;</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">,</span> <span class="s1">&#39;neurons and&#39;</span><span class="p">,</span> <span class="n">n_ts2</span><span class="p">,</span> <span class="s1">&#39;time bins for&#39;</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="s1">&#39;iterations&#39;</span><span class="p">)</span>
+<span class="n">mod_train2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">mod2</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">train_params2</span><span class="p">)</span> <span class="c1">#inference!</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+fitting 40 neurons and 500 time bins for 1001 iterations
+iter   0 | elbo -0.899 | kl 0.024 | loss 0.899 | |mu| 3.669 | sig 0.500 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_22_1.png" src="../_images/notebooks_mGPLVM_supervised_22_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.669 | sig 0.500 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 | 179.71661531495153
+iter  50 | elbo -0.821 | kl 0.034 | loss 0.855 | |mu| 3.686 | sig 0.265 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_22_3.png" src="../_images/notebooks_mGPLVM_supervised_22_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.686 | sig 0.265 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 | 171.02036628780542
+iter 100 | elbo -0.807 | kl 0.041 | loss 0.847 | |mu| 3.686 | sig 0.192 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_22_5.png" src="../_images/notebooks_mGPLVM_supervised_22_5.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.686 | sig 0.192 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 | 169.49881357190534
+iter 150 | elbo -0.803 | kl 0.044 | loss 0.847 | |mu| 3.685 | sig 0.169 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_22_7.png" src="../_images/notebooks_mGPLVM_supervised_22_7.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.685 | sig 0.169 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 | 169.31515102912715
+iter 300 | elbo -0.802 | kl 0.045 | loss 0.846 | |mu| 3.684 | sig 0.161 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_22_9.png" src="../_images/notebooks_mGPLVM_supervised_22_9.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.684 | sig 0.161 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 | 169.28415549746506
+iter 500 | elbo -0.802 | kl 0.045 | loss 0.847 | |mu| 3.685 | sig 0.161 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_22_11.png" src="../_images/notebooks_mGPLVM_supervised_22_11.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.685 | sig 0.161 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 | 169.30790498769238
+iter 1000 | elbo -0.802 | kl 0.045 | loss 0.846 | |mu| 3.688 | sig 0.160 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 |
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_22_13.png" src="../_images/notebooks_mGPLVM_supervised_22_13.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ |mu| 3.688 | sig 0.160 | scale 0.464 | ell 1.099 | lik_sig 0.494 | brownian_c 0.000 | brownian_eta 1.025 | 169.29766477862756
+</pre></div></div>
+</div>
+<p>We can then compare the performance of the simple linear decoder and our non-linear non-Euclidean mGPLVM-based decoder.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#let&#39;s do some simple evaluation</span>
+
+<span class="c1">#plot inferred vs true angles</span>
+<span class="n">thetas2_mgplvm</span> <span class="o">=</span> <span class="n">mod2</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="c1">#mgplvm prediction</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">thetas2</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">thetas2_lin</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">thetas2_mgplvm</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">plot_final_thetas</span><span class="p">(</span><span class="n">thetas2</span><span class="p">,</span> <span class="n">thetas2_lin</span><span class="p">,</span> <span class="n">thetas2_mgplvm</span><span class="p">)</span>
+
+<span class="c1">#compute errors in absolute distance</span>
+<span class="n">errs_lin</span><span class="p">,</span> <span class="n">errs_mgplvm</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetas2</span> <span class="o">-</span> <span class="n">arr</span><span class="p">))</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="p">[</span><span class="n">thetas2_lin</span><span class="p">,</span> <span class="n">thetas2_mgplvm</span><span class="p">]]</span>
+<span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">plot_final_errors</span><span class="p">(</span><span class="n">errs_lin</span><span class="p">,</span> <span class="n">errs_mgplvm</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
+
+<span class="c1">#print some summary statistics</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;average errors:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errs_lin</span><span class="p">),</span> <span class="s1">&#39;(linear),&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errs_mgplvm</span><span class="p">),</span> <span class="s1">&#39;(mgplvm)</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="c1">#print errors</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="n">errs_lin</span><span class="o">-</span><span class="n">errs_mgplvm</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="c1">#statistical test</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(500,) (500,) (500,)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_24_1.png" src="../_images/notebooks_mGPLVM_supervised_24_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_24_2.png" src="../_images/notebooks_mGPLVM_supervised_24_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+average errors: 0.24719006903707 (linear), 0.14978033165926113 (mgplvm)
+
+Ttest_1sampResult(statistic=10.922993944005611, pvalue=4.744473246264877e-25)
+</pre></div></div>
+</div>
+<p>Finally, we note that the mGPLVM decoder also provides uncertainty estimates in the form of a full distribution over <span class="math notranslate nohighlight">\(p(Z^* | Y^*)\)</span>. Here, we shower that these uncertainty estimates are in fact well-calibrated, suggesting that they can be useful for uncertainty-sensitive downstream applications and analyses.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## check whether our uncertainty estimates are well-calibrated##</span>
+<span class="n">sigmas</span> <span class="o">=</span> <span class="n">mod2</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="c1">#model uncertainty</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;68.3</span><span class="si">% c</span><span class="s1">i:&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errs_mgplvm</span> <span class="o">&lt;</span> <span class="n">sigmas</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;95.4</span><span class="si">% c</span><span class="s1">i:&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">errs_mgplvm</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">*</span><span class="n">sigmas</span><span class="p">))</span>
+
+<span class="c1">### now check whether the empirical std of of the residuals matches the model uncertainty###</span>
+<span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">sigmas</span><span class="p">)[::</span><span class="mi">75</span><span class="p">],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]])</span> <span class="c1">#construct some bins in which to compute errors</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">sigmas</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#how many observations in each bin</span>
+
+<span class="k">def</span> <span class="nf">RMSE</span><span class="p">(</span><span class="n">residuals</span><span class="p">):</span>
+  <span class="sd">&#39;&#39;&#39;compute RMSE for a set of residuals&#39;&#39;&#39;</span>
+  <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="c1">#compute std of the residuals for each uncertainty bin</span>
+<span class="n">errs_by_uncertainty</span> <span class="o">=</span> <span class="n">binned_statistic</span><span class="p">(</span><span class="n">sigmas</span><span class="p">,</span> <span class="n">errs_mgplvm</span><span class="p">,</span> <span class="n">statistic</span> <span class="o">=</span> <span class="n">RMSE</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1">#binned x-values taking the average within each bin</span>
+<span class="n">xs</span> <span class="o">=</span> <span class="n">binned_statistic</span><span class="p">(</span><span class="n">sigmas</span><span class="p">,</span> <span class="n">sigmas</span><span class="p">,</span> <span class="n">statistic</span> <span class="o">=</span> <span class="n">RMSE</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1">### plot RMSE vs uncertainty ###</span>
+<span class="n">plot_uncertainty_estimates</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">errs_by_uncertainty</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;correlation:&#39;</span><span class="p">,</span> <span class="n">pearsonr</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">errs_by_uncertainty</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;total duration:&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">tic</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+68.3% ci: 62.0
+95.4% ci: 92.2
+[75 75 75 75 75 75 50]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_26_1.png" src="../_images/notebooks_mGPLVM_supervised_26_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+correlation: (0.8046524817956322, 0.0290698255177712)
+total duration: 99.80845904350281
+</pre></div></div>
+</div>
+<p>##SO(3) For those who have the courage, we now validate this approach on the group of 3D rotations (SO(3)).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#@title SO(3) helper functions</span>
+
+<span class="k">def</span> <span class="nf">quaternion_multiply</span><span class="p">(</span><span class="n">quaternion1</span><span class="p">,</span> <span class="n">quaternion2</span><span class="p">):</span>
+  <span class="c1">#this is q1 \times q2</span>
+  <span class="n">w1</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span> <span class="o">=</span> <span class="n">quaternion1</span>
+  <span class="n">w2</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">z2</span> <span class="o">=</span> <span class="n">quaternion2</span>
+  <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">x1</span> <span class="o">*</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">y2</span> <span class="o">-</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">z2</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">w2</span><span class="p">,</span>
+                    <span class="n">x1</span> <span class="o">*</span> <span class="n">w2</span> <span class="o">+</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">z2</span> <span class="o">-</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">y2</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">x2</span><span class="p">,</span>
+                    <span class="o">-</span><span class="n">x1</span> <span class="o">*</span> <span class="n">z2</span> <span class="o">+</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">w2</span> <span class="o">+</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">x2</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">y2</span><span class="p">,</span>
+                    <span class="n">x1</span> <span class="o">*</span> <span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span> <span class="o">*</span> <span class="n">x2</span> <span class="o">+</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">w2</span> <span class="o">+</span> <span class="n">w1</span> <span class="o">*</span> <span class="n">z2</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">cb_so3</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;here we construct an (optional) function that helps us keep track of the training&quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">350</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">750</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">1250</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">1999</span><span class="p">]:</span> <span class="c1">#iterations to plot</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">+</span> <span class="n">mod</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">msg</span> <span class="o">+</span> <span class="n">mod</span><span class="o">.</span><span class="n">lprior</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span> <span class="n">loss</span><span class="o">/</span><span class="n">n_ts1</span><span class="p">)</span>
+<br/><br/></pre></div>
+</div>
+</div>
+<p>We start by generating some data on SO(3) using an autoregressive process. We also construct a set of neurons with preferred firing fields on SO(3).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### Try SO(3) ###</span>
+
+<span class="c1">### generate some synthetic data ###</span>
+
+<span class="n">tic</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">n_ts</span> <span class="o">=</span> <span class="mi">800</span> <span class="c1">#total time points</span>
+<span class="n">n_ts1</span> <span class="o">=</span> <span class="mi">400</span> <span class="c1">#training time points</span>
+<span class="n">n_neurons</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1">#number of neurons</span>
+
+<span class="c1">#generate quaternions over time using an autoregressive process</span>
+<span class="n">qs_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n_ts</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span> <span class="c1">#random points on sphere</span>
+<span class="n">qs_t</span> <span class="o">=</span> <span class="n">qs_t</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qs_t</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span> <span class="o">=</span> <span class="kc">True</span><span class="p">))</span> <span class="c1">#normalize</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_ts</span><span class="p">):</span> <span class="c1">#autoregressive process</span>
+  <span class="n">step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="c1">#displacement in tangent space</span>
+  <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">step</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+  <span class="n">v</span> <span class="o">=</span> <span class="n">step</span> <span class="o">/</span> <span class="n">theta</span>
+  <span class="n">qt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">v</span><span class="p">])</span> <span class="c1">#displacement in quaternion space</span>
+  <span class="n">qs_t</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">quaternion_multiply</span><span class="p">(</span><span class="n">qt</span><span class="p">,</span> <span class="n">qs_t</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span>
+  <span class="c1">#print(qs_t[t, :], np.sum(qs_t[t, :]**2), theta)</span>
+<span class="n">qs_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">qs_t</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">qs_t</span> <span class="c1">#consistent sign</span>
+
+<span class="c1">#generate preferred orientation for each neuron</span>
+<span class="n">qs_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">qs_n</span> <span class="o">=</span> <span class="n">qs_n</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qs_n</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span> <span class="o">=</span> <span class="kc">True</span><span class="p">))</span>
+<span class="n">qs_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">qs_n</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">qs_n</span> <span class="c1">#random quaternions</span>
+<span class="n">qs_n</span> <span class="o">=</span> <span class="n">qs_n</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">qs_n</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),</span> <span class="p">:]</span> <span class="c1">#sort by first element for visualization</span>
+
+<span class="n">deltas</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="p">(</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">qs_n</span> <span class="o">@</span> <span class="n">qs_t</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="c1">#difference for each neuron/time (x^2 in small angle limit)</span>
+
+<span class="n">dt_dists</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="p">(</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qs_t</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">qs_t</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;consecutive displacements:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">dt_dists</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;baseline/random:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">deltas</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+consecutive displacements: [0.35885536 0.76547395 1.34929525 2.14503775 2.91410946]
+baseline/random: [1.40482737 2.39040575 3.34394689 3.84129081 3.97570362]
+</pre></div></div>
+</div>
+<p>We proceed to generate some synthetic neural activity and visualize it together with a couple of example tuning curves.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#generate activity</span>
+<span class="n">gs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">)</span> <span class="c1">#scale variables</span>
+<span class="n">ells</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">)</span> <span class="c1">#concentration parameters</span>
+<span class="n">F</span> <span class="o">=</span> <span class="n">gs</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span> <span class="n">deltas</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">ells</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">F</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_ts</span><span class="p">))</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+<span class="c1">#split into train and test</span>
+<span class="n">Y1</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">n_ts1</span><span class="p">]</span> <span class="c1">#train</span>
+<span class="n">thetas1</span> <span class="o">=</span> <span class="n">qs_t</span><span class="p">[:</span><span class="n">n_ts1</span><span class="p">,</span> <span class="p">:]</span>
+<span class="n">Y2</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">n_ts1</span><span class="p">:]</span> <span class="c1">#test</span>
+
+<span class="c1">### plot the training data we just generated ###</span>
+<span class="n">plot_activity_heatmap</span><span class="p">(</span><span class="n">Y1</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">qs_t</span><span class="p">[:</span><span class="n">n_ts1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])])</span>
+
+<span class="c1">### also plot some example tuning curves ###</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">qs_t</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>  <span class="c1">#magnitude of rotation; ||x|| = theta/2</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">qs_t</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">qs_t</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">xs</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">u</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">tuning curves:&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits</span> <span class="kn">import</span> <span class="n">mplot3d</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mf">4.5</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+  <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+  <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">)</span>
+  <span class="n">ax</span><span class="o">.</span><span class="n">scatter3D</span><span class="p">(</span><span class="n">xs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">xs</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">c</span> <span class="o">=</span> <span class="n">F</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="p">:],</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+  <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([]);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([]);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_zticks</span><span class="p">([])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_32_0.png" src="../_images/notebooks_mGPLVM_supervised_32_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+
+tuning curves:
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_32_2.png" src="../_images/notebooks_mGPLVM_supervised_32_2.png" />
+</div>
+</div>
+<p>We not construct our model. In this case, we learn the parameters of the prior directly during model training (note that we could also have done this for the circle; we just defined the prior separately for clarity of exposition).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### set some parameters for fitting ###</span>
+<span class="n">max_steps</span> <span class="o">=</span> <span class="mi">1501</span> <span class="c1"># number of training iterations</span>
+<span class="n">n_mc</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># number of monte carlo samples per iteration (since the latents are a delta function, we only need 1)</span>
+<span class="n">print_every</span> <span class="o">=</span> <span class="mi">100</span> <span class="c1"># how often we print training progress</span>
+<span class="n">d_latent</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># specify the dimensionality of the space</span>
+<span class="n">n_z</span> <span class="o">=</span> <span class="mi">15</span> <span class="c1">#number of inducing points; performance increases with more inducing points</span>
+
+<span class="c1">### construct the actual model ###</span>
+<span class="n">n_trials</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_ts1</span> <span class="o">=</span> <span class="n">Y1</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">data1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">Y1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">manif</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">So3</span><span class="p">(</span><span class="n">n_ts1</span><span class="p">,</span> <span class="n">d_latent</span><span class="p">)</span> <span class="c1"># our latent variables live on SO(3) (see Jensen et al. 2020 for alternatives)</span>
+<span class="n">likelihood</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">Y1</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">d_latent</span><span class="p">)</span> <span class="c1">#Gaussian noise</span>
+<span class="n">mu</span> <span class="o">=</span> <span class="n">qs_t</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:</span><span class="n">n_ts1</span><span class="p">,</span> <span class="p">:]</span> <span class="c1">#ground truth thetas for training</span>
+<span class="n">lat_dist</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">rdist</span><span class="o">.</span><span class="n">ReLie</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">n_ts1</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">diagonal</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="p">)</span> <span class="c1">#latent distribution</span>
+
+<span class="c1">#learn the prior!</span>
+<span class="n">lprior</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">lpriors</span><span class="o">.</span><span class="n">Brownian</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">fixed_brownian_c</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fixed_brownian_eta</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">brownian_eta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d_latent</span><span class="p">)</span><span class="o">*</span><span class="mf">0.5</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">QuadExp</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">manif</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">Y1</span><span class="p">,</span> <span class="n">ell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">)</span><span class="o">*</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="mf">0.7</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">))</span> <span class="c1">#squared exponential kernel</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">manif</span><span class="o">.</span><span class="n">inducing_points</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_z</span><span class="p">)</span> <span class="c1">#inducing points</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">SvgpLvm</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_ts1</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">lat_dist</span><span class="p">,</span> <span class="n">lprior</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1">#construct model</span>
+</pre></div>
+</div>
+</div>
+<p>No we’re ready to train the model! This will take a bit longer since we’re using more neurons and time points.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="n">train_params</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">training_params</span><span class="p">(</span><span class="n">max_steps</span> <span class="o">=</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">n_mc</span> <span class="o">=</span> <span class="n">n_mc</span><span class="p">,</span> <span class="n">lrate</span> <span class="o">=</span> <span class="mf">5e-2</span><span class="p">,</span> <span class="n">callback</span> <span class="o">=</span> <span class="n">cb_so3</span><span class="p">,</span> <span class="n">print_every</span> <span class="o">=</span> <span class="mi">27</span><span class="p">,</span> <span class="n">burnin</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">mask_Ts</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">*</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;fitting&#39;</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">,</span> <span class="s1">&#39;neurons and&#39;</span><span class="p">,</span> <span class="n">n_ts1</span><span class="p">,</span> <span class="s1">&#39;time bins for&#39;</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="s1">&#39;iterations&#39;</span><span class="p">)</span>
+<span class="n">mod_train</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">data1</span><span class="p">,</span> <span class="n">train_params</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+fitting 100 neurons and 400 time bins for 1501 iterations
+0  |mu| 0.500 | sig 0.000 | scale 0.700 | ell 1.000 | lik_sig 0.615 | brownian_c 0.000 | brownian_eta 0.250 | 423.4367969499163c 0.000 | brownian_eta 0.250 |
+50  |mu| 0.500 | sig 0.000 | scale 0.648 | ell 1.059 | lik_sig 0.708 | brownian_c 0.000 | brownian_eta 0.156 | 26292.843348065802c 0.000 | brownian_eta 0.147 |
+100  |mu| 0.500 | sig 0.000 | scale 0.577 | ell 1.354 | lik_sig 0.555 | brownian_c 0.000 | brownian_eta 0.161 | 35962.86621122063c 0.000 | brownian_eta 0.161 |
+150  |mu| 0.500 | sig 0.000 | scale 0.505 | ell 1.796 | lik_sig 0.427 | brownian_c 0.000 | brownian_eta 0.161 | 39516.1293732866_c 0.000 | brownian_eta 0.161 |
+250  |mu| 0.500 | sig 0.000 | scale 0.437 | ell 2.277 | lik_sig 0.402 | brownian_c 0.000 | brownian_eta 0.161 | 41255.25921199156c 0.000 | brownian_eta 0.161 |
+350  |mu| 0.500 | sig 0.000 | scale 0.407 | ell 2.508 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 41519.85408235798c 0.000 | brownian_eta 0.161 |
+500  |mu| 0.500 | sig 0.000 | scale 0.384 | ell 2.733 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 41430.509171874866 0.000 | brownian_eta 0.161 |
+750  |mu| 0.500 | sig 0.000 | scale 0.370 | ell 3.003 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 41595.03474649752c 0.000 | brownian_eta 0.161 |
+1000  |mu| 0.500 | sig 0.000 | scale 0.370 | ell 3.215 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 41541.79230531835 0.000 | brownian_eta 0.161 |
+1250  |mu| 0.500 | sig 0.000 | scale 0.378 | ell 3.398 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 41523.662123503695 0.000 | brownian_eta 0.161 |
+1500  |mu| 0.500 | sig 0.000 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 41478.331239053674 0.000 | brownian_eta 0.161 |
+</pre></div></div>
+</div>
+<p>For inference, we again initialize from a linear model - this time a linear model prediction orientations in quaternion space.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## first fit a linear model (we will use this for initialization and comparison) ##</span>
+<span class="n">Y2</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">n_ts1</span><span class="p">:]</span> <span class="c1">#test data</span>
+<span class="n">Z1</span><span class="p">,</span> <span class="n">Z2</span> <span class="o">=</span> <span class="n">qs_t</span><span class="p">[:</span><span class="n">n_ts1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">qs_t</span><span class="p">[</span><span class="n">n_ts1</span><span class="p">:,</span> <span class="p">:]</span> <span class="c1">#train/test quaternions</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Y1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Z1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">alphas</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">51</span><span class="p">))</span> <span class="c1">#possible regularization strengths</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="n">alphas</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Y1</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">Z1</span><span class="p">)</span> <span class="c1">#crossvalidated ridge regression</span>
+<span class="n">Z2_pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Y2</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="c1">#predict test data</span>
+<span class="n">Z2_pred</span> <span class="o">=</span> <span class="n">Z2_pred</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Z2_pred</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span> <span class="o">=</span> <span class="kc">True</span><span class="p">))</span> <span class="c1">#normalize</span>
+<span class="n">Z2_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">Z2_pred</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">Z2_pred</span>
+
+<span class="n">errs_lin</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="p">(</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Z2</span> <span class="o">*</span> <span class="n">Z2_pred</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+<span class="n">errs_baseline</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="p">(</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">Z2</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+<span class="n">errs_baseline</span> <span class="o">=</span> <span class="n">deltas</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;linear error:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">errs_lin</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;baseline/constant:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">errs_baseline</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(1, 100, 400) (400, 4)
+linear error: [0.2881247  0.66655339 1.59165241 3.06419977 3.79916018]
+baseline/constant: [1.40482737 2.39040575 3.34394689 3.84129081 3.97570362]
+</pre></div></div>
+</div>
+<p>This sets us up to construct our inference model.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### now we want to do decoding ###</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_ts2</span> <span class="o">=</span> <span class="n">Y2</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">manif2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">So3</span><span class="p">(</span><span class="n">n_ts2</span><span class="p">,</span> <span class="n">d_latent</span><span class="p">)</span> <span class="c1"># latent manifold is still So(3)</span>
+<span class="n">mu2</span> <span class="o">=</span> <span class="n">Z2_pred</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="c1">#initialize from linear prediction</span>
+<span class="n">lat_dist2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">rdist</span><span class="o">.</span><span class="n">ReLie</span><span class="p">(</span><span class="n">manif2</span><span class="p">,</span> <span class="n">n_ts2</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">diagonal</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="n">mu2</span><span class="p">)</span> <span class="c1">#variational distribution</span>
+<span class="c1">#in this case we do not define a new prior</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#@title Construct SO(3) model</span>
+
+<span class="n">data2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">Y2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1">#put data on device</span>
+<span class="n">mod2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">SvgpLvm</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">,</span> <span class="n">n_ts2</span><span class="p">,</span> <span class="n">n_trials</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">kernel</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">likelihood</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">lat_dist2</span><span class="p">,</span> <span class="n">lprior</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="c1">#use old generative model and new variational distribution</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">mod2</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>  <span class="c1">#no gradients for generative parameters</span>
+  <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">mod2</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span> <span class="c1">#only inference</span>
+  <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="c1">#copy over tuning curves (this summarizes p(Y*|Z*, {Y, Z}) from the training data in the SVGP framework)</span>
+<span class="n">mod2</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_mu</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_mu</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+<span class="n">mod2</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_sqrt</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">q_sqrt</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Finally we are ready to do inference!</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="c1"># helper function to specify training parameters. We now do not mask the gradients.</span>
+<span class="n">train_params2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">training_params</span><span class="p">(</span><span class="n">max_steps</span> <span class="o">=</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">n_mc</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">lrate</span> <span class="o">=</span> <span class="mf">2.5e-2</span><span class="p">,</span> <span class="n">print_every</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">callback</span> <span class="o">=</span> <span class="n">cb_so3</span><span class="p">,</span> <span class="n">burnin</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mask_Ts</span> <span class="o">=</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">*</span><span class="mi">1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;fitting&#39;</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">,</span> <span class="s1">&#39;neurons and&#39;</span><span class="p">,</span> <span class="n">n_ts2</span><span class="p">,</span> <span class="s1">&#39;time bins for&#39;</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="s1">&#39;iterations&#39;</span><span class="p">)</span>
+<span class="n">mod_train2</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">crossval</span><span class="o">.</span><span class="n">train_model</span><span class="p">(</span><span class="n">mod2</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">train_params2</span><span class="p">)</span> <span class="c1">#inference!</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+fitting 100 neurons and 400 time bins for 1501 iterations
+0  |mu| 0.500 | sig 0.400 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 62.290469660887410.000 | brownian_eta 0.161 |
+50  |mu| 0.500 | sig 0.184 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.85302487515775.000 | brownian_eta 0.161 |
+100  |mu| 0.500 | sig 0.168 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.52055362654834000 | brownian_eta 0.161 |
+150  |mu| 0.500 | sig 0.167 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.47633758817053000 | brownian_eta 0.161 |
+250  |mu| 0.500 | sig 0.167 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.43180686517247600 | brownian_eta 0.161 |
+350  |mu| 0.500 | sig 0.166 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.3949941788345.000 | brownian_eta 0.161 |
+500  |mu| 0.500 | sig 0.167 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.39270274117705000 | brownian_eta 0.161 |
+750  |mu| 0.500 | sig 0.166 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.37082355594066000 | brownian_eta 0.161 |
+1000  |mu| 0.500 | sig 0.166 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.34905707142923600 | brownian_eta 0.161 |
+1250  |mu| 0.500 | sig 0.166 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.34360683315894000 | brownian_eta 0.161 |
+1500  |mu| 0.500 | sig 0.167 | scale 0.389 | ell 3.566 | lik_sig 0.399 | brownian_c 0.000 | brownian_eta 0.161 | 58.35833624306098000 | brownian_eta 0.161 |
+</pre></div></div>
+</div>
+<p>After performing inference, we compare our model to the linear and constant baselines and see that it vastly outperforms them.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Z2_mgplvm</span> <span class="o">=</span> <span class="n">mod2</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="c1">#mgplvm prediction</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">Z2_mgplvm</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">errs_mgplvm</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="p">(</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Z2</span> <span class="o">*</span> <span class="n">Z2_mgplvm</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+
+<span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">]</span>
+<span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span>
+<span class="c1">#bins = np.linspace(0, np.pi**2, 11)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="s1">&#39;mgplvm&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">idat</span><span class="p">,</span> <span class="n">dat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">errs_baseline</span><span class="p">,</span> <span class="n">errs_lin</span><span class="p">,</span> <span class="n">errs_mgplvm</span><span class="p">]):</span>
+  <span class="n">dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">dat</span><span class="p">)</span>
+  <span class="c1">#dat = dat**2</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="n">idat</span><span class="p">],</span> <span class="n">density</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+           <span class="n">histtype</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;step&#39;</span> <span class="k">if</span> <span class="n">idat</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;bar&#39;</span><span class="p">),</span> <span class="n">lw</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">idat</span><span class="p">])</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dat</span><span class="p">),</span> <span class="n">color</span> <span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="n">idat</span><span class="p">],</span> <span class="n">lw</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">idat</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39; mean error:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dat</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;geodesic error&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;frequency&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">([])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$0$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\pi / 2$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\pi$&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">loc</span> <span class="o">=</span> <span class="s1">&#39;upper center&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">),</span> <span class="n">ncol</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;total time for SO(3):&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">tic</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(400, 4)
+constant mean error: 2.206467350300819
+linear mean error: 1.4969529603467293
+mgplvm mean error: 0.64954366752159
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_mGPLVM_supervised_45_1.png" src="../_images/notebooks_mGPLVM_supervised_45_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+total time for SO(3): 292.0016107559204
+</pre></div></div>
+</div>
+<hr class="docutils" />
+<p>The rest is legacy code that I used for debugging</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># print(Y1 == Y2)</span>
+<span class="c1"># print(thetas[:n_ts1] == thetas2)</span>
+<span class="c1"># print(mod2, mod)</span>
+
+<span class="c1"># print(&#39;\nkernel ell&#39;)</span>
+<span class="c1"># print(mod.svgp.kernel.ell)</span>
+<span class="c1"># print(mod2.svgp.kernel.ell)</span>
+
+<span class="c1"># print(&#39;\nkernel scale&#39;)</span>
+<span class="c1"># print(mod.svgp.kernel.scale_sqr)</span>
+<span class="c1"># print(mod2.svgp.kernel.scale_sqr)</span>
+
+<span class="c1"># print(&#39;\nlikelihood prms&#39;)</span>
+<span class="c1"># print(mod.svgp.likelihood.prms)</span>
+<span class="c1"># print(mod2.svgp.likelihood.prms)</span>
+
+<span class="c1"># print(&#39;\ninducing points&#39;)</span>
+<span class="c1"># print(mod.svgp.z.z[:3, 0, 0])</span>
+<span class="c1"># print(mod2.svgp.z.z[:3, 0, 0])</span>
+
+<span class="c1"># print(&#39;\nlat mu&#39;)</span>
+<span class="c1"># print(mod.lat_dist.lat_prms()[0][0, :10, 0])</span>
+<span class="c1"># print(mod2.lat_dist.lat_prms()[0][0, :10, 0])</span>
+
+<span class="c1"># print(&#39;\nlat std&#39;)</span>
+<span class="c1"># print(mod.lat_dist.lat_prms()[1][0, :10, 0])</span>
+<span class="c1"># print(mod2.lat_dist.lat_prms()[1][0, :10, 0])</span>
+
+<span class="c1"># print(&#39;\nqmu&#39;)</span>
+<span class="c1"># print(mod.svgp.q_mu.requires_grad)</span>
+<span class="c1"># print(mod2.svgp.q_mu.requires_grad)</span>
+
+
+<span class="c1"># print(mod(data1, 10))</span>
+<span class="c1"># print(mod2(data2, 10))</span>
+
+<span class="c1"># print(len([p for p in mod.parameters()]))</span>
+
+<span class="c1"># for p in mod2.parameters():</span>
+<span class="c1">#   print(p.requires_grad)</span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bGPFA.html" class="btn btn-neutral float-left" title="(Bayesian) GPFA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../mgplvm/mgplvm.html" class="btn btn-neutral float-right" title="mgplvm package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

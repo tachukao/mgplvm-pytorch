@@ -16,7 +16,8 @@ This is a library for learning Gaussian process latent variable models (GPLVMs) 
    :glob:
    :caption: Examples
 
-   notebooks/Example
+   notebooks/bGPFA
+   notebooks/mGPLVM_supervised
 
   
 .. toctree::

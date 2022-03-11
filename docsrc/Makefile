@@ -22,6 +22,7 @@ api:
 	@$(SPHINXAPIDOC) -e -o "$(SOURCEDIR)/mgplvm" ../mgplvm/
 
 deploy: html
+	rm -rf ../docs/*
 	cp -a build/html/* ../docs
 
 .PHONY: help clean api deploy Makefile
