@@ -3,9 +3,10 @@ sphinx
 sphinx-rtd-theme
 pytest
 pytest-cov
-torch==1.7
+torch==1.7.1
 numpy 
 scipy
 matplotlib
 scikit-learn
 mypy
+python==3.7

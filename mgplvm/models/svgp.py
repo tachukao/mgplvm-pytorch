@@ -146,8 +146,8 @@ class SvgpBase(GpBase):
         Implementation largely follows derivation of the ELBO presented in `here <https://gpflow.readthedocs.io/en/develop/notebooks/theory/SGPR_notes.html>`_.
         """
 
-        assert (x.shape[-3] == y.shape[-3])
-        assert (x.shape[-1] == y.shape[-1])
+        assert (x.shape[-3] == y.shape[-3]) #Trials
+        assert (x.shape[-1] == y.shape[-1]) #Time
         batch_size = x.shape[-1]
         sample_size = x.shape[-3]
 

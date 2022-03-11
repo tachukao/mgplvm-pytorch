@@ -106,7 +106,7 @@ class Gplvm(nn.Module):
                                      kmax=kmax,
                                      analytic_kl=analytic_kl,
                                      prior=self.lprior)
-        # g is shape (n_samples, n_mc, m, d)
+        # g is shape (n_mc, n_samples, m, d)
         # lq is shape (n_mc x n_samples x m)
 
         #data = data if sample_idxs is None else data[..., sample_idxs, :, :]
@@ -124,7 +124,7 @@ class Gplvm(nn.Module):
             svgp_kl = svgp_kl[..., neuron_idxs]
         lik = svgp_lik - svgp_kl
 
-        if analytic_kl or (self.lat_dist.name == 'EP_GP'):
+        if analytic_kl or ('GP' in self.lat_dist.name):
             #print('analytic KL')
             #kl per MC sample; lq already represents the full KL
             kl = (torch.ones(n_mc).to(data.device)) * lq.sum()
@@ -132,8 +132,7 @@ class Gplvm(nn.Module):
             # compute kl term for the latents (n_mc, n_samples) per batch
             prior = self.lprior(g, batch_idxs)  #(n_mc)
             #print('prior, lq shapes:', prior.shape, lq.shape)
-            kl = lq.sum(-1).sum(
-                -1) - prior  #(n_mc) (sum q(g) over samples, conditions)
+            kl = lq.sum(-1).sum(-1) - prior  #(n_mc) (sum q(g) over samples, conditions)
 
         #rescale KL to entire dataset (basically structured conditions)
         batch_size = m if batch_idxs is None else len(batch_idxs)

@@ -22,7 +22,9 @@ def training_params(**kwargs):
         'mask_Ts': None,
         'n_mc': 32,
         'prior_m': None,
-        'accumulate_gradient': True
+        'analytic_kl': False,
+        'accumulate_gradient': True,
+        'batch_mc': None
     }
 
     for key, value in kwargs.items():
@@ -52,6 +54,8 @@ def train_model(mod, data, params):
         neuron_idxs=params['neuron_idxs'],
         mask_Ts=params['mask_Ts'],
         prior_m=params['prior_m'],
-        accumulate_gradient=params['accumulate_gradient']),
+        analytic_kl=params['analytic_kl'],
+        accumulate_gradient=params['accumulate_gradient'],
+        batch_mc = params['batch_mc'])
 
     return trained_mod

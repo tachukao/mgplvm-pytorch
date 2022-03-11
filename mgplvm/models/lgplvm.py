@@ -16,7 +16,7 @@ from ..lpriors.common import Lprior
 from ..rdist import Rdist
 from .gp_base import GpBase
 
-from .bfa import Fa, Bfa, Bvfa
+from .bfa import Fa, Bfa, Bvfa, vFa
 from .gplvm import Gplvm
 
 
@@ -34,7 +34,9 @@ class Lgplvm(Gplvm):
                  Y=None,
                  learn_neuron_scale=False,
                  ard=False,
-                 learn_scale=None):
+                 learn_scale=None,
+                sigma = None,
+                C = None):
         """
         __init__ method for linear GPLVM with exact posteriors and Gaussian noise
         Parameters
@@ -47,7 +49,7 @@ class Lgplvm(Gplvm):
                   Y=Y,
                   learn_neuron_scale=learn_neuron_scale,
                   ard=ard,
-                  learn_scale=learn_scale) if Bayesian else Fa(n, d, Y=Y)
+                  learn_scale=learn_scale) if Bayesian else Fa(n, d, Y=Y, sigma=sigma, C=C)
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)
 
@@ -67,7 +69,11 @@ class Lvgplvm(Gplvm):
                  learn_neuron_scale=False,
                  ard=False,
                  learn_scale=None,
-                 Y=None):
+                 Y=None,
+                rel_scale = 1,
+                 Bayesian = True,
+                 C = None,
+                q_mu = None, q_sqrt = None, scale = None, dim_scale = None, neuron_scale = None):
         """
         __init__ method for linear GPLVM with approximate posteriors and flexible noise models
         Parameters
@@ -75,15 +81,28 @@ class Lvgplvm(Gplvm):
         """
 
         #observation model (P(Y|X))
-        obs = Bvfa(n,
-                   d,
-                   m,
-                   n_samples,
-                   likelihood,
-                   tied_samples=tied_samples,
-                   Y=Y,
-                   learn_neuron_scale=learn_neuron_scale,
-                   ard=ard,
-                   learn_scale=learn_scale)
+        
+        if Bayesian:
+            obs = Bvfa(n,
+                       d,
+                       m,
+                       n_samples,
+                       likelihood,
+                       tied_samples=tied_samples,
+                       Y=Y,
+                       learn_neuron_scale=learn_neuron_scale,
+                       ard=ard,
+                       learn_scale=learn_scale,
+                      rel_scale = rel_scale,
+                      q_mu = q_mu, q_sqrt = q_sqrt, scale = scale, dim_scale = dim_scale, neuron_scale = neuron_scale)
+        else:
+            obs = vFa(n,
+                 d,
+                 m,
+                 n_samples,
+                 likelihood,
+                rel_scale = rel_scale,
+                 Y=Y,
+                C = C)
 
         super().__init__(obs, lat_dist, lprior, n, m, n_samples)

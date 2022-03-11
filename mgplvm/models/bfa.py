@@ -232,7 +232,11 @@ class Bvfa(GpBase):
                  Y=None,
                  learn_neuron_scale=False,
                  ard=False,
-                 learn_scale=None):
+                 learn_scale=None,
+                rel_scale = 1,
+                scale = None,
+                dim_scale = None,
+                neuron_scale = None):
         """
         __init__ method for Base Variational Factor Analysis 
         Parameters
@@ -277,17 +281,22 @@ class Bvfa(GpBase):
             C = torch.tensor(mod.components_.T)  # (n x d)
             #print(C.shape)
             if learn_scale:
-                _scale = torch.square(C).mean().sqrt()  #global scale
+                _scale = rel_scale*torch.square(C).mean().sqrt()  #global scale
             if learn_neuron_scale:
-                _neuron_scale = torch.square(C).mean(1).sqrt()  #per neuron
+                _neuron_scale = rel_scale*torch.square(C).mean(1).sqrt()  #per neuron
             if ard:
-                _dim_scale = torch.square(C).mean(0).sqrt()  #per latent
+                _dim_scale = rel_scale*torch.square(C).mean(0).sqrt()  #per latent
+        
+        ##optionally provide these as params##
+        scale = _scale if scale is None else scale
+        dim_scale = _dim_scale if dim_scale is None else dim_scale
+        neuron_scale = _neuron_scale if neuron_scale is None else neuron_scale
 
-        self._scale = nn.Parameter(inv_softplus(_scale),
+        self._scale = nn.Parameter(inv_softplus(scale),
                                    requires_grad=learn_scale)
-        self._neuron_scale = nn.Parameter(inv_softplus(_neuron_scale),
+        self._neuron_scale = nn.Parameter(inv_softplus(neuron_scale),
                                           requires_grad=learn_neuron_scale)
-        self._dim_scale = nn.Parameter(inv_softplus(_dim_scale),
+        self._dim_scale = nn.Parameter(inv_softplus(dim_scale),
                                        requires_grad=ard)
 
         #### initialize variational distribution (should we initialize this to the Gaussian ground truth?)####
@@ -314,8 +323,8 @@ class Bvfa(GpBase):
             assert (q_mu.shape[0] == n_samples)
             assert (q_sqrt.shape[0] == n_samples)
 
-        self.q_mu = nn.Parameter(q_mu, requires_grad=True)
-        self.q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
+        self._q_mu = nn.Parameter(q_mu, requires_grad=True)
+        self._q_sqrt = nn.Parameter(q_sqrt, requires_grad=True)
 
         self.likelihood = likelihood
 
@@ -330,6 +339,14 @@ class Bvfa(GpBase):
     @property
     def dim_scale(self):
         return softplus(self._dim_scale)[:, None]
+    
+    @property
+    def q_mu(self):
+        return self._q_mu
+
+    @property
+    def q_sqrt(self):
+        return transform_to(constraints.lower_cholesky)(self._q_sqrt)
 
     def prior_kl(self, sample_idxs=None):
         """
@@ -344,7 +361,7 @@ class Bvfa(GpBase):
         e = torch.eye(self.d).to(q_mu.device)
         p_mu = torch.zeros(self.n, self.d).to(q_mu.device)
         prior = MultivariateNormal(p_mu, scale_tril=e)
-        return kl_divergence(q, prior)
+        return kl_divergence(q, prior) ##consider implementing this directly
 
     def elbo(self,
              y: Tensor,
@@ -485,7 +502,7 @@ class Bvfa(GpBase):
     @property
     def prms(self) -> Tuple[Tensor, Tensor]:
         q_mu = self.q_mu
-        q_sqrt = transform_to(constraints.lower_cholesky)(self.q_sqrt)
+        q_sqrt = self.q_sqrt
 
         #multiply the posterior by a scale factor for each neuron
         q_mu, q_sqrt = self.neuron_scale * q_mu, self.neuron_scale[
@@ -493,7 +510,7 @@ class Bvfa(GpBase):
         return q_mu, q_sqrt
 
     def g0_parameters(self):
-        return [self.q_mu, self.q_sqrt]
+        return [self._q_mu, self._q_sqrt]
 
     def g1_parameters(self):
         return list(
@@ -524,7 +541,8 @@ class Fa(GpBase):
                  d: int,
                  sigma: Optional[Tensor] = None,
                  learn_sigma=True,
-                 Y=None):
+                 Y=None,
+                C = None):
         """
         n: number of neurons
         d: number of latents
@@ -533,20 +551,22 @@ class Fa(GpBase):
         self.n = n
 
         if Y is None:
-            C = torch.randn(n, d) * d**(-0.5)  # TODO: FA init
-            sigma = torch.ones(n,) * 0.5  # TODO: FA init
+            _C = torch.randn(n, d) * d**(-0.5)  # TODO: FA init
+            _sigma = torch.ones(n,) * 0.5  # TODO: FA init
         else:
             n_samples, n, m = Y.shape
             mod = decomposition.FactorAnalysis(n_components=d)
             Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
             mudata = mod.fit_transform(Y)  #m*n_samples x d
-            sigma = torch.tensor(np.sqrt(mod.noise_variance_))
-            C = torch.tensor(mod.components_.T)
+            _sigma = torch.tensor(np.sqrt(mod.noise_variance_))
+            _C = torch.tensor(mod.components_.T)
 
+        sigma = _sigma if sigma is None else sigma
+        C = _C if C is None else C
+        
         self._sigma = nn.Parameter(data=sigma, requires_grad=learn_sigma)
         self.C = nn.Parameter(data=C, requires_grad=True)
 
-        #self.likelihood, self.z, self.kernel = [NoneClass() for i in range(3)]
 
     @property
     def prms(self) -> Tensor:
@@ -662,3 +682,168 @@ class Fa(GpBase):
     @property
     def msg(self):
         return ''
+
+    
+    
+    
+class vFa(GpBase):
+    """
+    Variational non-Bayesian Factor Analysis
+    Allows for non-Gaussian noise
+    """
+
+    name = "vFa"
+
+    def __init__(self,
+                 n: int,
+                 d: int,
+                 m: int,
+                 n_samples: int,
+                 likelihood: Likelihood,
+                 Y=None,
+                 rel_scale = 1,
+                C = None):
+        """
+        n: number of neurons
+        d: number of latents
+        """
+        super().__init__()
+        self.n = n
+        self.m = m
+        self.n_samples = n_samples
+
+        if Y is None:
+            _C = torch.randn(n, d) * d**(-0.5)*rel_scale
+        else:
+            n_samples, n, m = Y.shape
+            mod = decomposition.FactorAnalysis(n_components=d)
+            Y = Y.transpose(0, 2, 1).reshape(n_samples * m, n)
+            mudata = mod.fit_transform(Y)  #m*n_samples x d
+            _C = torch.tensor(mod.components_.T)*rel_scale
+
+        C = _C if C is None else C
+        
+        self.C = nn.Parameter(data=C, requires_grad=True)
+        self.likelihood = likelihood
+
+    def elbo(self,
+             y: Tensor,
+             x: Tensor,
+             sample_idxs: Optional[List[int]] = None,
+             m: Optional[int] = None) -> Tuple[Tensor, Tensor]:
+        """
+        Parameters
+        ----------
+        y : Tensor
+            data tensor with dimensions (n_samples x n x m)
+        x : Tensor (single kernel) or Tensor list (product kernels)
+            input tensor(s) with dimensions (n_mc x n_samples x d x m)
+
+        Returns
+        -------
+        lik, prior_kl : Tuple[torch.Tensor, torch.Tensor]
+            lik has dimensions (n_mc x n) 
+            prior_kl has dimensions (n) and is zero
+        """
+        
+        assert (x.shape[-3] == y.shape[-3])
+        assert (x.shape[-1] == y.shape[-1])
+        batch_size = x.shape[-1]
+        sample_size = x.shape[-3]
+
+        # predictive mean and var at x
+        f_mean = self.C @ x  #(... x n x m)
+        
+        if sample_idxs is not None:
+            f_mean = f_mean[:, sample_idxs, ...]
+        f_var = torch.zeros(f_mean.shape).to(f_mean.device)+1e-12
+
+        #(n_mc, n_samles, n)
+        lik = self.likelihood.variational_expectation(y, f_mean, f_var)
+        # scale is (m / batch_size) * (self.n_samples / sample size)
+        # to compute an unbiased estimate of the likelihood of the full dataset
+        m = (self.m if m is None else m)
+        scale = (m / batch_size) * (self.n_samples / sample_size)
+        lik = lik.sum(-2)
+        lik = lik * scale
+        
+        prior_kl = torch.zeros(1, lik.shape[-1]).to(lik.device) #not Bayesian; no prior term (1xn)
+        return lik, prior_kl
+
+    def predict(self, xstar, full_cov=False):
+        """
+        compute posterior p(f* | x, y, C) = N(C@x*, Sig)
+        """
+        mu = self.C @ xstar  #(n_samples x n x m)
+        cov = torch.zeros(mu.shape)  #p(f|C, x) is a delta function
+        if not full_cov:
+            return mu, cov
+        else:
+            return mu, torch.diag_embed(cov)
+
+    def sample(self,
+               query: Tensor,
+               n_mc: int = 1000,
+               square: bool = False,
+               noise: bool = True):
+        """
+        Parameters
+        ----------
+        query : Tensor (single kernel)
+            test input tensor with dimensions (n_samples x d x m)
+        n_mc : int
+            numper of samples to return
+        square : bool
+            determines whether to square the output
+        noise : bool
+            determines whether we also sample explicitly from the noise model or simply return samples of the mean
+
+        Returns
+        -------
+        y_samps : Tensor
+            samples from the model (n_mc x n_samples x d x m)
+        """
+
+        query = query[None, ...]  #add batch dimension (1 x n_samples x d x m)
+
+        mu, _ = self.predict(query, False)  #1xn_samplesxnxm, 1xn_samplesxnxm
+        # remove batch dimension
+        mu = mu[0]  #n_samples x n x m,
+        #sample from p(f|x) which is a delta function for FA
+        f_samps = mu
+
+        if noise:
+            #sample from observation function p(y|f)
+            dist = Normal(loc=f_samps, scale=self.sigma[..., None])
+            y_samps = dist.sample(n_mc)  #n_mc x n_samples x n x m
+        else:
+            #compute mean observations mu(f) for each f
+            y_samps = torch.ones(
+                n_mc, mu.shape[0], mu.shape[1], mu.shape[2]).to(
+                    query.device) * f_samps  #n_mc x n_samples x n x m
+
+        if square:
+            y_samps = y_samps**2
+
+        return y_samps
+    
+    @property
+    def prms(self) -> Tensor:
+        return self.C
+
+    def g0_parameters(self):
+        return []
+
+    def g1_parameters(self):
+        return list(
+            itertools.chain.from_iterable([
+                self.likelihood.parameters(),
+                [self.C]
+            ]))
+
+    @property
+    def msg(self):
+        newmsg = ('C norm {:.3f} |').format(
+            (self.C**2).mean().item())
+        return newmsg + self.likelihood.msg
+    

@@ -1,11 +1,13 @@
-# PyTorch implementation of mGPLVM
+# PyTorch implementation of mGPLVM and bGPFA
 
 [![CI](https://github.com/tachukao/mgplvm-pytorch/workflows/CI/badge.svg?branch=develop)](https://github.com/tachukao/mgplvm-pytorch/actions?query=workflow%3ACI) | 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://tachukao.github.io/mgplvm-pytorch) | 
 [Examples](examples) | 
-[Paper](https://papers.nips.cc/paper/2020/file/fedc604da8b0f9af74b6cfc0fab2163c-Paper.pdf)
+[mGPLVM paper](https://papers.nips.cc/paper/2020/file/fedc604da8b0f9af74b6cfc0fab2163c-Paper.pdf)
+[bGPFA paper](https://www.biorxiv.org/content/10.1101/2021.06.03.446788v1)
 
-
+This repository contains code for running both the manifold GPLVM (Jensen et al. 2020) and Bayesian GPFA (Jensen and Kao et al. 2021) and is currently still in active development.
+Currently, the master branch can be used for mGPLVM and the bGPFA branch for bGPFA.
 
 ## Setup
 
@@ -13,6 +15,8 @@
 # inside virtual environment
 pip install -e .
 ```
+
+To run on GPU, it may be necessary to first install pytorch with GPU support.
 
 ## Dependencies
 
@@ -29,12 +33,6 @@ To autoformat all files in this directory:
 ```sh
 yapf -ir .
 ```
-
-## Code used for NeurIPS 2020
-
-The majority of the results in the NeurIPS 2020 paper "Manifold GPLVMs for discovering non-Euclidean latent structure in neural data" were generated using a Julia codebase which can be found [here](https://github.com/KrisJensen/mGPLVM).
-This Julia codebase is somewhat slower, less flexible and less user friendly than the present PyTorch implementation but produces the results and plots from the paper.
-
 
 ## Running tests
 ```sh

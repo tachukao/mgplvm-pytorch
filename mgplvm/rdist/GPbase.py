@@ -58,9 +58,13 @@ class GPbase(Rdist):
                                    requires_grad=True)
 
         #initialize length scale
-        ell = (torch.max(ts) - torch.min(ts)) / 20 if ell is None else ell
-        _ell = torch.ones(1, self.d, 1) * ell / (ts[0, 0, 1] - ts[0, 0, 0]
-                                                )  #scale by dt
+        if ell is None:
+            _ell = torch.ones(1, self.d, 1) * (torch.max(ts) - torch.min(ts)) / 20
+        else:
+            if type(ell) in [float, int]:
+                _ell = torch.ones(1, self.d, 1) * ell
+            else:
+                _ell = ell
         self._ell = nn.Parameter(data=inv_softplus(_ell), requires_grad=True)
 
         #pre-compute time differences (only need one row for the toeplitz stuff)
@@ -68,10 +72,15 @@ class GPbase(Rdist):
         dts_sq = torch.square(ts - ts[..., :1])  #(n_samples x 1 x m)
         #sum over _input_ dimension, add an axis for _output_ dimension
         dts_sq = dts_sq.sum(-2)[:, None, ...]  #(n_samples x 1 x m)
+        #print('dts sqr:', dts_sq.shape)
         self.dts_sq = nn.Parameter(data=dts_sq, requires_grad=False)
+
+        self.dt = (ts[0, 0, 1] - ts[0, 0, 0]).item()  #scale by dt
 
     @property
     def scale(self) -> torch.Tensor:
+        #print(self._scale.shape, type(self._scale))
+        #print(softplus(self._scale).shape)
         return softplus(self._scale)
 
     @property
@@ -102,9 +111,10 @@ class GPbase(Rdist):
         ell_half = self.ell / np.sqrt(2)
 
         #K^(1/2) has sig var sig*2^1/4*pi^(-1/4)*ell^(-1/2) if K has sig^2 (1 x d x 1)
-        sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * (self.ell**(-1 / 2))
+        sig_sqr_half = 1 * (2**(1 / 4)) * np.pi**(-1 / 4) * self.ell**(
+            -1 / 2) * self.dt**(1 / 2)
 
-        if sample_idxs is None:
+        if (sample_idxs is None) or (self.dts_sq.shape[0] == 1):
             dts = self.dts_sq[:, ...]
         else:
             dts = self.dts_sq[sample_idxs, ...]
@@ -181,7 +191,7 @@ class GPbase(Rdist):
         return x, lq
 
     def gmu_parameters(self):
-        return [self.nu]
+        return [self._nu]
 
     def concentration_parameters(self):
         return [self._scale, self._ell]

@@ -66,6 +66,7 @@ class GP_circ(GPbase):
         v is (n_samples x d x m x n_mc) where n_samples is the number of sample_idxs
         """
         scale, c = self.scale, self.c
+        #print(len(sample_idxs), sample_idxs, scale.shape, c.shape)
         if sample_idxs is not None:
             scale = scale[sample_idxs, ...]  #(n_samples x d x m)
             c = c[sample_idxs, ...]  #(n_samples x d x m/2)
@@ -78,6 +79,8 @@ class GP_circ(GPbase):
 
         #multiply by diagonal scale
         SCv = scale[..., None] * Cv
+        
+        #print(Cv.shape, SCv.shape)
 
         return SCv
 
@@ -116,3 +119,6 @@ class GP_circ(GPbase):
             kl = kl * len(batch_idxs) / self.m
 
         return kl
+    
+    def gmu_parameters(self):
+        return [self._nu, self._c]
