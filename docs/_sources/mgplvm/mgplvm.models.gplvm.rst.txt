@@ -1,0 +1,7 @@
+mgplvm.models.gplvm module
+==========================
+
+.. automodule:: mgplvm.models.gplvm
+   :members:
+   :undoc-members:
+   :show-inheritance:

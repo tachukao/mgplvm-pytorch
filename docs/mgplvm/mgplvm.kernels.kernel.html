@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.kernels.kernel module &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.kernels.linear module" href="mgplvm.kernels.linear.html" />
+    <link rel="prev" title="mgplvm.kernels package" href="mgplvm.kernels.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.fast_utils.html">mgplvm.fast_utils package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.kernels.html">mgplvm.kernels package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.kernels.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.kernels.html#module-mgplvm.kernels">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.optimisers.html">mgplvm.optimisers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+          <li><a href="mgplvm.kernels.html">mgplvm.kernels package</a> &raquo;</li>
+      <li>mgplvm.kernels.kernel module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/mgplvm/mgplvm.kernels.kernel.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-mgplvm.kernels.kernel">
+<span id="mgplvm-kernels-kernel-module"></span><h1>mgplvm.kernels.kernel module<a class="headerlink" href="#module-mgplvm.kernels.kernel" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.kernels.kernel.Kernel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.kernels.kernel.</span></span><span class="sig-name descname"><span class="pre">Kernel</span></span><a class="reference internal" href="../_modules/mgplvm/kernels/kernel.html#Kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.kernels.kernel.Kernel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.base.html#mgplvm.base.Module" title="mgplvm.base.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.base.Module</span></code></a></p>
+<p>Base kernel class</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.kernels.kernel.Kernel.K">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">K</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels/kernel.html#Kernel.K"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.kernels.kernel.Kernel.K" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.kernels.kernel.Kernel.diagK">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diagK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels/kernel.html#Kernel.diagK"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.kernels.kernel.Kernel.diagK" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.kernels.kernel.Kernel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels/kernel.html#Kernel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.kernels.kernel.Kernel.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.kernels.kernel.Kernel.trK">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/kernels/kernel.html#Kernel.trK"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.kernels.kernel.Kernel.trK" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.kernels.kernel.Kernel.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.kernels.kernel.Kernel.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mgplvm.kernels.html" class="btn btn-neutral float-left" title="mgplvm.kernels package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mgplvm.kernels.linear.html" class="btn btn-neutral float-right" title="mgplvm.kernels.linear module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

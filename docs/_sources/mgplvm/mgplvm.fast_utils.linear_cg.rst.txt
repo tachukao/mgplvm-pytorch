@@ -1,0 +1,7 @@
+mgplvm.fast\_utils.linear\_cg module
+====================================
+
+.. automodule:: mgplvm.fast_utils.linear_cg
+   :members:
+   :undoc-members:
+   :show-inheritance:

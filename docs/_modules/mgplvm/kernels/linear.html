@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.kernels.linear &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>mgplvm.kernels.linear</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for mgplvm.kernels.linear</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span><span class="p">,</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">.kernel</span> <span class="kn">import</span> <span class="n">Kernel</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">softplus</span><span class="p">,</span> <span class="n">inv_softplus</span>
+
+
+<div class="viewcode-block" id="Linear"><a class="viewcode-back" href="../../../mgplvm/mgplvm.kernels.linear.html#mgplvm.kernels.linear.Linear">[docs]</a><span class="k">class</span> <span class="nc">Linear</span><span class="p">(</span><span class="n">Kernel</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Linear&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">learn_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">Y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">Poisson</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        n is number of neurons/readouts</span>
+<span class="sd">        d is the dimensionality of the group parameterization</span>
+<span class="sd">        scale is an output scale parameter for each neuron</span>
+<span class="sd">        </span>
+<span class="sd">        learn_scale : learn an output scaling parameter (similar to the RBF signal variance)</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        W: nxd</span>
+<span class="sd">        X: n x d x mx</span>
+<span class="sd">        </span>
+<span class="sd">        x: d x mx</span>
+<span class="sd">        x^T w_n w_n^T y (mx x my)</span>
+<span class="sd">        </span>
+<span class="sd">        K_n(x, y) = w_n X^T (mx x my)</span>
+<span class="sd">        K(X, Y) (n x mx x my)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_scale_sqr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span><span class="o">.</span><span class="n">square</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="p">(</span>
+                <span class="n">Y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">)</span> <span class="ow">and</span> <span class="n">learn_scale</span><span class="p">:</span>  <span class="c1"># &lt;Y^2&gt; = scale * d * &lt;x^2&gt; + &lt;eps^2&gt; = scale * d + sig_noise^2</span>
+            <span class="n">_scale_sqr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="mf">0.5</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>  <span class="c1">#assume half signal half noise</span>
+            <span class="k">if</span> <span class="n">Poisson</span><span class="p">:</span>
+                <span class="n">_scale_sqr</span> <span class="o">/=</span> <span class="mi">100</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_scale_sqr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,)</span>  <span class="c1">#one per neuron</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale_sqr</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">inv_softplus</span><span class="p">(</span><span class="n">_scale_sqr</span><span class="p">),</span>
+                                       <span class="n">requires_grad</span><span class="o">=</span><span class="n">learn_scale</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ard</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">learn_scale</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">_input_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">Poisson</span><span class="p">:</span>
+                <span class="n">_input_scale</span> <span class="o">/=</span> <span class="mi">100</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_input_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="n">_input_scale</span> <span class="o">=</span> <span class="n">inv_softplus</span><span class="p">(</span><span class="n">_input_scale</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_scale</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">_input_scale</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="n">ard</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Linear.diagK"><a class="viewcode-back" href="../../../mgplvm/mgplvm.kernels.linear.html#mgplvm.kernels.linear.Linear.diagK">[docs]</a>    <span class="k">def</span> <span class="nf">diagK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">diag</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_sqr</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reweight</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">diag</span></div>
+
+<div class="viewcode-block" id="Linear.trK"><a class="viewcode-back" href="../../../mgplvm/mgplvm.kernels.linear.html#mgplvm.kernels.linear.Linear.trK">[docs]</a>    <span class="k">def</span> <span class="nf">trK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">diagK</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reweight</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Linear.K"><a class="viewcode-back" href="../../../mgplvm/mgplvm.kernels.linear.html#mgplvm.kernels.linear.Linear.K">[docs]</a>    <span class="k">def</span> <span class="nf">K</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : Tensor</span>
+<span class="sd">            input tensor of dims (... n_samples x n x d x mx)</span>
+<span class="sd">        y : Tensor</span>
+<span class="sd">            input tensor of dims (... n_samples x n x d x mx)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        trK : Tensor</span>
+<span class="sd">            trace of kernel K(x,x) with dims (... n)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># compute x dot y with latent reweighting</span>
+        <span class="n">dot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reweight</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reweight</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+        <span class="c1"># multiply by scale factor</span>
+        <span class="n">kxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_sqr</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">dot</span>
+        <span class="k">return</span> <span class="n">kxy</span></div>
+
+<div class="viewcode-block" id="Linear.reweight"><a class="viewcode-back" href="../../../mgplvm/mgplvm.kernels.linear.html#mgplvm.kernels.linear.Linear.reweight">[docs]</a>    <span class="k">def</span> <span class="nf">reweight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;re-weight the latent dimensions&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_scale</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_sqr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_scale</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scale_sqr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">softplus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale_sqr</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_sqr</span> <span class="o">+</span> <span class="mf">1e-20</span><span class="p">)</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">input_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">softplus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_scale</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;scale </span><span class="si">{:.3f}</span><span class="s1"> | input_scale </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_scale</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

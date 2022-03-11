@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.likelihoods module &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.utils module" href="mgplvm.utils.html" />
+    <link rel="prev" title="mgplvm.inducing_variables module" href="mgplvm.inducing_variables.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.base.html">mgplvm.base module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.dists.html">mgplvm.dists module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.inducing_variables.html">mgplvm.inducing_variables module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">mgplvm.likelihoods module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.utils.html">mgplvm.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+      <li>mgplvm.likelihoods module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/mgplvm/mgplvm.likelihoods.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-mgplvm.likelihoods">
+<span id="mgplvm-likelihoods-module"></span><h1>mgplvm.likelihoods module<a class="headerlink" href="#module-mgplvm.likelihoods" title="Permalink to this headline"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.FA_init">
+<span class="sig-prename descclassname"><span class="pre">mgplvm.likelihoods.</span></span><span class="sig-name descname"><span class="pre">FA_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#FA_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.FA_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.likelihoods.</span></span><span class="sig-name descname"><span class="pre">Gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gh_locs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.likelihoods.Likelihood" title="mgplvm.likelihoods.Likelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.likelihoods.Likelihood</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.dist">
+<span class="sig-name descname"><span class="pre">dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian.dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.dist" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean function values (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>dist</strong><span class="classifier">distribution</span></dt><dd><p>resulting Gaussian distributions</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.dist_mean">
+<span class="sig-name descname"><span class="pre">dist_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian.dist_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.dist_mean" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean function values (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mean</strong><span class="classifier">Tensor</span></dt><dd><p>means of the resulting Gaussian distributions (n_mc x n_samples x n x m)
+for a Gaussian, this is simply fs</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.log_prob">
+<span class="sig-name descname"><span class="pre">log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian.log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.log_prob" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Gaussian'</span></em><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.prms" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_samps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.sample" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_samps</strong><span class="classifier">Tensor</span></dt><dd><p>GP output samples (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y_samps</strong><span class="classifier">Tensor</span></dt><dd><p>samples from the resulting Gaussian distributions (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.sigma">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sigma</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.sigma" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Gaussian.variational_expectation">
+<span class="sig-name descname"><span class="pre">variational_expectation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fvar</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Gaussian.variational_expectation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Gaussian.variational_expectation" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>number of MC samples (n_samples x n x m)</p>
+</dd>
+<dt><strong>fmu</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean (n_mc x n_samples x n x m)</p>
+</dd>
+<dt><strong>fvar</strong><span class="classifier">Tensor</span></dt><dd><p>GP diagonal variance (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Log likelihood</strong><span class="classifier">Tensor</span></dt><dd><p>SVGP likelihood term per MC, neuron, sample (n_mc x n_samples x n)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Likelihood">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.likelihoods.</span></span><span class="sig-name descname"><span class="pre">Likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gh_locs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Likelihood" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.base.html#mgplvm.base.Module" title="mgplvm.base.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.base.Module</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Likelihood.dist">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Likelihood.dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.dist" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Likelihood.dist_mean">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dist_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Likelihood.dist_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.dist_mean" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Likelihood.log_prob">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log_prob</span></span><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.log_prob" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Likelihood.msg">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Likelihood.sample">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Likelihood.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.sample" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Likelihood.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Likelihood.variational_expectation">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variational_expectation</span></span><a class="headerlink" href="#mgplvm.likelihoods.Likelihood.variational_expectation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.likelihoods.</span></span><span class="sig-name descname"><span class="pre">NegativeBinomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_link=&lt;function</span> <span class="pre">id_link&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binsize=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_count=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_total_count=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_c=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_d=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gh_locs=20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.likelihoods.Likelihood" title="mgplvm.likelihoods.Likelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.likelihoods.Likelihood</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.dist">
+<span class="sig-name descname"><span class="pre">dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial.dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.dist" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean function values (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>dist</strong><span class="classifier">distribution</span></dt><dd><p>resulting negative binomial distributions</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.dist_mean">
+<span class="sig-name descname"><span class="pre">dist_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial.dist_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.dist_mean" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean function values (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mean</strong><span class="classifier">Tensor</span></dt><dd><p>means of the resulting negative binomial distributions (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.log_prob">
+<span class="sig-name descname"><span class="pre">log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial.log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.log_prob" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Negative</span> <span class="pre">binomial'</span></em><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.prms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_samps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.sample" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_samps</strong><span class="classifier">Tensor</span></dt><dd><p>GP output samples (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y_samps</strong><span class="classifier">Tensor</span></dt><dd><p>samples from the resulting negative binomial distributions (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.total_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_count</span></span><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.total_count" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.NegativeBinomial.variational_expectation">
+<span class="sig-name descname"><span class="pre">variational_expectation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fvar</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#NegativeBinomial.variational_expectation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.NegativeBinomial.variational_expectation" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>number of MC samples (n_samples x n x m)</p>
+</dd>
+<dt><strong>fmu</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean (n_mc x n_samples x n x m)</p>
+</dd>
+<dt><strong>fvar</strong><span class="classifier">Tensor</span></dt><dd><p>GP diagonal variance (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Log likelihood</strong><span class="classifier">Tensor</span></dt><dd><p>SVGP likelihood term per MC, neuron, sample (n_mc x n_samples x n)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.likelihoods.</span></span><span class="sig-name descname"><span class="pre">Poisson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_link=&lt;function</span> <span class="pre">exp_link&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binsize=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_c=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_d=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gh_locs=20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.likelihoods.Likelihood" title="mgplvm.likelihoods.Likelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.likelihoods.Likelihood</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.dist">
+<span class="sig-name descname"><span class="pre">dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson.dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson.dist" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean function values (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>dist</strong><span class="classifier">distribution</span></dt><dd><p>resulting Poisson distributions</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.dist_mean">
+<span class="sig-name descname"><span class="pre">dist_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson.dist_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson.dist_mean" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean function values (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mean</strong><span class="classifier">Tensor</span></dt><dd><p>means of the resulting Poisson distributions (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.log_prob">
+<span class="sig-name descname"><span class="pre">log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lamb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson.log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson.log_prob" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.likelihoods.Poisson.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Poisson'</span></em><a class="headerlink" href="#mgplvm.likelihoods.Poisson.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><a class="headerlink" href="#mgplvm.likelihoods.Poisson.prms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_samps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson.sample" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_samps</strong><span class="classifier">Tensor</span></dt><dd><p>GP output samples (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y_samps</strong><span class="classifier">Tensor</span></dt><dd><p>samples from the resulting Poisson distributions (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.likelihoods.Poisson.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.Poisson.variational_expectation">
+<span class="sig-name descname"><span class="pre">variational_expectation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fvar</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#Poisson.variational_expectation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.Poisson.variational_expectation" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>number of MC samples (n_samples x n x m)</p>
+</dd>
+<dt><strong>fmu</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean (n_mc x n_samples x n x m)</p>
+</dd>
+<dt><strong>fvar</strong><span class="classifier">Tensor</span></dt><dd><p>GP diagonal variance (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Log likelihood</strong><span class="classifier">Tensor</span></dt><dd><p>SVGP likelihood term per MC, neuron, sample (n_mc x n)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.likelihoods.</span></span><span class="sig-name descname"><span class="pre">ZIPoisson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_link=&lt;function</span> <span class="pre">exp_link&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binsize=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_c=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_d=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_alpha=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gh_locs=20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#ZIPoisson"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.likelihoods.Likelihood" title="mgplvm.likelihoods.Likelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.likelihoods.Likelihood</span></code></a></p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Zero-inflated_model">https://en.wikipedia.org/wiki/Zero-inflated_model</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.dist">
+<span class="sig-name descname"><span class="pre">dist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#ZIPoisson.dist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.dist" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean function values (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>dist</strong><span class="classifier">distribution</span></dt><dd><p>resulting Poisson distributions (for use internally)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.dist_mean">
+<span class="sig-name descname"><span class="pre">dist_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#ZIPoisson.dist_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.dist_mean" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean function values (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mean</strong><span class="classifier">Tensor</span></dt><dd><p>means of the resulting ZIP distributions (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.log_prob">
+<span class="sig-name descname"><span class="pre">log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lamb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#ZIPoisson.log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.log_prob" title="Permalink to this definition"></a></dt>
+<dd><dl>
+<dt>..math::</dt><dd><dl class="field-list simple">
+<dt class="field-odd">nowrap</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>begin{eqnarray}
+P(N=0) &amp;= alpha + (1-lpha)   ext{Poisson}(N=0)
+P(N&gt;0) &amp;= (1-lpha)   ext{Poisson}(N)
+end{eqnarray}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Zero-inflated</span> <span class="pre">Poisson'</span></em><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.prms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_samps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#ZIPoisson.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.sample" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>f_samps</strong><span class="classifier">Tensor</span></dt><dd><p>GP output samples (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y_samps</strong><span class="classifier">Tensor</span></dt><dd><p>samples from the resulting ZIP distributions (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.ZIPoisson.variational_expectation">
+<span class="sig-name descname"><span class="pre">variational_expectation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fvar</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#ZIPoisson.variational_expectation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.ZIPoisson.variational_expectation" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>number of MC samples (n_samples x n x m)</p>
+</dd>
+<dt><strong>fmu</strong><span class="classifier">Tensor</span></dt><dd><p>GP mean (n_mc x n_samples x n x m)</p>
+</dd>
+<dt><strong>fvar</strong><span class="classifier">Tensor</span></dt><dd><p>GP diagonal variance (n_mc x n_samples x n x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Log likelihood</strong><span class="classifier">Tensor</span></dt><dd><p>SVGP likelihood term per MC, neuron, sample (n_mc x n)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.exp_link">
+<span class="sig-prename descclassname"><span class="pre">mgplvm.likelihoods.</span></span><span class="sig-name descname"><span class="pre">exp_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#exp_link"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.exp_link" title="Permalink to this definition"></a></dt>
+<dd><p>exponential link function used for positive observations</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mgplvm.likelihoods.id_link">
+<span class="sig-prename descclassname"><span class="pre">mgplvm.likelihoods.</span></span><span class="sig-name descname"><span class="pre">id_link</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/likelihoods.html#id_link"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.likelihoods.id_link" title="Permalink to this definition"></a></dt>
+<dd><p>identity link function used for neg binomial data</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mgplvm.inducing_variables.html" class="btn btn-neutral float-left" title="mgplvm.inducing_variables module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mgplvm.utils.html" class="btn btn-neutral float-right" title="mgplvm.utils module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

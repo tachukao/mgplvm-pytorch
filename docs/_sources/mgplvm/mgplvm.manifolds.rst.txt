@@ -1,0 +1,23 @@
+mgplvm.manifolds package
+========================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.manifolds.base
+   mgplvm.manifolds.euclid
+   mgplvm.manifolds.quaternion
+   mgplvm.manifolds.s3
+   mgplvm.manifolds.so3
+   mgplvm.manifolds.torus
+
+Module contents
+---------------
+
+.. automodule:: mgplvm.manifolds
+   :members:
+   :undoc-members:
+   :show-inheritance:

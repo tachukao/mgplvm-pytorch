@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.lpriors.euclidean &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>mgplvm.lpriors.euclidean</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for mgplvm.lpriors.euclidean</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.distributions</span> <span class="k">as</span> <span class="nn">dists</span>
+<span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="kn">import</span> <span class="n">transform_to</span><span class="p">,</span> <span class="n">constraints</span>
+<span class="kn">from</span> <span class="nn">..kernels</span> <span class="kn">import</span> <span class="n">Kernel</span>
+<span class="kn">from</span> <span class="nn">..manifolds</span> <span class="kn">import</span> <span class="n">Euclid</span>
+<span class="kn">from</span> <span class="nn">..manifolds.base</span> <span class="kn">import</span> <span class="n">Manifold</span>
+<span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="n">Svgp</span>
+<span class="kn">from</span> <span class="nn">..inducing_variables</span> <span class="kn">import</span> <span class="n">InducingPoints</span>
+<span class="kn">from</span> <span class="nn">..likelihoods</span> <span class="kn">import</span> <span class="n">Gaussian</span>
+<span class="kn">from</span> <span class="nn">.common</span> <span class="kn">import</span> <span class="n">Lprior</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">softplus</span><span class="p">,</span> <span class="n">inv_softplus</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+
+<div class="viewcode-block" id="LpriorEuclid"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.euclidean.html#mgplvm.lpriors.euclidean.LpriorEuclid">[docs]</a><span class="k">class</span> <span class="nc">LpriorEuclid</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">Euclid</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;GP prior only works with Euclidean manifolds&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GP"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.euclidean.html#mgplvm.lpriors.euclidean.GP">[docs]</a><span class="k">class</span> <span class="nc">GP</span><span class="p">(</span><span class="n">LpriorEuclid</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;GP&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">n</span><span class="p">,</span>
+                 <span class="n">m</span><span class="p">,</span>
+                 <span class="n">n_samples</span><span class="p">,</span>
+                 <span class="n">manif</span><span class="p">:</span> <span class="n">Manifold</span><span class="p">,</span>
+                 <span class="n">kernel</span><span class="p">:</span> <span class="n">Kernel</span><span class="p">,</span>
+                 <span class="n">ts</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                 <span class="n">n_z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+                 <span class="n">d</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">learn_sigma</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        __init__ method for GP prior class (only works for Euclidean manif)</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            number of output dimensions (i.e. dimensionality of the latent space)</span>
+<span class="sd">        m : int</span>
+<span class="sd">            number of time points</span>
+<span class="sd">        n_samples : int </span>
+<span class="sd">            number of samples (each with a separate GP posterior)</span>
+<span class="sd">        manif : mgplvm.manifolds.Manifold</span>
+<span class="sd">            latent manifold</span>
+<span class="sd">        kernel : mgplvm.kernels.kernel</span>
+<span class="sd">            kernel used in the prior (does not haave to mtach the p(Y|G) kernel)</span>
+<span class="sd">        ts: Tensor</span>
+<span class="sd">            input timepoints for each sample (n_samples x d x m)</span>
+<span class="sd">        n_z : Optional[int]</span>
+<span class="sd">            number of inducing points used in the GP prior</span>
+<span class="sd">        d : Optional[int]</span>
+<span class="sd">            number of input dimensions -- defaults to 1 since the input is assumed to be time, but could also be other higher-dimensional observed variables.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">m</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_samples</span> <span class="o">=</span> <span class="n">n_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span>
+        <span class="c1">#1d latent and n_z inducing points</span>
+        <span class="n">zinit</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">n_z</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_z</span><span class="p">)</span>
+        <span class="c1">#separate inducing points for each latent dimension</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">InducingPoints</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">n_z</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">zinit</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span>
+        <span class="c1">#consider fixing this to a small value as in GPFA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lik</span> <span class="o">=</span> <span class="n">Gaussian</span><span class="p">(</span><span class="n">n</span><span class="p">,</span>
+                            <span class="n">sigma</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.2</span><span class="p">,</span>
+                            <span class="n">learn_sigma</span><span class="o">=</span><span class="n">learn_sigma</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">svgp</span> <span class="o">=</span> <span class="n">Svgp</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span>
+                         <span class="n">n</span><span class="p">,</span>
+                         <span class="n">m</span><span class="p">,</span>
+                         <span class="n">n_samples</span><span class="p">,</span>
+                         <span class="n">z</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">lik</span><span class="p">,</span>
+                         <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                         <span class="n">tied_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1">#construct svgp</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">q_mu</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">sigma_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">prms</span>
+        <span class="k">return</span> <span class="n">q_mu</span><span class="p">,</span> <span class="n">q_sqrt</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">sigma_n</span>
+
+<div class="viewcode-block" id="GP.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.euclidean.html#mgplvm.lpriors.euclidean.GP.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        x is a latent of shape (n_mc x n_samples x mx x d)</span>
+<span class="sd">        ts is the corresponding timepoints of shape (n_samples x mx)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">n_mc</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">m</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">m</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="c1"># x now has shape (n_mc, n_samples , n, m)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n_mc</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">svgp_lik</span><span class="p">,</span> <span class="n">svgp_kl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">elbo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ts</span><span class="p">)</span>
+
+        <span class="c1"># Here, we need to rescale the KL term so that it is over the batch not the full dataset, as that is what is expected in SVGPLVM</span>
+        <span class="n">elbo</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span> <span class="o">/</span> <span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">svgp_lik</span> <span class="o">-</span> <span class="n">svgp_kl</span><span class="p">)</span>
+
+        <span class="c1"># as the inducing points are shared across the full batch</span>
+        <span class="k">return</span> <span class="n">elbo</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#sum over dimensions</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">prms</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lik</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39; prior ell </span><span class="si">{:.3f}</span><span class="s1"> | prior noise </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">ell</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">noise</span><span class="o">.</span><span class="n">item</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="fio_id"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.euclidean.html#mgplvm.lpriors.euclidean.fio_id">[docs]</a><span class="k">def</span> <span class="nf">fio_id</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="fio_ReLU"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.euclidean.html#mgplvm.lpriors.euclidean.fio_ReLU">[docs]</a><span class="k">def</span> <span class="nf">fio_ReLU</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fio_tanh"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.euclidean.html#mgplvm.lpriors.euclidean.fio_tanh">[docs]</a><span class="k">def</span> <span class="nf">fio_tanh</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DS"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.euclidean.html#mgplvm.lpriors.euclidean.DS">[docs]</a><span class="k">class</span> <span class="nc">DS</span><span class="p">(</span><span class="n">LpriorEuclid</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;DS&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">manif</span><span class="p">:</span> <span class="n">Manifold</span><span class="p">,</span>
+        <span class="n">fio</span><span class="o">=</span><span class="n">fio_id</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        x_t = f(A*x_(t-1)) + N(0, Q)</span>
+<span class="sd">        where A is Hurwitz and Q is diagonal</span>
+<span class="sd">        f can be the identity (default; LDS prior) or some non-linear function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span>
+
+        <span class="n">Q</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">Q</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span>
+                             <span class="p">)</span>  <span class="c1"># fixes the scale and orientation of the latents</span>
+
+        <span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">A</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;initialized DS&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">O</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">signs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">R</span><span class="p">)))</span>
+        <span class="n">O</span> <span class="o">=</span> <span class="n">O</span> <span class="o">@</span> <span class="n">signs</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">signs</span> <span class="o">@</span> <span class="n">R</span>
+
+        <span class="n">Lsqrt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+        <span class="n">L_I</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">Lsqrt</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="n">Lsqrt</span><span class="p">)</span> <span class="o">@</span> <span class="n">O</span> <span class="o">@</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag_embed</span><span class="p">(</span><span class="n">L_I</span><span class="p">)</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Q</span>
+        <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">Q</span>
+
+<div class="viewcode-block" id="DS.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.euclidean.html#mgplvm.lpriors.euclidean.DS.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        x: (n_mc, n_samples, m, d)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">A</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">xA</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>  <span class="c1">#(n_mc, n_samples, m, d)</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">xA</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale_tril</span><span class="o">=</span><span class="n">Q</span><span class="p">)</span>
+        <span class="n">lq</span> <span class="o">=</span> <span class="n">normal</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span>  <span class="c1">#(n_mc x n_samplesx m-1)</span>
+        <span class="n">lq</span> <span class="o">=</span> <span class="n">lq</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#(n_mc)</span>
+
+        <span class="c1">#in the future, we may want an explicit prior over the initial point</span>
+        <span class="k">return</span> <span class="n">lq</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">lp_msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39; A </span><span class="si">{:.3f}</span><span class="s1"> |&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">lp_msg</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

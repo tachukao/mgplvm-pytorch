@@ -1,0 +1,7 @@
+mgplvm.rdist.GPbase module
+==========================
+
+.. automodule:: mgplvm.rdist.GPbase
+   :members:
+   :undoc-members:
+   :show-inheritance:

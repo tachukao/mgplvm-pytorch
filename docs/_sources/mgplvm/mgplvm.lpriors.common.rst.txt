@@ -1,0 +1,7 @@
+mgplvm.lpriors.common module
+============================
+
+.. automodule:: mgplvm.lpriors.common
+   :members:
+   :undoc-members:
+   :show-inheritance:

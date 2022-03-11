@@ -1,0 +1,7 @@
+mgplvm.manifolds.quaternion module
+==================================
+
+.. automodule:: mgplvm.manifolds.quaternion
+   :members:
+   :undoc-members:
+   :show-inheritance:

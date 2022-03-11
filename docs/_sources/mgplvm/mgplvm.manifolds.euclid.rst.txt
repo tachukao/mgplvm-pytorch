@@ -1,0 +1,7 @@
+mgplvm.manifolds.euclid module
+==============================
+
+.. automodule:: mgplvm.manifolds.euclid
+   :members:
+   :undoc-members:
+   :show-inheritance:

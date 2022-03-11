@@ -1,0 +1,7 @@
+mgplvm.crossval.construct\_model module
+=======================================
+
+.. automodule:: mgplvm.crossval.construct_model
+   :members:
+   :undoc-members:
+   :show-inheritance:

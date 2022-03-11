@@ -1,0 +1,7 @@
+mgplvm.crossval.train\_model module
+===================================
+
+.. automodule:: mgplvm.crossval.train_model
+   :members:
+   :undoc-members:
+   :show-inheritance:

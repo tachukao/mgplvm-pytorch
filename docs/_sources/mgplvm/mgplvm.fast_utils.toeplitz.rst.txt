@@ -1,0 +1,7 @@
+mgplvm.fast\_utils.toeplitz module
+==================================
+
+.. automodule:: mgplvm.fast_utils.toeplitz
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.models.bfa module &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.models.gp_base module" href="mgplvm.models.gp_base.html" />
+    <link rel="prev" title="mgplvm.models package" href="mgplvm.models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.fast_utils.html">mgplvm.fast_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.kernels.html">mgplvm.kernels package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.models.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.models.html#module-mgplvm.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.optimisers.html">mgplvm.optimisers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+          <li><a href="mgplvm.models.html">mgplvm.models package</a> &raquo;</li>
+      <li>mgplvm.models.bfa module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/mgplvm/mgplvm.models.bfa.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-mgplvm.models.bfa">
+<span id="mgplvm-models-bfa-module"></span><h1>mgplvm.models.bfa module<a class="headerlink" href="#module-mgplvm.models.bfa" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.models.bfa.</span></span><span class="sig-name descname"><span class="pre">Bfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_neuron_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bfa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bfa" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.models.gp_base.html#mgplvm.models.gp_base.GpBase" title="mgplvm.models.gp_base.GpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.models.gp_base.GpBase</span></code></a></p>
+<p>Bayesian Factor Analysis
+Assumes Gaussian observation noise
+Computes log_prob and posterior predictions exactly</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.dim_scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dim_scale</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bfa.dim_scale" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.elbo">
+<span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bfa.elbo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bfa.elbo" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>data tensor with dimensions (n_samples x n x m)</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>input tensor(s) with dimensions (n_mc x n_samples x d x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>lik, prior_kl</strong><span class="classifier">Tuple[torch.Tensor, torch.Tensor]</span></dt><dd><p>lik has dimensions (n_mc x n) 
+prior_kl has dimensions (n) and is zero</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.g0_parameters">
+<span class="sig-name descname"><span class="pre">g0_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bfa.g0_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bfa.g0_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.g1_parameters">
+<span class="sig-name descname"><span class="pre">g1_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bfa.g1_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bfa.g1_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.log_prob">
+<span class="sig-name descname"><span class="pre">log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bfa.log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bfa.log_prob" title="Permalink to this definition"></a></dt>
+<dd><p>compute prior p(y) = N(y|0, X^T X)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bfa.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Bfa'</span></em><a class="headerlink" href="#mgplvm.models.bfa.Bfa.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.neuron_scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">neuron_scale</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bfa.neuron_scale" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xstar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bfa.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bfa.predict" title="Permalink to this definition"></a></dt>
+<dd><p>compute posterior p(f* | x, y)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#mgplvm.models.bfa.Bfa.prms" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scale</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bfa.scale" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.sigma">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sigma</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#mgplvm.models.bfa.Bfa.sigma" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bfa.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.models.bfa.Bfa.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.models.bfa.</span></span><span class="sig-name descname"><span class="pre">Bvfa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likelihood</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_sqrt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tied_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_neuron_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rel_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bvfa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bvfa" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.models.gp_base.html#mgplvm.models.gp_base.GpBase" title="mgplvm.models.gp_base.GpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.models.gp_base.GpBase</span></code></a></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.dim_scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dim_scale</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.dim_scale" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.elbo">
+<span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bvfa.elbo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.elbo" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>data tensor with dimensions (n_samples x n x m)</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>input tensor(s) with dimensions (n_mc x n_samples x d x m)</p>
+</dd>
+<dt><strong>m</strong><span class="classifier">Optional int</span></dt><dd><p>used to scale the svgp likelihood.
+If not provided, self.m is used which is provided at initialization.
+This parameter is useful if we subsample data but want to weight the prior as if it was the full dataset.
+We use this e.g. in crossvalidation</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>lik, prior_kl</strong><span class="classifier">Tuple[torch.Tensor, torch.Tensor]</span></dt><dd><p>lik has dimensions (n_mc x n) 
+prior_kl has dimensions (n)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.g0_parameters">
+<span class="sig-name descname"><span class="pre">g0_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bvfa.g0_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.g0_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.g1_parameters">
+<span class="sig-name descname"><span class="pre">g1_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bvfa.g1_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.g1_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Bvfa'</span></em><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.neuron_scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">neuron_scale</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.neuron_scale" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_cov</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bvfa.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.predict" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>test input tensor(s) with dimensions (n_b x n_samples x d x m)</p>
+</dd>
+<dt><strong>full_cov</strong><span class="classifier">bool</span></dt><dd><p>returns full covariance if true otherwise returns the diagonal</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>mu</strong><span class="classifier">Tensor</span></dt><dd><p>mean of predictive density at test inputs [ s ]</p>
+</dd>
+<dt><strong>v</strong><span class="classifier">Tensor</span></dt><dd><p>variance/covariance of predictive density at test inputs [ s ]
+if full_cov is true returns full covariance, otherwise
+returns diagonal variance</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.prior_kl">
+<span class="sig-name descname"><span class="pre">prior_kl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p(f)</span> <span class="pre">||</span> <span class="pre">q(f)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bvfa.prior_kl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.prior_kl" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.prms" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.q_mu">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">q_mu</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.q_mu" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.q_sqrt">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">q_sqrt</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.q_sqrt" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">square</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Bvfa.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.sample" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>query</strong><span class="classifier">Tensor (single kernel)</span></dt><dd><p>test input tensor with dimensions (n_samples x d x m)</p>
+</dd>
+<dt><strong>n_mc</strong><span class="classifier">int</span></dt><dd><p>numper of samples to return</p>
+</dd>
+<dt><strong>square</strong><span class="classifier">bool</span></dt><dd><p>determines whether to square the output</p>
+</dd>
+<dt><strong>noise</strong><span class="classifier">bool</span></dt><dd><p>determines whether we also sample explicitly from the noise model or simply return samples of the mean</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y_samps</strong><span class="classifier">Tensor</span></dt><dd><p>samples from the model (n_mc x n_samples x d x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scale</span></span><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.scale" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Bvfa.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.models.bfa.Bvfa.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.models.bfa.</span></span><span class="sig-name descname"><span class="pre">Fa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Fa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Fa" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.models.gp_base.html#mgplvm.models.gp_base.GpBase" title="mgplvm.models.gp_base.GpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.models.gp_base.GpBase</span></code></a></p>
+<p>Standard non-Bayesian Factor Analysis
+Assumes Gaussian observation noise
+Computes log_prob and posterior predictions exactly</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.elbo">
+<span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Fa.elbo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Fa.elbo" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>data tensor with dimensions (n_samples x n x m)</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>input tensor(s) with dimensions (n_mc x n_samples x d x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>lik, prior_kl</strong><span class="classifier">Tuple[torch.Tensor, torch.Tensor]</span></dt><dd><p>lik has dimensions (n_mc x n) 
+prior_kl has dimensions (n) and is zero</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.g0_parameters">
+<span class="sig-name descname"><span class="pre">g0_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Fa.g0_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Fa.g0_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.g1_parameters">
+<span class="sig-name descname"><span class="pre">g1_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Fa.g1_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Fa.g1_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.log_prob">
+<span class="sig-name descname"><span class="pre">log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Fa.log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Fa.log_prob" title="Permalink to this definition"></a></dt>
+<dd><p>compute p(y|X) = N(y|CX, I)
+x is (n_mc x n_samples x d x m)
+y is (n_samples x n x m)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.models.bfa.Fa.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Fa'</span></em><a class="headerlink" href="#mgplvm.models.bfa.Fa.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xstar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Fa.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Fa.predict" title="Permalink to this definition"></a></dt>
+<dd><p>compute posterior p(f* | x, y, C) = N(<a class="reference external" href="mailto:C&#37;&#52;&#48;x*">C<span>&#64;</span>x*</a>, Sig)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#mgplvm.models.bfa.Fa.prms" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">square</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#Fa.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.Fa.sample" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>query</strong><span class="classifier">Tensor (single kernel)</span></dt><dd><p>test input tensor with dimensions (n_samples x d x m)</p>
+</dd>
+<dt><strong>n_mc</strong><span class="classifier">int</span></dt><dd><p>numper of samples to return</p>
+</dd>
+<dt><strong>square</strong><span class="classifier">bool</span></dt><dd><p>determines whether to square the output</p>
+</dd>
+<dt><strong>noise</strong><span class="classifier">bool</span></dt><dd><p>determines whether we also sample explicitly from the noise model or simply return samples of the mean</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y_samps</strong><span class="classifier">Tensor</span></dt><dd><p>samples from the model (n_mc x n_samples x d x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.sigma">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sigma</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#mgplvm.models.bfa.Fa.sigma" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.Fa.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.models.bfa.Fa.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.batch_capacitance_tril">
+<span class="sig-prename descclassname"><span class="pre">mgplvm.models.bfa.</span></span><span class="sig-name descname"><span class="pre">batch_capacitance_tril</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">W</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#batch_capacitance_tril"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.batch_capacitance_tril" title="Permalink to this definition"></a></dt>
+<dd><p>Copied from pytorch source code
+Computes Cholesky of <span class="math notranslate nohighlight">\(I + W.T &#64; inv(D) &#64; W\)</span> for a batch of matrices <span class="math notranslate nohighlight">\(W\)</span>
+and a batch of vectors <span class="math notranslate nohighlight">\(D\)</span>.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.models.bfa.</span></span><span class="sig-name descname"><span class="pre">vFa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likelihood</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rel_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#vFa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.vFa" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.models.gp_base.html#mgplvm.models.gp_base.GpBase" title="mgplvm.models.gp_base.GpBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.models.gp_base.GpBase</span></code></a></p>
+<p>Variational non-Bayesian Factor Analysis
+Allows for non-Gaussian noise</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.elbo">
+<span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#vFa.elbo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.vFa.elbo" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">Tensor</span></dt><dd><p>data tensor with dimensions (n_samples x n x m)</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">Tensor (single kernel) or Tensor list (product kernels)</span></dt><dd><p>input tensor(s) with dimensions (n_mc x n_samples x d x m)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>lik, prior_kl</strong><span class="classifier">Tuple[torch.Tensor, torch.Tensor]</span></dt><dd><p>lik has dimensions (n_mc x n) 
+prior_kl has dimensions (n) and is zero</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.g0_parameters">
+<span class="sig-name descname"><span class="pre">g0_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#vFa.g0_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.vFa.g0_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.g1_parameters">
+<span class="sig-name descname"><span class="pre">g1_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#vFa.g1_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.vFa.g1_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.models.bfa.vFa.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'vFa'</span></em><a class="headerlink" href="#mgplvm.models.bfa.vFa.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xstar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#vFa.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.vFa.predict" title="Permalink to this definition"></a></dt>
+<dd><p>compute posterior p(f* | x, y, C) = N(<a class="reference external" href="mailto:C&#37;&#52;&#48;x*">C<span>&#64;</span>x*</a>, Sig)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#mgplvm.models.bfa.vFa.prms" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">square</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/bfa.html#vFa.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.bfa.vFa.sample" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>query</strong><span class="classifier">Tensor (single kernel)</span></dt><dd><p>test input tensor with dimensions (n_samples x d x m)</p>
+</dd>
+<dt><strong>n_mc</strong><span class="classifier">int</span></dt><dd><p>numper of samples to return</p>
+</dd>
+<dt><strong>square</strong><span class="classifier">bool</span></dt><dd><p>determines whether to square the output</p>
+</dd>
+<dt><strong>noise</strong><span class="classifier">bool</span></dt><dd><p>determines whether we also sample explicitly from the noise model or simply return samples of the mean</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>y_samps</strong><span class="classifier">Tensor</span></dt><dd><p>samples from the model (n_mc x n_samples x d x m)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.bfa.vFa.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.models.bfa.vFa.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mgplvm.models.html" class="btn btn-neutral float-left" title="mgplvm.models package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mgplvm.models.gp_base.html" class="btn btn-neutral float-right" title="mgplvm.models.gp_base module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

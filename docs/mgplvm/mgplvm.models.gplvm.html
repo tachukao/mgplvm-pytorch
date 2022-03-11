@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.models.gplvm module &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.models.lgplvm module" href="mgplvm.models.lgplvm.html" />
+    <link rel="prev" title="mgplvm.models.gp_base module" href="mgplvm.models.gp_base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.fast_utils.html">mgplvm.fast_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.kernels.html">mgplvm.kernels package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.models.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.models.html#module-mgplvm.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.optimisers.html">mgplvm.optimisers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+          <li><a href="mgplvm.models.html">mgplvm.models package</a> &raquo;</li>
+      <li>mgplvm.models.gplvm module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/mgplvm/mgplvm.models.gplvm.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-mgplvm.models.gplvm">
+<span id="mgplvm-models-gplvm-module"></span><h1>mgplvm.models.gplvm module<a class="headerlink" href="#module-mgplvm.models.gplvm" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.models.gplvm.Gplvm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.models.gplvm.</span></span><span class="sig-name descname"><span class="pre">Gplvm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat_dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lprior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/gplvm.html#Gplvm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.gplvm.Gplvm" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.modules.module.Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.gplvm.Gplvm.calc_LL">
+<span class="sig-name descname"><span class="pre">calc_LL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/gplvm.html#Gplvm.calc_LL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.gplvm.Gplvm.calc_LL" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">Tensor</span></dt><dd><p>data with dimensionality (n_samples x n x m)</p>
+</dd>
+<dt><strong>n_mc</strong><span class="classifier">int</span></dt><dd><p>number of MC samples</p>
+</dd>
+<dt><strong>kmax</strong><span class="classifier">int</span></dt><dd><p>parameter for estimating entropy for several manifolds
+(not used for some manifolds)</p>
+</dd>
+<dt><strong>m</strong><span class="classifier">Optional int</span></dt><dd><p>used to scale the svgp likelihood and sgp prior.
+If not provided, self.m is used which is provided at initialization.
+This parameter is useful if we subsample data but want to weight the prior as if it was the full dataset.
+We use this e.g. in crossvalidation</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>LL</strong><span class="classifier">Tensor</span></dt><dd><p>E_mc[p(Y)] (burda et al.) (scalar)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.gplvm.Gplvm.elbo">
+<span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analytic_kl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/gplvm.html#Gplvm.elbo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.gplvm.Gplvm.elbo" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">Tensor</span></dt><dd><p>data with dimensionality (n_samples x n x m)</p>
+</dd>
+<dt><strong>n_mc</strong><span class="classifier">int</span></dt><dd><p>number of MC samples</p>
+</dd>
+<dt><strong>kmax</strong><span class="classifier">int</span></dt><dd><p>parameter for estimating entropy for several manifolds
+(not used for some manifolds)</p>
+</dd>
+<dt><strong>batch_idxs</strong><span class="classifier">Optional int list</span></dt><dd><p>if None then use all data and (batch_size == m)
+otherwise, (batch_size == len(batch_idxs))</p>
+</dd>
+<dt><strong>sample_idxs</strong><span class="classifier">Optional int list</span></dt><dd><p>if None then use all data 
+otherwise, compute elbo only for selected samples</p>
+</dd>
+<dt><strong>neuron_idxs: Optional int list</strong></dt><dd><p>if None then use all data 
+otherwise, compute only elbo for selected neurons</p>
+</dd>
+<dt><strong>m</strong><span class="classifier">Optional int</span></dt><dd><p>used to scale the svgp likelihood and sgp prior.
+If not provided, self.m is used which is provided at initialization.
+This parameter is useful if we subsample data but want to weight the prior as if it was the full dataset.
+We use this e.g. in crossvalidation</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>svgp_elbo</strong><span class="classifier">Tensor</span></dt><dd><p>evidence lower bound of sparse GP per neuron, batch and sample (n_mc x n)
+note that this is the ELBO for the batch which is proportional to an unbiased estimator for the data.</p>
+</dd>
+<dt><strong>kl</strong><span class="classifier">Tensor</span></dt><dd><p>estimated KL divergence per batch between variational distribution and prior (n_mc)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>ELBO of the model per batch is [ svgp_elbo - kl ]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.models.gplvm.Gplvm.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analytic_kl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/models/gplvm.html#Gplvm.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.models.gplvm.Gplvm.forward" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">Tensor</span></dt><dd><p>data with dimensionality (n_samples x n x m)</p>
+</dd>
+<dt><strong>n_mc</strong><span class="classifier">int</span></dt><dd><p>number of MC samples</p>
+</dd>
+<dt><strong>kmax</strong><span class="classifier">int</span></dt><dd><p>parameter for estimating entropy for several manifolds
+(not used for some manifolds)</p>
+</dd>
+<dt><strong>batch_idxs: Optional int list</strong></dt><dd><p>if None then use all data and (batch_size == m)
+otherwise, (batch_size == len(batch_idxs))</p>
+</dd>
+<dt><strong>sample_idxs</strong><span class="classifier">Optional int list</span></dt><dd><p>if None then use all data 
+otherwise, compute elbo only for selected samples</p>
+</dd>
+<dt><strong>neuron_idxs: Optional int list</strong></dt><dd><p>if None then use all data 
+otherwise, compute only elbo for selected neurons</p>
+</dd>
+<dt><strong>m</strong><span class="classifier">Optional int</span></dt><dd><p>used to scale the svgp likelihood and sgp prior.
+If not provided, self.m is used which is provided at initialization.
+This parameter is useful if we subsample data but want to weight the prior as if it was the full dataset.
+We use this e.g. in crossvalidation</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>elbo</strong><span class="classifier">Tensor</span></dt><dd><p>evidence lower bound of the GPLVM model averaged across MC samples and summed over n, m, n_samples (scalar)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.gplvm.Gplvm.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Gplvm'</span></em><a class="headerlink" href="#mgplvm.models.gplvm.Gplvm.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.models.gplvm.Gplvm.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.models.gplvm.Gplvm.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mgplvm.models.gp_base.html" class="btn btn-neutral float-left" title="mgplvm.models.gp_base module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mgplvm.models.lgplvm.html" class="btn btn-neutral float-right" title="mgplvm.models.lgplvm module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

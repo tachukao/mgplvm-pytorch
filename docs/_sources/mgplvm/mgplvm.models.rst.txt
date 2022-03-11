@@ -1,0 +1,23 @@
+mgplvm.models package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.models.bfa
+   mgplvm.models.gp_base
+   mgplvm.models.gplvm
+   mgplvm.models.lgplvm
+   mgplvm.models.svgp
+   mgplvm.models.svgplvm
+
+Module contents
+---------------
+
+.. automodule:: mgplvm.models
+   :members:
+   :undoc-members:
+   :show-inheritance:

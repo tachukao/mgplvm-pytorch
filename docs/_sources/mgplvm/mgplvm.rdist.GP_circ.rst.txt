@@ -1,0 +1,7 @@
+mgplvm.rdist.GP\_circ module
+============================
+
+.. automodule:: mgplvm.rdist.GP_circ
+   :members:
+   :undoc-members:
+   :show-inheritance:

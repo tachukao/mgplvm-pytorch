@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.lpriors.torus &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../mgplvm/mgplvm.html">mgplvm package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>mgplvm.lpriors.torus</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for mgplvm.lpriors.torus</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.distributions</span> <span class="k">as</span> <span class="nn">dists</span>
+<span class="kn">from</span> <span class="nn">..manifolds</span> <span class="kn">import</span> <span class="n">Torus</span>
+<span class="kn">from</span> <span class="nn">.common</span> <span class="kn">import</span> <span class="n">Lprior</span>
+
+
+<div class="viewcode-block" id="LpriorTorus"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.torus.html#mgplvm.lpriors.torus.LpriorTorus">[docs]</a><span class="k">class</span> <span class="nc">LpriorTorus</span><span class="p">(</span><span class="n">Lprior</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">Torus</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;VonMises prior only works with Tori manifolds&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VonMises"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.torus.html#mgplvm.lpriors.torus.VonMises">[docs]</a><span class="k">class</span> <span class="nc">VonMises</span><span class="p">(</span><span class="n">LpriorTorus</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;VonMises&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manif</span><span class="p">,</span> <span class="n">concentration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fixed_concentration</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">manif</span><span class="o">.</span><span class="n">d</span>
+        <span class="n">concentration</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span>
+            <span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">concentration</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">concentration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concentration</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">dists</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span>
+                <span class="n">dists</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">greater_than_eq</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">concentration</span><span class="p">),</span>
+            <span class="n">requires_grad</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">fixed_concentration</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dists</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span><span class="n">dists</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">greater_than_eq</span><span class="p">(</span><span class="mi">0</span><span class="p">))(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">concentration</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VonMises.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.torus.html#mgplvm.lpriors.torus.VonMises.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">concentration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">ginv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">ginv</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>
+        <span class="n">vm</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">VonMises</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+                            <span class="n">concentration</span><span class="o">=</span><span class="n">concentration</span><span class="p">)</span>
+        <span class="n">vm_all</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span><span class="n">vm</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vm_all</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">concentration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;concentration </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">concentration</span><span class="o">.</span><span class="n">item</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="IARP"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.torus.html#mgplvm.lpriors.torus.IARP">[docs]</a><span class="k">class</span> <span class="nc">IARP</span><span class="p">(</span><span class="n">LpriorTorus</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;IARP&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">p</span><span class="p">,</span>
+                 <span class="n">manif</span><span class="p">,</span>
+                 <span class="n">mu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">phi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">concentration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">fixed_mu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">fixed_concentration</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">link</span><span class="o">=</span><span class="s2">&quot;logits&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">manif</span><span class="o">.</span><span class="n">d</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">if</span> <span class="n">phi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">phi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">phi</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">link</span> <span class="o">==</span> <span class="s2">&quot;atan&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tan</span><span class="p">((</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">link</span> <span class="o">==</span> <span class="s2">&quot;logits&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dists</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">logits_to_probs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">dists</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">probs_to_logits</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span>
+                                                                  <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Link function not implemented for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">link</span><span class="p">)</span>
+
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">mu</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mu</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">mu</span><span class="p">),</span>
+                               <span class="n">requires_grad</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">fixed_mu</span><span class="p">))</span>
+        <span class="n">concentration</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span>
+            <span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">concentration</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">concentration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">concentration</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">dists</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span>
+                <span class="n">dists</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">greater_than_eq</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">concentration</span><span class="p">),</span>
+            <span class="n">requires_grad</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">fixed_concentration</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">concentration</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">transform_to</span><span class="p">(</span>
+            <span class="n">dists</span><span class="o">.</span><span class="n">constraints</span><span class="o">.</span><span class="n">greater_than_eq</span><span class="p">(</span><span class="mi">0</span><span class="p">))(</span><span class="bp">self</span><span class="o">.</span><span class="n">concentration</span><span class="p">)</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="p">,</span> <span class="n">concentration</span>
+
+<div class="viewcode-block" id="IARP.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.torus.html#mgplvm.lpriors.torus.IARP.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">concentration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="n">g</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># make sure it&#39;s</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">p</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">)],</span>
+            <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">hat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">delta</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">vm</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">VonMises</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">hat</span><span class="p">,</span> <span class="n">concentration</span><span class="o">=</span><span class="n">concentration</span><span class="p">)</span>
+        <span class="n">vm_all</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span><span class="n">vm</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vm_all</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">p</span><span class="p">:,</span> <span class="p">:])</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">concentration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;mu_avg </span><span class="si">{:.3f}</span><span class="s1"> | phi_avg </span><span class="si">{:.3f}</span><span class="s1"> | concentration </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">concentration</span><span class="o">.</span><span class="n">item</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="LARP"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.torus.html#mgplvm.lpriors.torus.LARP">[docs]</a><span class="k">class</span> <span class="nc">LARP</span><span class="p">(</span><span class="n">LpriorTorus</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;LinkedARP&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">p</span><span class="p">,</span>
+                 <span class="n">manif</span><span class="p">,</span>
+                 <span class="n">mu</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">phi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">eta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">fixed_mu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">fixed_eta</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">link</span><span class="o">=</span><span class="s2">&quot;logits&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">manif</span><span class="o">.</span><span class="n">d</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">if</span> <span class="n">phi</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">phi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phi</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">phi</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">link</span> <span class="o">==</span> <span class="s2">&quot;atan&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tan</span><span class="p">((</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">link</span> <span class="o">==</span> <span class="s2">&quot;logits&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dists</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">logits_to_probs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">dists</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">probs_to_logits</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span>
+                                                                  <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Linke function not implemented for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">link</span><span class="p">)</span>
+
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">mu</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mu</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">mu</span><span class="p">),</span>
+                               <span class="n">requires_grad</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">fixed_mu</span><span class="p">))</span>
+        <span class="n">eta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">if</span> <span class="n">eta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">requires_grad</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">fixed_eta</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eta</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LARP.forward"><a class="viewcode-back" href="../../../mgplvm/mgplvm.lpriors.torus.html#mgplvm.lpriors.torus.LARP.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">batch_idxs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="p">(</span><span class="n">g</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># make sure it&#39;s on the circle</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">inv_link</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">p</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">)],</span>
+            <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">hat</span> <span class="o">=</span> <span class="n">delta</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="n">hat</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">eta</span><span class="p">))</span>
+        <span class="n">normal_all</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">normal_all</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">p</span><span class="p">:,</span> <span class="p">:])</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">concentration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prms</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;mu_avg </span><span class="si">{:.3f}</span><span class="s1"> | phi_avg </span><span class="si">{:.3f}</span><span class="s1"> | eta </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">concentration</span><span class="o">.</span><span class="n">item</span><span class="p">())</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

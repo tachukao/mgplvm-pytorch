@@ -1,0 +1,20 @@
+mgplvm.kernels package
+======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.kernels.kernel
+   mgplvm.kernels.linear
+   mgplvm.kernels.stationary
+
+Module contents
+---------------
+
+.. automodule:: mgplvm.kernels
+   :members:
+   :undoc-members:
+   :show-inheritance:

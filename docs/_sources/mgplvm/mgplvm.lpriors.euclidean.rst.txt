@@ -1,0 +1,7 @@
+mgplvm.lpriors.euclidean module
+===============================
+
+.. automodule:: mgplvm.lpriors.euclidean
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+mgplvm.optimisers.stopping\_criterions module
+=============================================
+
+.. automodule:: mgplvm.optimisers.stopping_criterions
+   :members:
+   :undoc-members:
+   :show-inheritance:

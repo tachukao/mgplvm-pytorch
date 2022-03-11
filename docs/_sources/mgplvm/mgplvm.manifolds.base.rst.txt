@@ -1,0 +1,7 @@
+mgplvm.manifolds.base module
+============================
+
+.. automodule:: mgplvm.manifolds.base
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+mgplvm.optimisers.svgp module
+=============================
+
+.. automodule:: mgplvm.optimisers.svgp
+   :members:
+   :undoc-members:
+   :show-inheritance:

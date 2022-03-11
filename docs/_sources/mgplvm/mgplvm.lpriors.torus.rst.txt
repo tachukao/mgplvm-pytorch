@@ -1,0 +1,7 @@
+mgplvm.lpriors.torus module
+===========================
+
+.. automodule:: mgplvm.lpriors.torus
+   :members:
+   :undoc-members:
+   :show-inheritance:

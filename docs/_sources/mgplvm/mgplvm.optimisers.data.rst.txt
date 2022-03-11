@@ -1,0 +1,7 @@
+mgplvm.optimisers.data module
+=============================
+
+.. automodule:: mgplvm.optimisers.data
+   :members:
+   :undoc-members:
+   :show-inheritance:

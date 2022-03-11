@@ -1,0 +1,20 @@
+mgplvm.optimisers package
+=========================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.optimisers.data
+   mgplvm.optimisers.stopping_criterions
+   mgplvm.optimisers.svgp
+
+Module contents
+---------------
+
+.. automodule:: mgplvm.optimisers
+   :members:
+   :undoc-members:
+   :show-inheritance:

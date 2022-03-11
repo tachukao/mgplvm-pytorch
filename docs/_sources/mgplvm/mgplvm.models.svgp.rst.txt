@@ -1,0 +1,7 @@
+mgplvm.models.svgp module
+=========================
+
+.. automodule:: mgplvm.models.svgp
+   :members:
+   :undoc-members:
+   :show-inheritance:

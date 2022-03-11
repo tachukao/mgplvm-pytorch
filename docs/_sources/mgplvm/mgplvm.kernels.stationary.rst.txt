@@ -1,0 +1,7 @@
+mgplvm.kernels.stationary module
+================================
+
+.. automodule:: mgplvm.kernels.stationary
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+mgplvm.crossval.crossval\_bgpfa module
+======================================
+
+.. automodule:: mgplvm.crossval.crossval_bgpfa
+   :members:
+   :undoc-members:
+   :show-inheritance:

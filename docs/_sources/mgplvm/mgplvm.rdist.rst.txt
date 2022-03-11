@@ -1,0 +1,22 @@
+mgplvm.rdist package
+====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.rdist.GP_circ
+   mgplvm.rdist.GP_diag
+   mgplvm.rdist.GPbase
+   mgplvm.rdist.common
+   mgplvm.rdist.relie
+
+Module contents
+---------------
+
+.. automodule:: mgplvm.rdist
+   :members:
+   :undoc-members:
+   :show-inheritance:

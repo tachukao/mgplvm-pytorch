@@ -1,0 +1,20 @@
+mgplvm.fast\_utils package
+==========================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.fast_utils.broadcasting
+   mgplvm.fast_utils.linear_cg
+   mgplvm.fast_utils.toeplitz
+
+Module contents
+---------------
+
+.. automodule:: mgplvm.fast_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:

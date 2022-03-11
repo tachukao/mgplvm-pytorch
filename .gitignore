@@ -1,5 +1,5 @@
 *.bat
-docs/source/mgplvm
+docsrc/source/mgplvm
 build
 _build
 .vscode

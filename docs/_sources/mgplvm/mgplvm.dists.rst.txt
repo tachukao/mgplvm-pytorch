@@ -1,0 +1,7 @@
+mgplvm.dists module
+===================
+
+.. automodule:: mgplvm.dists
+   :members:
+   :undoc-members:
+   :show-inheritance:

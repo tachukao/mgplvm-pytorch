@@ -1,0 +1,7 @@
+mgplvm.models.bfa module
+========================
+
+.. automodule:: mgplvm.models.bfa
+   :members:
+   :undoc-members:
+   :show-inheritance:

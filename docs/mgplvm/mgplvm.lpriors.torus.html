@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.lpriors.torus module &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.manifolds package" href="mgplvm.manifolds.html" />
+    <link rel="prev" title="mgplvm.lpriors.euclidean module" href="mgplvm.lpriors.euclidean.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.fast_utils.html">mgplvm.fast_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.kernels.html">mgplvm.kernels package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.lpriors.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.lpriors.html#module-mgplvm.lpriors">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.optimisers.html">mgplvm.optimisers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+          <li><a href="mgplvm.lpriors.html">mgplvm.lpriors package</a> &raquo;</li>
+      <li>mgplvm.lpriors.torus module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/mgplvm/mgplvm.lpriors.torus.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-mgplvm.lpriors.torus">
+<span id="mgplvm-lpriors-torus-module"></span><h1>mgplvm.lpriors.torus module<a class="headerlink" href="#module-mgplvm.lpriors.torus" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.IARP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.lpriors.torus.</span></span><span class="sig-name descname"><span class="pre">IARP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concentration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_concentration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logits'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/torus.html#IARP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.lpriors.torus.IARP" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.torus.LpriorTorus" title="mgplvm.lpriors.torus.LpriorTorus"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.torus.LpriorTorus</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.IARP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/torus.html#IARP.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.lpriors.torus.IARP.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.IARP.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.lpriors.torus.IARP.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.IARP.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IARP'</span></em><a class="headerlink" href="#mgplvm.lpriors.torus.IARP.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.IARP.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><a class="headerlink" href="#mgplvm.lpriors.torus.IARP.prms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.IARP.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.lpriors.torus.IARP.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.LARP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.lpriors.torus.</span></span><span class="sig-name descname"><span class="pre">LARP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_eta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logits'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/torus.html#LARP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.lpriors.torus.LARP" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.torus.LpriorTorus" title="mgplvm.lpriors.torus.LpriorTorus"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.torus.LpriorTorus</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.LARP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/torus.html#LARP.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.lpriors.torus.LARP.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.LARP.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.lpriors.torus.LARP.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.LARP.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LinkedARP'</span></em><a class="headerlink" href="#mgplvm.lpriors.torus.LARP.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.LARP.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><a class="headerlink" href="#mgplvm.lpriors.torus.LARP.prms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.LARP.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.lpriors.torus.LARP.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.LpriorTorus">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.lpriors.torus.</span></span><span class="sig-name descname"><span class="pre">LpriorTorus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manif</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/torus.html#LpriorTorus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.lpriors.torus.LpriorTorus" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mgplvm.lpriors.common.html#mgplvm.lpriors.common.Lprior" title="mgplvm.lpriors.common.Lprior"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.common.Lprior</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.LpriorTorus.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.lpriors.torus.LpriorTorus.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.VonMises">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">mgplvm.lpriors.torus.</span></span><span class="sig-name descname"><span class="pre">VonMises</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manif</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concentration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_concentration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/torus.html#VonMises"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.lpriors.torus.VonMises" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mgplvm.lpriors.torus.LpriorTorus" title="mgplvm.lpriors.torus.LpriorTorus"><code class="xref py py-class docutils literal notranslate"><span class="pre">mgplvm.lpriors.torus.LpriorTorus</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.VonMises.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/lpriors/torus.html#VonMises.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.lpriors.torus.VonMises.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.VonMises.msg">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">msg</span></span><a class="headerlink" href="#mgplvm.lpriors.torus.VonMises.msg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.VonMises.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'VonMises'</span></em><a class="headerlink" href="#mgplvm.lpriors.torus.VonMises.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.VonMises.prms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prms</span></span><a class="headerlink" href="#mgplvm.lpriors.torus.VonMises.prms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mgplvm.lpriors.torus.VonMises.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#mgplvm.lpriors.torus.VonMises.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mgplvm.lpriors.euclidean.html" class="btn btn-neutral float-left" title="mgplvm.lpriors.euclidean module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mgplvm.manifolds.html" class="btn btn-neutral float-right" title="mgplvm.manifolds package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

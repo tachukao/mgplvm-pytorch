@@ -1,0 +1,38 @@
+mgplvm package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.crossval
+   mgplvm.fast_utils
+   mgplvm.kernels
+   mgplvm.lpriors
+   mgplvm.manifolds
+   mgplvm.models
+   mgplvm.optimisers
+   mgplvm.rdist
+   mgplvm.syndata
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   mgplvm.base
+   mgplvm.dists
+   mgplvm.inducing_variables
+   mgplvm.likelihoods
+   mgplvm.utils
+
+Module contents
+---------------
+
+.. automodule:: mgplvm
+   :members:
+   :undoc-members:
+   :show-inheritance:

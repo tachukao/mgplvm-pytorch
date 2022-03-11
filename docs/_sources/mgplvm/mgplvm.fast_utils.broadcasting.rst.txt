@@ -1,0 +1,7 @@
+mgplvm.fast\_utils.broadcasting module
+======================================
+
+.. automodule:: mgplvm.fast_utils.broadcasting
+   :members:
+   :undoc-members:
+   :show-inheritance:

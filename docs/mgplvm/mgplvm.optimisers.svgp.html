@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mgplvm.optimisers.svgp module &mdash; mGPLVM 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mgplvm.rdist package" href="mgplvm.rdist.html" />
+    <link rel="prev" title="mgplvm.optimisers.stopping_criterions module" href="mgplvm.optimisers.stopping_criterions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> mGPLVM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="mgplvm.html">mgplvm package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="mgplvm.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.crossval.html">mgplvm.crossval package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.fast_utils.html">mgplvm.fast_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.kernels.html">mgplvm.kernels package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.lpriors.html">mgplvm.lpriors package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.manifolds.html">mgplvm.manifolds package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.models.html">mgplvm.models package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="mgplvm.optimisers.html">mgplvm.optimisers package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="mgplvm.optimisers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mgplvm.optimisers.html#module-mgplvm.optimisers">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.rdist.html">mgplvm.rdist package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mgplvm.syndata.html">mgplvm.syndata package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mgplvm.html#module-mgplvm">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mGPLVM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="mgplvm.html">mgplvm package</a> &raquo;</li>
+          <li><a href="mgplvm.optimisers.html">mgplvm.optimisers package</a> &raquo;</li>
+      <li>mgplvm.optimisers.svgp module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/mgplvm/mgplvm.optimisers.svgp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-mgplvm.optimisers.svgp">
+<span id="mgplvm-optimisers-svgp-module"></span><h1>mgplvm.optimisers.svgp module<a class="headerlink" href="#module-mgplvm.optimisers.svgp" title="Permalink to this headline"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="mgplvm.optimisers.svgp.fit">
+<span class="sig-prename descclassname"><span class="pre">mgplvm.optimisers.svgp.</span></span><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer=&lt;class</span> <span class="pre">'torch.optim.adam.Adam'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mc=32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burnin=100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lrate=0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps=1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_every=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_Ts=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neuron_idxs=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_m=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analytic_kl=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accumulate_gradient=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_mc=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/optimisers/svgp.html#fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.optimisers.svgp.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dataset</strong><span class="classifier">Union[Tensor,DataLoader]</span></dt><dd><p>data matrix of dimensions (n_samples x n x m)</p>
+</dd>
+<dt><strong>model</strong><span class="classifier">SvgpLvm</span></dt><dd><p>model to be trained</p>
+</dd>
+<dt><strong>n_mc</strong><span class="classifier">int</span></dt><dd><p>number of MC samples for estimating the ELBO</p>
+</dd>
+<dt><strong>burnin</strong><span class="classifier">int</span></dt><dd><p>number of iterations to burn in during optimization</p>
+</dd>
+<dt><strong>lrate</strong><span class="classifier">float</span></dt><dd><p>initial learning rate passed to the optimizer</p>
+</dd>
+<dt><strong>max_steps</strong><span class="classifier">Optional[int], default=1000</span></dt><dd><p>maximum number of training iterations</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mgplvm.optimisers.svgp.print_progress">
+<span class="sig-prename descclassname"><span class="pre">mgplvm.optimisers.svgp.</span></span><span class="sig-name descname"><span class="pre">print_progress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kl_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">svgp_elbo_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_idxs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/optimisers/svgp.html#print_progress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.optimisers.svgp.print_progress" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="mgplvm.optimisers.svgp.sort_params">
+<span class="sig-prename descclassname"><span class="pre">mgplvm.optimisers.svgp.</span></span><span class="sig-name descname"><span class="pre">sort_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mgplvm/optimisers/svgp.html#sort_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mgplvm.optimisers.svgp.sort_params" title="Permalink to this definition"></a></dt>
+<dd><p>apply burnin period to Sigma_Q and alpha^2
+allow for masking of certain conditions for use in crossvalidation</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mgplvm.optimisers.stopping_criterions.html" class="btn btn-neutral float-left" title="mgplvm.optimisers.stopping_criterions module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mgplvm.rdist.html" class="btn btn-neutral float-right" title="mgplvm.rdist package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ta-Chu Kao and Kris Jensen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

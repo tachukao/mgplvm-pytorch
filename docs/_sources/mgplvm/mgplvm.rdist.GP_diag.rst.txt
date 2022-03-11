@@ -1,0 +1,7 @@
+mgplvm.rdist.GP\_diag module
+============================
+
+.. automodule:: mgplvm.rdist.GP_diag
+   :members:
+   :undoc-members:
+   :show-inheritance:

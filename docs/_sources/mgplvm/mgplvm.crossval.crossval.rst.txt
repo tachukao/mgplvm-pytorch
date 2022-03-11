@@ -1,0 +1,7 @@
+mgplvm.crossval.crossval module
+===============================
+
+.. automodule:: mgplvm.crossval.crossval
+   :members:
+   :undoc-members:
+   :show-inheritance:
