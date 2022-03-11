@@ -9,7 +9,6 @@ This is a library for learning Gaussian process latent variable models (GPLVMs) 
    :caption: Getting Started
 
    install
-   example
 
 .. toctree::   
    :maxdepth: 1
