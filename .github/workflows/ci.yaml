@@ -28,4 +28,5 @@ jobs:
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
         run: |
+          pip install pytest
           pytest -v --cov=mgplvm --cov-report term-missing
