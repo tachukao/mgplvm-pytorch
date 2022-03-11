@@ -4,7 +4,7 @@
 
 1. Install dependencies
 ```sh
-pip install sphinx shpinx_rtd_theme numpydoc sphinx_autodoc_typehints
+pip install -r requirements.txt
 ```
 
 2. Build

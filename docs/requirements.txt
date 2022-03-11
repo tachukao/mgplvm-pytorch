@@ -1,0 +1,4 @@
+sphinx 
+sphinx-rtd-theme
+numpydoc 
+sphinx_autodoc_typehints
