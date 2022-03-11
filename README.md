@@ -1,8 +1,8 @@
 # PyTorch implementation of mGPLVM and bGPFA
 
-[![CI](https://github.com/tachukao/mgplvm-pytorch/workflows/ci.yaml/badge.svg?branch=develop)](https://github.com/tachukao/mgplvm-pytorch/workflows/ci.yaml/badge.svg?branch=develop)
-[![Mypy](https://github.com/tachukao/mgplvm-pytorch/workflows/mypy.yaml/badge.svg?branch=develop)](https://github.com/tachukao/mgplvm-pytorch/workflows/mypy.yaml/badge.svg?branch=develop)
-[![Formatting](https://github.com/tachukao/mgplvm-pytorch/workflows/formatting.yaml/badge.svg?branch=develop)](https://github.com/tachukao/mgplvm-pytorch/workflows/formatting.yaml/badge.svg?branch=develop)
+[![CI](https://github.com/tachukao/mgplvm-pytorch/actions/workflows/ci.yaml/badge.svg?branch=develop)](https://github.com/tachukao/mgplvm-pytorch/actions/workflows/ci.yaml/badge.svg?branch=develop)
+[![Mypy](https://github.com/tachukao/mgplvm-pytorch/actions/workflows/mypy.yaml/badge.svg?branch=develop)](https://github.com/tachukao/mgplvm-pytorch/actions/workflows/mypy.yaml/badge.svg?branch=develop)
+[![Formatting](https://github.com/tachukao/mgplvm-pytorch/actions/workflows/formatting.yml/badge.svg?branch=develop)](https://github.com/tachukao/mgplvm-pytorch/actions/workflows/formatting.yml/badge.svg?branch=develop)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://tachukao.github.io/mgplvm-pytorch)
 
 This repository contains code for running both the manifold GPLVM (Jensen et al. 2020) and Bayesian GPFA (Jensen and Kao et al. 2021) and is currently still in active development.
