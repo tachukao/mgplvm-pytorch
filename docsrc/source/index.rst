@@ -17,6 +17,7 @@ This is a library for learning Gaussian process latent variable models (GPLVMs) 
 
    notebooks/bGPFA
    notebooks/mGPLVM_supervised
+   notebooks/synthetic_torus
 
   
 .. toctree::

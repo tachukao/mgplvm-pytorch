@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="mgplvm package" href="../mgplvm/mgplvm.html" />
+    <link rel="next" title="Applying mGPLVM to synthetic neural data generated from circular latents" href="synthetic_torus.html" />
     <link rel="prev" title="(Bayesian) GPFA" href="bGPFA.html" /> 
 </head>
 
@@ -43,12 +43,12 @@
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="bGPFA.html">(Bayesian) GPFA</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Supervised learning and decoding with manifold GPLVMs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="synthetic_torus.html">Applying mGPLVM to synthetic neural data generated from circular latents</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
@@ -352,20 +352,28 @@ div.rendered_html tbody tr:hover {
 <section id="Supervised-learning-and-decoding-with-manifold-GPLVMs">
 <h1>Supervised learning and decoding with manifold GPLVMs<a class="headerlink" href="#Supervised-learning-and-decoding-with-manifold-GPLVMs" title="Permalink to this headline"></a></h1>
 <p><em>Kristopher T. Jensen (February, 2022); ktj21&#64;cam.ac.uk</em></p>
-<p>In this short example notebook, we fit mGPLVM as a <em>supervised</em> learning model (based on Jensen, Kao, Tripodi &amp; Henneuquin, NeurIPS 2020).</p>
-<div class="line-block">
-<div class="line">The general specification of mGPLVM is a latent variable model where the objective is to maximize the marginal likelihood: <span class="math notranslate nohighlight">\(p(Y) = \int p_{\theta}(Y|Z) p(Z) dZ\)</span>,</div>
-<div class="line">where <span class="math notranslate nohighlight">\(p(Y|Z)\)</span> is a Gaussian processes, <span class="math notranslate nohighlight">\(Y \in \mathbb{R}^{N \times T}\)</span> are neural recordings, and <span class="math notranslate nohighlight">\(Z \in T^1\)</span> are some latent variables on a circle (note that everything readily generalizes to higher-dimensional Euclidean and non-Euclidean manifolds).</div>
-</div>
+<p>In this short example notebook, we fit mGPLVM as a <em>supervised</em> learning model (based on Jensen, Kao, Tripodi &amp; Hennequin, NeurIPS 2020).</p>
+<p>The general specification of mGPLVM is a latent variable model where the objective is to maximize the marginal likelihood:</p>
+<div class="math notranslate nohighlight">
+\[p(Y) = \int p_{\theta}(Y|Z) p(Z) dZ,\]</div>
+<p>where <span class="math notranslate nohighlight">\(p(Y|Z)\)</span> is a Gaussian processes, <span class="math notranslate nohighlight">\(Y \in \mathbb{R}^{N \times T}\)</span> are neural recordings, and <span class="math notranslate nohighlight">\(Z \in T^1\)</span> are some latent variables on a circle (note that everything readily generalizes to higher-dimensional Euclidean and non-Euclidean manifolds).</p>
 <div class="line-block">
 <div class="line">However, in the supervised setting, <span class="math notranslate nohighlight">\(p(Z)\)</span> is a <em>delta function</em> during training, and we can simply optimize the parameters <span class="math notranslate nohighlight">\(\theta\)</span> of the generative model <span class="math notranslate nohighlight">\(p_{\theta}(Y_{train}|Z_{train})\)</span> without worrying about inferring <span class="math notranslate nohighlight">\(Z\)</span>:</div>
-<div class="line"><span class="math notranslate nohighlight">\(\theta^* = \text{argmax}_\theta \left [ \log p_{\theta}(Y_{train}|Z_{train}) \right ].\)</span></div>
+<div class="line"><br /></div>
 </div>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\theta^* = \text{argmax}_\theta \left [ \log p_{\theta}(Y_{train}|Z_{train}) \right ].\]</div>
+</div></blockquote>
 <div class="line-block">
 <div class="line">After training, we need to perform inference on the <em>test data</em> <span class="math notranslate nohighlight">\(Y^*\)</span> to find the latent variables <span class="math notranslate nohighlight">\(Z^*\)</span> given the training data <span class="math notranslate nohighlight">\(\{ Y_{train}, Z_{train} \}\)</span>. This takes the form</div>
-<div class="line"><span class="math notranslate nohighlight">\(p(Z^*|Y^*, \{Y_{train}, Z_{train}\}) \propto p_{\theta}(Y^* | Z^*, \{Y_{train}, Z_{train}\}) p(Z^*)\)</span>,</div>
-<div class="line">where <span class="math notranslate nohighlight">\(p_{\theta}(Y^* | Z^*, \{Y_{train}, Z_{train}\})\)</span> is given by the standard predictive GP equations. This is of course difficult, and we resort to variational inference using the mGPLVM machinery, but now with frozen generative parameters <span class="math notranslate nohighlight">\(\theta^*\)</span>.</div>
+<div class="line"><br /></div>
 </div>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[p(Z^*|Y^*, \{Y_{train}, Z_{train}\}) \propto p_{\theta}(Y^* | Z^*, \{Y_{train}, Z_{train}\}) p(Z^*),\]</div>
+<p>where <span class="math notranslate nohighlight">\(p_{\theta}(Y^* | Z^*, \{Y_{train}, Z_{train}\})\)</span> is given by the standard predictive GP equations. This is of course difficult, and we resort to variational inference using the mGPLVM machinery, but now with frozen generative parameters <span class="math notranslate nohighlight">\(\theta^*\)</span>.</p>
+</div></blockquote>
 <div class="line-block">
 <div class="line">For the prior <span class="math notranslate nohighlight">\(p(Z^*)\)</span> we have two main options:</div>
 <div class="line">(i) we can assume a uniform, uninformative prior.</div>
@@ -1519,7 +1527,7 @@ total time for SO(3): 292.0016107559204
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="bGPFA.html" class="btn btn-neutral float-left" title="(Bayesian) GPFA" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../mgplvm/mgplvm.html" class="btn btn-neutral float-right" title="mgplvm package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="synthetic_torus.html" class="btn btn-neutral float-right" title="Applying mGPLVM to synthetic neural data generated from circular latents" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
