@@ -51,12 +51,12 @@ def print_progress(model,
     lat_dist = model.lat_dist
     if i % print_every == 0:
         Z = n * m * n_samples
-        msg = ('\riter {:>3d} | elbo {:> .3f} | kl {:> .3f} | loss {:> .3f} |').format(
-            i, svgp_elbo_val / Z, kl_val / Z, loss_val / Z)
+        msg = ('\riter {:>3d} | elbo {:> .3f} | kl {:> .3f} | loss {:> .3f} |'
+              ).format(i, svgp_elbo_val / Z, kl_val / Z, loss_val / Z)
 
-        print(msg + lat_dist.msg(Y, batch_idxs, sample_idxs) +
-              model.svgp.msg + model.lprior.msg,
-              )
+        print(
+            msg + lat_dist.msg(Y, batch_idxs, sample_idxs) + model.svgp.msg +
+            model.lprior.msg,)
 
 
 def fit(dataset: Union[Tensor, DataLoader],
@@ -94,7 +94,7 @@ def fit(dataset: Union[Tensor, DataLoader],
     # set learning rate schedule so sigma updates have a burn-in period
     def fburn(x):
         return 1 - np.exp(-x / (3 * burnin))
-    
+
     progress = []
 
     #optionally mask some time points
@@ -175,5 +175,5 @@ def fit(dataset: Union[Tensor, DataLoader],
         if stop is not None:
             if stop(model, i, np.sum(loss_vals)):
                 break
-                
+
     return progress

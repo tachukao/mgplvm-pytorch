@@ -384,14 +384,12 @@ class Svgp(SvgpBase):
         return self.kernel.msg + self.likelihood.msg
 
     def g0_parameters(self):
-        return list(itertools.chain.from_iterable([
-            [self.q_mu, self.q_sqrt],
-            self.z.parameters()
-        ]))
+        return list(
+            itertools.chain.from_iterable([[self.q_mu, self.q_sqrt],
+                                           self.z.parameters()]))
 
     def g1_parameters(self):
         return list(
-            itertools.chain.from_iterable([
-                self.kernel.parameters(),
-                self.likelihood.parameters()
-            ]))
+            itertools.chain.from_iterable(
+                [self.kernel.parameters(),
+                 self.likelihood.parameters()]))
