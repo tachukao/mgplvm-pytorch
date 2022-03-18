@@ -7,5 +7,4 @@ The latest version of this library is in the `develop` branch of the `mGPLVM <ht
 
     git clone https://github.com/tachukao/mgplvm-pytorch
     cd mgplvm-pytorch
-    git checkout develop
-    pip install -e .
+    pip install .
