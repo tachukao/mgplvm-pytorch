@@ -385,26 +385,26 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
---2022-03-11 18:46:48--  https://drive.google.com/u/2/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download
+--2022-03-18 15:16:34--  https://drive.google.com/u/2/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download
 Resolving drive.google.com (drive.google.com)... 142.250.178.14, 2a00:1450:4009:815::200e
 Connecting to drive.google.com (drive.google.com)|142.250.178.14|:443... connected.
 HTTP request sent, awaiting response... 302 Found
 Location: https://drive.google.com/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download [following]
---2022-03-11 18:46:48--  https://drive.google.com/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download
+--2022-03-18 15:16:34--  https://drive.google.com/uc?id=1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-&amp;export=download
 Reusing existing connection to drive.google.com:443.
 HTTP request sent, awaiting response... 303 See Other
-Location: https://doc-0o-08-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/7hq0frb0eijohoa79tamqhcijftlbjq5/1647024375000/03061924325282805644/*/1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-?e=download [following]
+Location: https://doc-0o-08-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/g3tq2qr01nd9huo6vr1po3c0ird1gh7q/1647616575000/03061924325282805644/*/1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-?e=download [following]
 Warning: wildcards not supported in HTTP.
---2022-03-11 18:47:00--  https://doc-0o-08-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/7hq0frb0eijohoa79tamqhcijftlbjq5/1647024375000/03061924325282805644/*/1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-?e=download
+--2022-03-18 15:16:43--  https://doc-0o-08-docs.googleusercontent.com/docs/securesc/ha0ro937gcuc7l7deffksulhg5h7mbp1/g3tq2qr01nd9huo6vr1po3c0ird1gh7q/1647616575000/03061924325282805644/*/1kYJHADLpUVtBnLxlphk1ff3AC5UB21N-?e=download
 Resolving doc-0o-08-docs.googleusercontent.com (doc-0o-08-docs.googleusercontent.com)... 172.217.169.65, 2a00:1450:4009:819::2001
 Connecting to doc-0o-08-docs.googleusercontent.com (doc-0o-08-docs.googleusercontent.com)|172.217.169.65|:443... connected.
 HTTP request sent, awaiting response... 200 OK
 Length: 4041709 (3.9M) [application/x-gzip]
 Saving to: ‘data/test_data.tar.gz’
 
-data/test_data.tar. 100%[===================&gt;]   3.85M  --.-KB/s    in 0.07s
+data/test_data.tar. 100%[===================&gt;]   3.85M  --.-KB/s    in 0.08s
 
-2022-03-11 18:47:00 (52.1 MB/s) - ‘data/test_data.tar.gz’ saved [4041709/4041709]
+2022-03-18 15:16:43 (50.8 MB/s) - ‘data/test_data.tar.gz’ saved [4041709/4041709]
 
 </pre></div></div>
 </div>
@@ -426,7 +426,7 @@ data/test_data.tar. 100%[===================&gt;]   3.85M  --.-KB/s    in 0.07s
 Doherty_example.pickled
 total 114M
 -rw-r--r-- 1 tck29 tck29grp 110M Jun 18  2021 Doherty_example.pickled
--rw-r--r-- 1 tck29 tck29grp 3.9M Mar 11 18:47 test_data.tar.gz
+-rw-r--r-- 1 tck29 tck29grp 3.9M Mar 18 15:16 test_data.tar.gz
 </pre></div></div>
 </div>
 <p>We proceed to install the Bayesian GPFA implementation used in Jensen &amp; Kao et al. This is freely available but the codebase is still under active development with ongoing work on other latent variable models (here we use the ‘bGPFA’ branch and ignore other models).</p>
@@ -573,16 +573,16 @@ loading
 <div class="highlight"><pre>
 fitting 93 neurons and 1500 time bins for 1001 iterations
 iter: 0 time: 1s log scales: [-1.4 -2.  -2.2 -2.4 -2.4 -2.5 -2.6 -2.6 -2.7 -2.8]
-iter: 100 time: 17s log scales: [-1.5 -2.  -2.2 -2.4 -2.4 -2.5 -2.6 -2.7 -2.7 -2.8]
-iter: 200 time: 32s log scales: [-1.6 -1.7 -2.1 -2.3 -2.4 -2.5 -2.7 -2.9 -2.9 -3. ]
-iter: 300 time: 50s log scales: [-1.4 -1.8 -2.  -2.5 -2.5 -2.9 -2.9 -3.4 -3.5 -3.5]
-iter: 400 time: 65s log scales: [-1.3 -1.9 -2.  -2.6 -2.7 -3.2 -3.5 -4.3 -4.3 -4.4]
-iter: 500 time: 79s log scales: [-1.3 -1.9 -2.  -2.7 -2.8 -3.5 -4.4 -4.7 -4.8 -4.8]
-iter: 600 time: 93s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -4.1 -4.8 -5.  -5.1 -5.1]
-iter: 700 time: 107s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -4.7 -5.1 -5.2 -5.3 -5.3]
-iter: 800 time: 121s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -5.  -5.3 -5.4 -5.5 -5.5]
-iter: 900 time: 139s log scales: [-1.3 -2.  -2.1 -2.7 -2.8 -5.2 -5.5 -5.5 -5.6 -5.6]
-iter: 1000 time: 155s log scales: [-1.3 -2.  -2.1 -2.7 -2.8 -5.4 -5.6 -5.6 -5.7 -5.8]
+iter: 100 time: 12s log scales: [-1.5 -2.  -2.2 -2.4 -2.4 -2.5 -2.6 -2.7 -2.7 -2.8]
+iter: 200 time: 22s log scales: [-1.6 -1.7 -2.1 -2.3 -2.4 -2.5 -2.7 -2.9 -2.9 -3. ]
+iter: 300 time: 35s log scales: [-1.4 -1.8 -2.  -2.5 -2.5 -2.9 -2.9 -3.4 -3.5 -3.5]
+iter: 400 time: 46s log scales: [-1.3 -1.9 -2.  -2.6 -2.7 -3.2 -3.5 -4.3 -4.3 -4.4]
+iter: 500 time: 58s log scales: [-1.3 -1.9 -2.  -2.7 -2.8 -3.5 -4.4 -4.7 -4.8 -4.8]
+iter: 600 time: 70s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -4.1 -4.8 -5.  -5.1 -5.1]
+iter: 700 time: 81s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -4.7 -5.1 -5.2 -5.3 -5.3]
+iter: 800 time: 95s log scales: [-1.3 -2.  -2.  -2.7 -2.8 -5.  -5.3 -5.4 -5.5 -5.5]
+iter: 900 time: 108s log scales: [-1.3 -2.  -2.1 -2.7 -2.8 -5.2 -5.5 -5.5 -5.6 -5.6]
+iter: 1000 time: 122s log scales: [-1.3 -2.  -2.1 -2.7 -2.8 -5.4 -5.6 -5.6 -5.7 -5.8]
 </pre></div></div>
 </div>
 <p>Now we’re ready to analyze our new model. We start by plotting the posterior mean against the prior scales <span class="math notranslate nohighlight">\({s_d}\)</span> to see how informative the different latent dimensions are (upper right corner indicates more informative dimensions).</p>

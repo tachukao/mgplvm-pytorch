@@ -354,7 +354,7 @@ div.rendered_html tbody tr:hover {
 </style>
 <section id="Applying-mGPLVM-to-synthetic-neural-data-generated-from-circular-latents">
 <h1>Applying mGPLVM to synthetic neural data generated from circular latents<a class="headerlink" href="#Applying-mGPLVM-to-synthetic-neural-data-generated-from-circular-latents" title="Permalink to this headline"></a></h1>
-<p><em>Calvin Kao c.kao&#64;ucl.ac.uk &amp; Kris Jensen ktj21&#64;cam.ac.uk (16 March 2022)</em></p>
+<p><em>Calvin Kao &amp; Kris Jensen (16 March 2022)</em></p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -363,7 +363,9 @@ div.rendered_html tbody tr:hover {
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span>
+
 <span class="kn">import</span> <span class="nn">mgplvm</span> <span class="k">as</span> <span class="nn">mgp</span>
+
 <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
@@ -386,18 +388,18 @@ loading
 <p>Here, we generate synthetic neural data from the following generative model:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{align}
-x_{t} &amp;\sim U(0, 2\pi)\\
-f_{it} &amp;\sim \mathcal{GP}(0, K(x, x'))\\
-y_{it}  &amp;= f_{it} + \omega \quad \omega \sim \mathcal{N}(0, \sigma^2 I)
+\theta_{t} &amp;\sim U(0, 2\pi)\\
+f_{it} &amp;\sim \mathcal{GP}(0, K(\theta, \theta'))\\
+y_{it}  &amp;\sim \mathcal{N}(f_{it}, \sigma_i^2 I)
 \end{align}\end{split}\]</div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># dimensions of latent space</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># dimensions of latent space, here we just have a ring i.e. T(1)</span>
 <span class="n">n</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># number of neurons</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># number of conditions / time points</span>
-<span class="n">n_z</span> <span class="o">=</span> <span class="mi">15</span>  <span class="c1"># number of inducing points</span>
+<span class="n">n_z</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># number of inducing points</span>
 <span class="n">n_samples</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># number of samples</span>
 </pre></div>
 </div>
@@ -406,7 +408,9 @@ y_{it}  &amp;= f_{it} + \omega \quad \omega \sim \mathcal{N}(0, \sigma^2 I)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gen</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">syndata</span><span class="o">.</span><span class="n">Gen</span><span class="p">(</span><span class="n">mgp</span><span class="o">.</span><span class="n">syndata</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">variability</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gen</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">syndata</span><span class="o">.</span><span class="n">Gen</span><span class="p">(</span>
+    <span class="n">mgp</span><span class="o">.</span><span class="n">syndata</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">variability</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span>
+<span class="p">)</span>
 <span class="n">Y</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">gen_data</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dimension of neural data Y: </span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
@@ -422,6 +426,26 @@ Dimension of neural data Y: (1, 50, 100)
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">rwidth</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;counts&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;ground-truth $</span><span class="se">\\</span><span class="s2">theta$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_synthetic_torus_5_0.png" src="../_images/notebooks_synthetic_torus_5_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raw data&quot;</span><span class="p">)</span>
@@ -450,45 +474,50 @@ Raw data
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_synthetic_torus_5_1.png" src="../_images/notebooks_synthetic_torus_5_1.png" />
+<img alt="../_images/notebooks_synthetic_torus_6_1.png" src="../_images/notebooks_synthetic_torus_6_1.png" />
 </div>
 </div>
 <p>Let’s now construct the mGPLVM model!</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># specify manifold, kernel and rdist</span>
-<span class="n">manif</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="c1"># latent distribution manifold</span>
-<span class="n">lat_dist</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">rdist</span><span class="o">.</span><span class="n">ReLie</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span> <span class="c1"># construct ReLie distribution</span>
-<span class="c1"># We construct the kernel and likelihood by passing the data in for initialization</span>
-<span class="n">kernel</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">QuadExp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">manif</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">)</span> <span class="c1"># Use an exponential quadratic (RBF) kernel</span>
-<span class="n">lik</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">Y</span><span class="o">=</span><span class="n">Y</span><span class="p">)</span> <span class="c1"># Gaussian likelihood</span>
-<span class="n">lprior</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">lpriors</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span> <span class="c1"># Prior on the manifold distribution</span>
-<span class="n">z</span> <span class="o">=</span> <span class="n">manif</span><span class="o">.</span><span class="n">inducing_points</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_z</span><span class="p">)</span> <span class="c1"># build inducing points</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">SvgpLvm</span><span class="p">(</span>
-    <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">lik</span><span class="p">,</span> <span class="n">lat_dist</span><span class="p">,</span> <span class="n">lprior</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span>
-<span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">build_model</span><span class="p">():</span>
+    <span class="c1"># specify manifold, kernel and rdist</span>
+    <span class="n">manif</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">Torus</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>  <span class="c1"># latent distribution manifold</span>
+    <span class="n">lat_dist</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">rdist</span><span class="o">.</span><span class="n">ReLie</span><span class="p">(</span><span class="n">manif</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>  <span class="c1"># construct ReLie distribution</span>
+    <span class="c1"># Note: we construct the kernel and likelihood by passing the data in for initialization</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">QuadExp</span><span class="p">(</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">manif</span><span class="o">.</span><span class="n">distance</span>
+    <span class="p">)</span>  <span class="c1"># Use an exponential quadratic (RBF) kernel</span>
+    <span class="n">lik</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">likelihoods</span><span class="o">.</span><span class="n">Gaussian</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>  <span class="c1"># Gaussian likelihood</span>
+    <span class="n">lprior</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">lpriors</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">manif</span><span class="p">)</span>  <span class="c1"># Prior on the manifold distribution</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">manif</span><span class="o">.</span><span class="n">inducing_points</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_z</span><span class="p">)</span>  <span class="c1"># build inducing points</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">SvgpLvm</span><span class="p">(</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">lik</span><span class="p">,</span> <span class="n">lat_dist</span><span class="p">,</span> <span class="n">lprior</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">get_default_dtype</span><span class="p">())</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">()</span>
+
+<span class="n">train_opts</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;lrate&quot;</span><span class="p">:</span> <span class="mf">5e-2</span><span class="p">,</span>
+    <span class="s2">&quot;max_steps&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="s2">&quot;n_mc&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+    <span class="s2">&quot;print_every&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="s2">&quot;burnin&quot;</span><span class="p">:</span> <span class="mi">30</span> <span class="o">/</span> <span class="mf">5e-2</span><span class="p">,</span>
+    <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span>
+<span class="p">}</span>
 
 <span class="c1"># train model</span>
-<span class="n">mgp</span><span class="o">.</span><span class="n">optimisers</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-    <span class="n">data</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="o">=</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span>
-    <span class="n">max_steps</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span>
-    <span class="n">burnin</span><span class="o">=</span><span class="mi">10</span> <span class="o">/</span> <span class="mf">2e-2</span><span class="p">,</span>
-    <span class="n">n_mc</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-    <span class="n">lrate</span><span class="o">=</span><span class="mf">2e-2</span><span class="p">,</span>
-    <span class="n">print_every</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="n">progress</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">optimisers</span><span class="o">.</span><span class="n">svgp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">train_opts</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -497,8 +526,44 @@ Raw data
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-iter 1100 | elbo 0.155 | kl 0.049 | loss -0.112 | |mu| 1.962 | sig 0.143 | scale 0.433 | ell 1.469 | lik_sig 0.216 ||
+iter   0 | elbo -5.604 | kl  0.002 | loss  5.604 | |mu| 0.110 | sig 1.500 | scale 1.000 | ell 2.000 | lik_sig 1.000 |
+iter 100 | elbo -1.012 | kl  0.003 | loss  1.013 | |mu| 0.655 | sig 1.342 | scale 0.993 | ell 2.024 | lik_sig 0.948 |
+iter 200 | elbo -0.686 | kl  0.008 | loss  0.688 | |mu| 0.751 | sig 1.014 | scale 0.984 | ell 2.073 | lik_sig 0.645 |
+iter 300 | elbo -0.136 | kl  0.026 | loss  0.146 | |mu| 1.366 | sig 0.397 | scale 0.963 | ell 2.197 | lik_sig 0.272 |
+iter 400 | elbo  0.343 | kl  0.052 | loss -0.318 | |mu| 1.711 | sig 0.108 | scale 0.912 | ell 1.823 | lik_sig 0.153 |
+iter 500 | elbo  0.528 | kl  0.066 | loss -0.490 | |mu| 1.746 | sig 0.054 | scale 0.875 | ell 1.471 | lik_sig 0.129 |
+iter 600 | elbo  0.568 | kl  0.074 | loss -0.522 | |mu| 1.749 | sig 0.038 | scale 0.846 | ell 1.296 | lik_sig 0.124 |
+iter 700 | elbo  0.564 | kl  0.078 | loss -0.511 | |mu| 1.742 | sig 0.031 | scale 0.807 | ell 1.224 | lik_sig 0.128 |
+iter 800 | elbo  0.612 | kl  0.080 | loss -0.552 | |mu| 1.733 | sig 0.028 | scale 0.775 | ell 1.161 | lik_sig 0.111 |
+iter 900 | elbo  0.657 | kl  0.082 | loss -0.593 | |mu| 1.739 | sig 0.025 | scale 0.745 | ell 1.096 | lik_sig 0.103 |
 </pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">progress</span><span class="p">,</span> <span class="s2">&quot;k&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;training iterations&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;training loss&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0, 0.5, &#39;training loss&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_synthetic_torus_10_1.png" src="../_images/notebooks_synthetic_torus_10_1.png" />
+</div>
 </div>
 <p>Now that we have fit the model, let’s see if we have correctly inferred the ground-truth latents up to an arbitrary rotational bias. To do this, we plot:</p>
 <ol class="lowerroman simple">
@@ -507,25 +572,31 @@ iter 1100 | elbo 0.155 | kl 0.049 | loss -0.112 | |mu| 1.962 | sig 0.143 | scale
 </ol>
 <p>We know we have inferred the latents correctly when both plots fall on a straight line, with the first plot wrapping around at the <span class="math notranslate nohighlight">\((0, 2\pi)\)</span> boundaries:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">learned_latents</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">prms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
 <span class="n">true_latents</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">plearn</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
-    <span class="n">learned_latents</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">learned_latents</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+<span class="n">plearn</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">lat_dist</span><span class="o">.</span><span class="n">manif</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+        <span class="n">learned_latents</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">learned_latents</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="p">)</span>
 <span class="n">ptrue</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">manifold</span><span class="o">.</span><span class="n">manifs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">true_latents</span><span class="p">,</span> <span class="n">true_latents</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">true_latents</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">learned_latents</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;ko&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;ground truth&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;inferred&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">true_latents</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">learned_latents</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;ko&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;ground truth $</span><span class="se">\\</span><span class="s2">theta$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;inferred $</span><span class="se">\\</span><span class="s2">theta$&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -534,17 +605,17 @@ iter 1100 | elbo 0.155 | kl 0.049 | loss -0.112 | |mu| 1.962 | sig 0.143 | scale
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_synthetic_torus_11_0.png" src="../_images/notebooks_synthetic_torus_11_0.png" />
+<img alt="../_images/notebooks_synthetic_torus_13_0.png" src="../_images/notebooks_synthetic_torus_13_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plearn</span><span class="p">,</span> <span class="n">ptrue</span><span class="p">,</span> <span class="s2">&quot;ko&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;inferred&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;true&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plearn</span><span class="p">,</span> <span class="n">ptrue</span><span class="p">,</span> <span class="s2">&quot;ko&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;inferred pairwise distance&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;true pairwise distance&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -553,15 +624,133 @@ iter 1100 | elbo 0.155 | kl 0.049 | loss -0.112 | |mu| 1.962 | sig 0.143 | scale
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_synthetic_torus_12_0.png" src="../_images/notebooks_synthetic_torus_12_0.png" />
+<img alt="../_images/notebooks_synthetic_torus_14_0.png" src="../_images/notebooks_synthetic_torus_14_0.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">generate_binary_array</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">l</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">generate_binary_array</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">])])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">generate_binary_array</span><span class="p">(</span>
+                <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="p">(</span>
+                    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">l</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">l</span><span class="p">]</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">align_torus</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">dist</span><span class="p">(</span><span class="n">newmus</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="n">mus</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">Torus</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">newmus</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">Torus</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">mus</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="n">mus</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">optloss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">generate_binary_array</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">newmus</span> <span class="o">=</span> <span class="n">coords</span> <span class="o">*</span> <span class="n">mus</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>  <span class="c1"># random restarts to avoid local minima</span>
+            <span class="c1"># params = torch.zeros(mod.d)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">([</span><span class="n">params</span><span class="p">])</span>
+
+            <span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
+                <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="n">dist</span><span class="p">(</span><span class="n">newmus</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+                <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">loss</span>
+
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">closure</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">loss</span> <span class="o">&lt;</span> <span class="n">optloss</span><span class="p">:</span>
+                <span class="n">optloss</span> <span class="o">=</span> <span class="n">loss</span>
+                <span class="n">optcoords</span> <span class="o">=</span> <span class="n">coords</span>
+                <span class="n">optparams</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">mgp</span><span class="o">.</span><span class="n">manifolds</span><span class="o">.</span><span class="n">Torus</span><span class="o">.</span><span class="n">gmul</span><span class="p">(</span><span class="n">optcoords</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">optparams</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">f</span>
 </pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">align</span> <span class="o">=</span> <span class="n">align_torus</span><span class="p">(</span><span class="n">learned_latents</span><span class="p">,</span> <span class="n">true_latents</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">align</span><span class="p">(</span><span class="n">learned_latents</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">true_latents</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;ko&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_synthetic_torus_17_0.png" src="../_images/notebooks_synthetic_torus_17_0.png" />
+</div>
+</div>
+<p>Let’s now plot the inferred tuning curves!</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">50</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">get_default_dtype</span><span class="p">(),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+<span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+<span class="n">aligned_query</span> <span class="o">=</span> <span class="n">align</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>  <span class="c1"># align the query for the model</span>
+<span class="n">fmean</span><span class="p">,</span> <span class="n">fvar</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">aligned_query</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">full_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">fstd</span> <span class="o">=</span> <span class="n">fvar</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+<span class="n">inds</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">((</span><span class="n">gen</span><span class="o">.</span><span class="n">gprefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">val</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="mf">0.25</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">]</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inds</span><span class="p">:</span>
+    <span class="n">xs</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="p">[</span><span class="n">arr</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="p">(</span><span class="n">fmean</span><span class="p">,</span> <span class="n">fstd</span><span class="p">)]</span>
+    <span class="n">xs</span> <span class="o">=</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">std</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="s2">&quot;k--&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">m</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">std</span><span class="p">,</span> <span class="n">m</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">std</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="n">true_y</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">gen_data</span><span class="p">(</span><span class="n">gs_in</span><span class="o">=</span><span class="n">xs</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">sigma</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">true_y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="s2">&quot;g-&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\theta$ [radian]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;rate [a.u.]&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_synthetic_torus_19_0.png" src="../_images/notebooks_synthetic_torus_19_0.png" />
 </div>
 </div>
 </section>
