@@ -180,7 +180,7 @@ def fit(dataset: Union[Tensor, DataLoader],
             if stop(model, i, np.sum(loss_vals)):
                 break
 
-    print('removing hooks')
+    #print('removing hooks')
     for h in hooks: h.remove()
 
     return progress
