@@ -13,12 +13,16 @@ def sort_params(model, hook):
     '''apply burnin period to Sigma_Q and alpha^2
     allow for masking of certain conditions for use in crossvalidation'''
 
+    hooks = []
     if 'GP' in model.lat_dist.name:
-        model.lat_dist.nu.register_hook(hook)
-        model.lat_dist._scale.register_hook(hook)
+        h1 = model.lat_dist.nu.register_hook(hook)
+        h2 = model.lat_dist._scale.register_hook(hook)
+        hooks.append(h1)
+        hooks.append(h2)
     else:
         for prm in model.lat_dist.parameters():
-            prm.register_hook(hook)
+            h = prm.register_hook(hook)
+            hooks.append(h)
 
     params0 = list(
         itertools.chain.from_iterable(
@@ -33,7 +37,7 @@ def sort_params(model, hook):
         ]))
 
     params = [{'params': params0}, {'params': params1}]
-    return params
+    return params, hooks
 
 
 def print_progress(model,
@@ -100,7 +104,7 @@ def fit(dataset: Union[Tensor, DataLoader],
     #optionally mask some time points
     mask_Ts = mask_Ts if mask_Ts is not None else lambda x: x
 
-    params = sort_params(model, mask_Ts)
+    params, hooks = sort_params(model, mask_Ts)
 
     # instantiate optimizer
     opt = optimizer(params, lr=lrate)
@@ -175,5 +179,8 @@ def fit(dataset: Union[Tensor, DataLoader],
         if stop is not None:
             if stop(model, i, np.sum(loss_vals)):
                 break
+
+    print('removing hooks')
+    for h in hooks: h.remove()
 
     return progress
