@@ -1,33 +1,33 @@
-import mgplvm
-from mgplvm import manifolds, kernels, likelihoods, priors, models, optimisers
+import mgplvm as mgp
+from mgplvm import kernels, likelihoods, priors, models, optimisers
 import numpy as np
 import torch
 from torch import optim
 
 torch.set_default_dtype(torch.float64)
-device = mgplvm.utils.get_device()
+device = mgp.utils.get_device()
 
 
 def test_euclid_dimensions():
-    e3 = manifolds.Euclid(10, 3)
+    e3 = mgp.EuclidManifold(10, 3)
     assert e3.d == 3
     assert e3.m == 10
 
 
 def test_torus_dimensions():
-    t3 = manifolds.Torus(10, 3)
+    t3 = mgp.TorusManifold(10, 3)
     assert t3.d == 3
     assert t3.m == 10
 
 
 def test_so3_dimensions():
-    so3 = manifolds.So3(10)
+    so3 = mgp.So3Manifold(10)
     assert so3.d == 3
     assert so3.m == 10
 
 
 def test_s3_dimensions():
-    s3 = manifolds.S3(10)
+    s3 = mgp.S3Manifold(10)
     assert s3.d == 3
     assert s3.m == 10
 
@@ -49,7 +49,7 @@ def test_euclid_distance():
     ell2 = torch.ones(n, 1, 1) + torch.randn(n, 1, 1) * 0.1
     ell3 = None
 
-    manif = manifolds.Euclid(10, d)
+    manif = mgp.manifolds.Euclid(10, d)
     for ell in [ell0, ell1, ell2, ell3]:
         if ell is None:
             slow_dist = torch.square(x[..., None] - y[..., None, :]).sum(-3)
@@ -78,7 +78,7 @@ def test_torus_distance():
     ell2 = torch.ones(n, 1, 1) + torch.randn(n, 1, 1) * 0.1
     ell3 = None
 
-    manif = manifolds.Torus(10, d)
+    manif = mgp.manifolds.Torus(10, d)
     for ell in [ell0, ell1, ell2, ell3]:
         if ell is None:
             slow_dist = (2 -
@@ -99,7 +99,7 @@ def test_so3_distance():
     x = x / (1e-20 + x.square().sum(-2, keepdim=True).sqrt())
     y = torch.randn(2, 1, 4, d, my)
     y = y / (1e-20 + y.square().sum(-2, keepdim=True).sqrt())
-    manif = manifolds.So3(10)
+    manif = mgp.manifolds.So3(10)
     z = (x[..., None] * y[..., None, :]).sum(-3)
     slow_dist = 4 * (1 - z.square())
     slow_dist.clamp_min_(0)
@@ -115,7 +115,7 @@ def test_s3_distance():
     x = x / (1e-20 + x.square().sum(-2, keepdim=True).sqrt())
     y = torch.randn(2, 1, 4, d, my)
     y = y / (1e-20 + y.square().sum(-2, keepdim=True).sqrt())
-    manif = manifolds.S3(10)
+    manif = mgp.manifolds.S3(10)
     z = (x[..., None] * y[..., None, :]).sum(-3)
     slow_dist = 2 * (1 - z)
     slow_dist.clamp_min_(0)
@@ -128,20 +128,20 @@ def test_manifs_runs():
     Y = np.random.normal(0, 1, (n_samples, n, m))
     data = torch.tensor(Y, dtype=torch.get_default_dtype(), device=device)
     for i, manif_type in enumerate(
-        [manifolds.Torus, manifolds.So3, manifolds.S3]):
+        [mgp.TorusManifold, mgp.So3Manifold, mgp.S3Manifold]):
         manif = manif_type(m, d)
         print(manif.name)
-        lat_dist = mgplvm.ReLie(manif,
+        lat_dist = mgp.ReLie(manif,
                                 m,
                                 n_samples,
                                 sigma=0.4,
                                 diagonal=(True if i == 0 else False))
-        kernel = mgplvm.kernels.QuadExp(n, manif.distance, Y=Y)
+        kernel = mgp.QuadExpKernel(n, manif.distance, Y=Y)
         # generate model
-        lik = mgplvm.likelihoods.Gaussian(n)
-        prior = mgplvm.priors.Uniform(manif)
+        lik = mgp.likelihoods.Gaussian(n)
+        prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = mgplvm.models.SvgpLvm(n,
+        mod = mgp.models.SvgpLvm(n,
                                     m,
                                     n_samples,
                                     z,
