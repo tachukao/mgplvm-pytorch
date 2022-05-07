@@ -61,13 +61,13 @@ def test_likelihood_runs():
 
         # train model
         mgplvm.fit(data,
-                            mod,
-                            optimizer=optim.Adam,
-                            max_steps=5,
-                            burnin=5 / 2E-2,
-                            n_mc=64,
-                            lrate=2E-2,
-                            print_every=1000)
+                   mod,
+                   optimizer=optim.Adam,
+                   max_steps=5,
+                   burnin=5 / 2E-2,
+                   n_mc=64,
+                   lrate=2E-2,
+                   print_every=1000)
 
         ### test burda log likelihood ###
         LL = mod.calc_LL(data, 128)

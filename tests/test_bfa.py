@@ -95,10 +95,7 @@ def test_bvfa():
         optimizer.zero_grad()
         loglik, kl = model.elbo(ytrain, xtrain)
         loss = -(loglik - kl).sum()
-        bfa = mgp.BFA(n,
-                             d,
-                             model.likelihood.sigma.data,
-                             learn_sigma=False)
+        bfa = mgp.BFA(n, d, model.likelihood.sigma.data, learn_sigma=False)
         true_log_prob = bfa.log_prob(ytrain, xtrain).sum()
         if k % 200 == 0:
             xtest = torch.randn(n_samples, d, m)

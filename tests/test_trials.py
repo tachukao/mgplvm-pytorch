@@ -32,50 +32,50 @@ def test_trial_structure():
     # specify manifold, kernel and lat_dist
     manif1 = Euclid(m, d)
     lat_dist1 = mgp.ReLie(manif1,
-                                   m,
-                                   n_samples,
-                                   diagonal=False,
-                                   initialization='fa',
-                                   Y=Y,
-                                   sigma=sig0)
+                          m,
+                          n_samples,
+                          diagonal=False,
+                          initialization='fa',
+                          Y=Y,
+                          sigma=sig0)
     kernel1 = kernels.QuadExp(n, manif1.distance, Y=Y)
     lik1 = likelihoods.Gaussian(n)
     prior1 = mgp.priors.Uniform(manif1)
     z1 = manif1.inducing_points(n, n_z, z=zs)
     mod1 = mgp.SVGPLVM(n,
-                          m,
-                          n_samples,
-                          z1,
-                          kernel1,
-                          lik1,
-                          lat_dist1,
-                          prior1,
-                          whiten=True).to(device)
+                       m,
+                       n_samples,
+                       z1,
+                       kernel1,
+                       lik1,
+                       lat_dist1,
+                       prior1,
+                       whiten=True).to(device)
 
     Y2 = Y.transpose(1, 0, 2).reshape(n, -1)[None, ...]
     n_samples2, n2, m2 = Y2.shape
     print(Y2.shape)
     manif2 = Euclid(m2, d)
     lat_dist2 = mgp.ReLie(manif2,
-                                   m2,
-                                   n_samples2,
-                                   diagonal=False,
-                                   initialization='fa',
-                                   Y=Y2,
-                                   sigma=sig0)
+                          m2,
+                          n_samples2,
+                          diagonal=False,
+                          initialization='fa',
+                          Y=Y2,
+                          sigma=sig0)
     kernel2 = kernels.QuadExp(n2, manif2.distance, Y=Y2)
     lik2 = likelihoods.Gaussian(n2)
     prior2 = mgp.priors.Uniform(manif2)
     z2 = manif2.inducing_points(n2, n_z, z=zs)
     mod2 = mgp.SVGPLVM(n2,
-                          m2,
-                          1,
-                          z2,
-                          kernel2,
-                          lik2,
-                          lat_dist2,
-                          prior2,
-                          whiten=True).to(device)
+                       m2,
+                       1,
+                       z2,
+                       kernel2,
+                       lik2,
+                       lat_dist2,
+                       prior2,
+                       whiten=True).to(device)
 
     assert torch.allclose(mod1.svgp.kernel.prms[0], mod2.svgp.kernel.prms[0])
     assert torch.allclose(mod1.svgp.kernel.prms[1], mod2.svgp.kernel.prms[1])

@@ -88,20 +88,20 @@ def test_GP_lat_prior():
         # generate model
         likelihood = mgp.likelihoods.Gaussian(n, Y=Y, d=dfit)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.SVGPLVM(n, m, n_samples, z, kernel, likelihood,
-                                 lat_dist, prior).to(device)
+        mod = mgp.SVGPLVM(n, m, n_samples, z, kernel, likelihood, lat_dist,
+                          prior).to(device)
 
         ### test that training runs ###
         n_mc = 16
 
         mgp.fit(data,
-                                mod,
-                                optimizer=optim.Adam,
-                                n_mc=n_mc,
-                                max_steps=50,
-                                burnin=50,
-                                lrate=10e-2,
-                                print_every=20)
+                mod,
+                optimizer=optim.Adam,
+                n_mc=n_mc,
+                max_steps=50,
+                burnin=50,
+                lrate=10e-2,
+                print_every=20)
 
         print('lat ell, scale:',
               mod.lat_dist.ell.detach().flatten(),

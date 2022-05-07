@@ -1,5 +1,5 @@
 import mgplvm as mgp
-from mgplvm import kernels, likelihoods, priors 
+from mgplvm import kernels, likelihoods, priors
 import numpy as np
 import torch
 from torch import optim
@@ -132,32 +132,32 @@ def test_manifs_runs():
         manif = manif_type(m, d)
         print(manif.name)
         lat_dist = mgp.ReLie(manif,
-                                m,
-                                n_samples,
-                                sigma=0.4,
-                                diagonal=(True if i == 0 else False))
+                             m,
+                             n_samples,
+                             sigma=0.4,
+                             diagonal=(True if i == 0 else False))
         kernel = mgp.QuadExpKernel(n, manif.distance, Y=Y)
         # generate model
         lik = mgp.GaussianLikelihood(n)
         prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mod = mgp.SVGPLVM(n,
-                                    m,
-                                    n_samples,
-                                    z,
-                                    kernel,
-                                    lik,
-                                    lat_dist,
-                                    prior,
-                                    whiten=True).to(device)
+                          m,
+                          n_samples,
+                          z,
+                          kernel,
+                          lik,
+                          lat_dist,
+                          prior,
+                          whiten=True).to(device)
 
         # train model
         trained_model = mgp.fit(data,
-                                            mod,
-                                            max_steps=5,
-                                            n_mc=64,
-                                            optimizer=optim.Adam,
-                                            print_every=1000)
+                                mod,
+                                max_steps=5,
+                                n_mc=64,
+                                optimizer=optim.Adam,
+                                print_every=1000)
 
 
 if __name__ == '__main__':

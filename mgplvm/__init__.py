@@ -20,7 +20,6 @@ from .manifolds import Torus as TorusManifold
 from .manifolds import So3 as So3Manifold
 from .manifolds import S3 as S3Manifold
 
-
 from .likelihoods import Gaussian as GaussianLikelihood
 from .likelihoods import Poisson as PoissonLikelihood
 from .likelihoods import NegativeBinomial as NegativeBinomialLikelihood

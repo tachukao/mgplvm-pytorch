@@ -64,19 +64,19 @@ def test_GP_prior():
     likelihood = mgp.likelihoods.Gaussian(n, sigma=torch.Tensor(sigma))
     z = manif.inducing_points(n, n_z)
     mod = mgp.SVGPLVM(n, m, n_samples, z, kernel, likelihood, lat_dist,
-                             prior).to(device)
+                      prior).to(device)
 
     ### test that training runs ###
     n_mc = 64
 
     mgp.fit(data,
-                            mod,
-                            optimizer=optim.Adam,
-                            n_mc=n_mc,
-                            max_steps=5,
-                            burnin=1,
-                            lrate=10E-2,
-                            print_every=50)
+            mod,
+            optimizer=optim.Adam,
+            n_mc=n_mc,
+            max_steps=5,
+            burnin=1,
+            lrate=10E-2,
+            print_every=50)
 
     # check that we are indeed optimizing different q_mu in the GP prior for each sample
     assert (not (torch.allclose(mod.prior.svgp.q_mu[0].detach().data,
@@ -129,22 +129,22 @@ def test_ARP_runs():
                                diagonal=(True if i in [0, 1] else False))
         z = manif.inducing_points(n, n_z)
         mod = mgp.SVGPLVM(n,
-                                 m,
-                                 n_samples,
-                                 z,
-                                 kernel,
-                                 lik,
-                                 lat_dist,
-                                 prior,
-                                 whiten=True).to(device)
+                          m,
+                          n_samples,
+                          z,
+                          kernel,
+                          lik,
+                          lat_dist,
+                          prior,
+                          whiten=True).to(device)
 
         # train model
         mgp.fit(data,
-                                mod,
-                                max_steps=5,
-                                n_mc=64,
-                                optimizer=optim.Adam,
-                                print_every=1000)
+                mod,
+                max_steps=5,
+                n_mc=64,
+                optimizer=optim.Adam,
+                print_every=1000)
 
 
 def fio_id(x):
@@ -174,22 +174,22 @@ def test_LDS_prior_runs():
         prior = mgp.priors.DS(manif, fio=fio)
         z = manif.inducing_points(n, n_z)
         mod = mgp.SVGPLVM(n,
-                                 m,
-                                 n_samples,
-                                 z,
-                                 kernel,
-                                 lik,
-                                 lat_dist,
-                                 prior,
-                                 whiten=True).to(device)
+                          m,
+                          n_samples,
+                          z,
+                          kernel,
+                          lik,
+                          lat_dist,
+                          prior,
+                          whiten=True).to(device)
 
         # train model
         mgp.fit(data,
-                                mod,
-                                max_steps=10,
-                                n_mc=16,
-                                optimizer=optim.Adam,
-                                print_every=1000)
+                mod,
+                max_steps=10,
+                n_mc=16,
+                optimizer=optim.Adam,
+                print_every=1000)
 
         A, Q = mod.prior.prms
         A = A.detach().cpu().numpy()

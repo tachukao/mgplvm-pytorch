@@ -38,25 +38,25 @@ def test_svgplvm_LL():
     prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = mgp.SVGPLVM(n,
-                             m,
-                             n_samples,
-                             z,
-                             kernel,
-                             lik,
-                             lat_dist,
-                             prior,
-                             whiten=True).to(device)
+                      m,
+                      n_samples,
+                      z,
+                      kernel,
+                      lik,
+                      lat_dist,
+                      prior,
+                      whiten=True).to(device)
 
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     # train model
     mgp.fit(data,
-                            mod,
-                            optimizer=optim.Adam,
-                            max_steps=5,
-                            burnin=5 / 2E-2,
-                            n_mc=64,
-                            lrate=2E-2,
-                            print_every=1000)
+            mod,
+            optimizer=optim.Adam,
+            max_steps=5,
+            burnin=5 / 2E-2,
+            n_mc=64,
+            lrate=2E-2,
+            print_every=1000)
 
     ### test burda log likelihood ###
     LL = mod.calc_LL(data, 128)
@@ -92,27 +92,27 @@ def test_lgplvm_LL():
         z = manif.inducing_points(n, n_z)
         if nmod in [0, 1]:
             mod = mgp.LGPLVM(n,
-                                    m,
-                                    d,
-                                    n_samples,
-                                    lat_dist,
-                                    prior,
-                                    Bayesian=(nmod == 1),
-                                    Y=Y).to(device)
+                             m,
+                             d,
+                             n_samples,
+                             lat_dist,
+                             prior,
+                             Bayesian=(nmod == 1),
+                             Y=Y).to(device)
         else:
             mod = mgp.LVGPLVM(n, m, d, n_samples, lat_dist, prior,
-                                     lik).to(device)
+                              lik).to(device)
 
         data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
         # train model
         mgp.fit(data,
-                                mod,
-                                optimizer=optim.Adam,
-                                max_steps=5,
-                                burnin=5 / 2E-2,
-                                n_mc=64,
-                                lrate=2E-2,
-                                print_every=1000)
+                mod,
+                optimizer=optim.Adam,
+                max_steps=5,
+                burnin=5 / 2E-2,
+                n_mc=64,
+                lrate=2E-2,
+                print_every=1000)
 
         ### test burda log likelihood ###
         LL = mod.calc_LL(data, 128)

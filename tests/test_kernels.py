@@ -91,13 +91,13 @@ def test_kernels_run():
 
         ### test that training runs ###
         trained_mod = mgplvm.fit(data,
-                                          mod,
-                                          optimizer=optim.Adam,
-                                          max_steps=5,
-                                          burnin=100,
-                                          n_mc=64,
-                                          lrate=10E-2,
-                                          print_every=50)
+                                 mod,
+                                 optimizer=optim.Adam,
+                                 max_steps=5,
+                                 burnin=100,
+                                 n_mc=64,
+                                 lrate=10E-2,
+                                 print_every=50)
 
     return
 
