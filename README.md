@@ -14,7 +14,7 @@ Currently, the master branch can be used for mGPLVM and the bGPFA branch for bGP
 
 ```sh
 # inside virtual environment
-pip install -e .
+pip install git@github.com:tachukao/mgplvm-pytorch.git
 ```
 
 To run on GPU, it may be necessary to first install pytorch with GPU support.
