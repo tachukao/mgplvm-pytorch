@@ -8,6 +8,8 @@ from typing import Tuple
 class LatentDistribution(Module, metaclass=abc.ABCMeta):
     """LatentDistribution base class."""
 
+    name: str
+
     def __init__(self, manif: Manifold, kmax: int):
         super().__init__()
         self.manif = manif

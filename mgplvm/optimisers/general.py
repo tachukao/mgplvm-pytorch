@@ -7,6 +7,8 @@ from .data import DataLoader
 import itertools
 from typing import Union, List, Optional
 
+Dataset = Union[Tensor, DataLoader]
+
 
 def sort_params(model, hook):
     '''apply burnin period to Sigma_Q and alpha^2
@@ -62,7 +64,7 @@ def print_progress(model,
             model.prior.msg,)
 
 
-def fit(dataset: Union[Tensor, DataLoader],
+def fit(dataset: Dataset,
         model,
         optimizer=optim.Adam,
         n_mc: int = 32,

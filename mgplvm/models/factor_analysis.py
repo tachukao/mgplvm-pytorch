@@ -815,7 +815,8 @@ class VFA(GPBase):
 
         if noise:
             #sample from observation function p(y|f)
-            dist = Normal(loc=f_samps, scale=self.sigma[..., None])
+            sigma = self.sigma[..., None]  # type: ignore
+            dist = Normal(loc=f_samps, scale=sigma)
             y_samps = dist.sample(n_mc)  #n_mc x n_samples x n x m
         else:
             #compute mean observations mu(f) for each f

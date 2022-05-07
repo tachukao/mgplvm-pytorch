@@ -11,15 +11,15 @@ class Kernel(Module, metaclass=abc.ABCMeta):
     def __init__(self):
         super().__init__()
 
-    @abc.abstractstaticmethod
+    @abc.abstractmethod
     def K(self, x: Tensor, y: Tensor) -> Tensor:
         pass
 
-    @abc.abstractstaticmethod
+    @abc.abstractmethod
     def trK(self, x: Tensor) -> Tensor:
         pass
 
-    @abc.abstractstaticmethod
+    @abc.abstractmethod
     def diagK(self, x: Tensor) -> Tensor:
         pass
 

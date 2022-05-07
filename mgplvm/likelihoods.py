@@ -54,15 +54,15 @@ class Likelihood(Module, metaclass=abc.ABCMeta):
     def variational_expectation(self):
         pass
 
-    @abc.abstractstaticmethod
+    @abc.abstractmethod
     def sample(self, x: Tensor):
         pass
 
-    @abc.abstractstaticmethod
+    @abc.abstractmethod
     def dist(self, x: Tensor):
         pass
 
-    @abc.abstractstaticmethod
+    @abc.abstractmethod
     def dist_mean(self, x: Tensor):
         pass
 

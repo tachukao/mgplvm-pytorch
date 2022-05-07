@@ -1,4 +1,5 @@
 from __future__ import print_function
+from typing import Union
 import numpy as np
 from ..utils import softplus
 from . import svgp
@@ -54,6 +55,9 @@ class LGPLVM(GPLVM):
         super().__init__(obs, lat_dist, prior, n, m, n_samples)
 
 
+LVGPLVM_OBSERVATION = Union[BVFA, VFA]
+
+
 class LVGPLVM(GPLVM):
     name = "Lvgplvm"
 
@@ -87,22 +91,23 @@ class LVGPLVM(GPLVM):
         #observation model (P(Y|X))
 
         if Bayesian:
-            obs = BVFA(n,
-                       d,
-                       m,
-                       n_samples,
-                       likelihood,
-                       tied_samples=tied_samples,
-                       Y=Y,
-                       learn_neuron_scale=learn_neuron_scale,
-                       ard=ard,
-                       learn_scale=learn_scale,
-                       rel_scale=rel_scale,
-                       q_mu=q_mu,
-                       q_sqrt=q_sqrt,
-                       scale=scale,
-                       dim_scale=dim_scale,
-                       neuron_scale=neuron_scale)
+            obs: LVGPLVM_OBSERVATION = BVFA(
+                n,
+                d,
+                m,
+                n_samples,
+                likelihood,
+                tied_samples=tied_samples,
+                Y=Y,
+                learn_neuron_scale=learn_neuron_scale,
+                ard=ard,
+                learn_scale=learn_scale,
+                rel_scale=rel_scale,
+                q_mu=q_mu,
+                q_sqrt=q_sqrt,
+                scale=scale,
+                dim_scale=dim_scale,
+                neuron_scale=neuron_scale)
         else:
             obs = VFA(n,
                       d,
