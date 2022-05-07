@@ -74,10 +74,7 @@ def test_kernels_run():
     for kernel in kernels:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d)
-        lat_dist = mgplvm.ReLie(manif,
-                                      m,
-                                      n_samples,
-                                      initialization='random')
+        lat_dist = mgplvm.ReLie(manif, m, n_samples, initialization='random')
         # generate model
         lik = likelihoods.Gaussian(n)
         prior = priors.Uniform(manif)

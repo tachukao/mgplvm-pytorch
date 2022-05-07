@@ -132,10 +132,10 @@ def test_manifs_runs():
         manif = manif_type(m, d)
         print(manif.name)
         lat_dist = mgplvm.ReLie(manif,
-                                      m,
-                                      n_samples,
-                                      sigma=0.4,
-                                      diagonal=(True if i == 0 else False))
+                                m,
+                                n_samples,
+                                sigma=0.4,
+                                diagonal=(True if i == 0 else False))
         kernel = mgplvm.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgplvm.likelihoods.Gaussian(n)

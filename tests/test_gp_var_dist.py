@@ -25,11 +25,11 @@ def test_K_half():
     manif = mgp.manifolds.Euclid(m, dfit)
     #initialize with ground truth parameters
     lat_dist = mgp.GPBaseLatDist(manif,
-                                m,
-                                n_samples,
-                                torch.Tensor(ts),
-                                ell=ell,
-                                _scale=1)
+                                 m,
+                                 n_samples,
+                                 torch.Tensor(ts),
+                                 ell=ell,
+                                 _scale=1)
 
     K_half = lat_dist.K_half(None).detach().cpu()  # (n_samples x d x m)
     K_half = sym_toeplitz(K_half[0, 0, :])  #m x m

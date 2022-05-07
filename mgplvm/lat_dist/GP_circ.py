@@ -39,12 +39,7 @@ class GPCircLatDist(GPBaseLatDist):
         We parameterize our posterior as N(K2 v, K2 SCCS K2) where K2@K2 = Kprior, S is diagonal and C is circulant
         """
 
-        super().__init__(manif,
-                                      m,
-                                      n_samples,
-                                      ts,
-                                      _scale=_scale,
-                                      ell=ell)
+        super().__init__(manif, m, n_samples, ts, _scale=_scale, ell=ell)
 
         #initialize circulant parameters
         if self.m % 2 == 0:

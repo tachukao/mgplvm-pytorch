@@ -209,7 +209,7 @@ class ARP(Prior):
                  learn_eta=True,
                  learn_c=True,
                  diagonal=True):
-       
+
         super().__init__(manif)
         d = self.d
         self.p = p

@@ -69,14 +69,15 @@ def load_model(params):
         params['diagonal'] = False
 
     #### specify latent distribution ####
-    lat_dist: lat_dist_lib.LatentDistribution = lat_dist_lib.ReLie(manif,
-                                        m,
-                                        n_samples,
-                                        sigma=params['latent_sigma'],
-                                        diagonal=params['diagonal'],
-                                        initialization=params['initialization'],
-                                        Y=params['Y'],
-                                        mu=params['latent_mu'])
+    lat_dist: lat_dist_lib.LatentDistribution = lat_dist_lib.ReLie(
+        manif,
+        m,
+        n_samples,
+        sigma=params['latent_sigma'],
+        diagonal=params['diagonal'],
+        initialization=params['initialization'],
+        Y=params['Y'],
+        mu=params['latent_mu'])
 
     #### specify kernel ####
     if params['kernel'] == 'linear':
@@ -111,19 +112,19 @@ def load_model(params):
                                     ts=params['ts'])
         """
         lat_dist = lat_dist_lib.GP_diag(manif,
-                                 m,
-                                 n_samples,
-                                 params['ts'].to(device),
-                                 ell=params['prior_ell'])
+                                        m,
+                                        n_samples,
+                                        params['ts'].to(device),
+                                        ell=params['prior_ell'])
         prior: Prior = priors.Null(manif)
 
     elif params['prior'] == 'ARP':
         prior = priors.ARP(params['arp_p'],
-                             manif,
-                             ar_eta=torch.tensor(params['arp_eta']),
-                             learn_eta=params['arp_learn_eta'],
-                             learn_c=params['arp_learn_c'],
-                             diagonal=params['diagonal'])
+                           manif,
+                           ar_eta=torch.tensor(params['arp_eta']),
+                           learn_eta=params['arp_learn_eta'],
+                           learn_c=params['arp_learn_c'],
+                           diagonal=params['diagonal'])
     elif params['prior'] == 'LDS':
         prior = priors.DS(manif)
     else:

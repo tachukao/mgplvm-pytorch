@@ -8,7 +8,8 @@ from . import crossval
 from . import syndata
 from . import fast_utils
 
-from .lat_dist import (ReLie, LatentDistribution, GPBaseLatDist, GPCircLatDist, GPDiagLatDist)
+from .lat_dist import (ReLie, LatentDistribution, GPBaseLatDist, GPCircLatDist,
+                       GPDiagLatDist)
 from .kernels import Linear as LinearKernel
 from .kernels import QuadExp as QuadExpKernel
 from .kernels import Exp as ExpKernel

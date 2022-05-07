@@ -147,7 +147,7 @@ class DS(PriorEuclid):
         manif: Manifold,
         fio=fio_id,
     ):
-        
+
         super().__init__(manif)
         d = self.d
 

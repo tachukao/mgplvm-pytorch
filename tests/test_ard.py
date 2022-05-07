@@ -43,12 +43,12 @@ def test_linear_ard():
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)  #over-parameterize
     lat_dist = mgp.ReLie(manif,
-                               m,
-                               n_samples,
-                               diagonal=True,
-                               sigma=0.3,
-                               initialization='fa',
-                               Y=Y)
+                         m,
+                         n_samples,
+                         diagonal=True,
+                         sigma=0.3,
+                         initialization='fa',
+                         Y=Y)
     kernel = mgp.kernels.Linear(n, d, ard=True, learn_scale=False)
     lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.5)
     prior = mgp.priors.Uniform(manif)
@@ -91,12 +91,12 @@ def test_rbf_ard():
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)
     lat_dist = mgp.ReLie(manif,
-                               m,
-                               n_samples,
-                               diagonal=True,
-                               sigma=0.5,
-                               initialization='fa',
-                               Y=Y)
+                         m,
+                         n_samples,
+                         diagonal=True,
+                         sigma=0.5,
+                         initialization='fa',
+                         Y=Y)
     kernel = mgp.kernels.QuadExp(n,
                                  manif.distance,
                                  Y=Y,

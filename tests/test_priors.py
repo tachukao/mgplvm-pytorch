@@ -36,28 +36,28 @@ def test_GP_prior():
 
     #lat_dist = mgp.MVN(m, d, sigma=sig0)
     lat_dist = mgp.ReLie(manif,
-                               m,
-                               n_samples,
-                               sigma=sig0,
-                               initialization='random',
-                               Y=Y)
+                         m,
+                         n_samples,
+                         sigma=sig0,
+                         initialization='random',
+                         Y=Y)
 
     ###construct prior
     prior_manif = mgp.manifolds.Euclid(m, d2)
     prior_kernel = mgp.kernels.QuadExp(d,
-                                        prior_manif.distance,
-                                        learn_scale=False)
+                                       prior_manif.distance,
+                                       learn_scale=False)
     ts = torch.arange(m, device=device,
                       dtype=torch.get_default_dtype())[None, None, :].repeat(
                           n_samples, d2, 1)
     prior = mgp.priors.GP(d,
-                            m,
-                            n_samples,
-                            prior_manif,
-                            prior_kernel,
-                            n_z=20,
-                            ts=ts,
-                            d=d2)
+                          m,
+                          n_samples,
+                          prior_manif,
+                          prior_kernel,
+                          n_z=20,
+                          ts=ts,
+                          d=d2)
     #prior = priors.Gaussian(manif)
 
     # generate model
@@ -117,16 +117,16 @@ def test_ARP_runs():
         manif = manif_type(m, d)
         print(manif.name)
         lat_dist = mgp.ReLie(manif,
-                                   m,
-                                   n_samples,
-                                   sigma=0.4,
-                                   diagonal=(True if i in [0, 1] else False))
+                             m,
+                             n_samples,
+                             sigma=0.4,
+                             diagonal=(True if i in [0, 1] else False))
         kernel = mgp.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgp.likelihoods.Gaussian(n)
         prior = mgp.priors.ARP(p,
-                                 manif,
-                                 diagonal=(True if i in [0, 1] else False))
+                               manif,
+                               diagonal=(True if i in [0, 1] else False))
         z = manif.inducing_points(n, n_z)
         mod = mgp.models.SvgpLvm(n,
                                  m,
@@ -167,11 +167,7 @@ def test_LDS_prior_runs():
     for i, fio in enumerate([fio_id, fio_ReLU, fio_tanh]):
         print('fio', i)
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.ReLie(manif,
-                                   m,
-                                   n_samples,
-                                   sigma=0.4,
-                                   diagonal=True)
+        lat_dist = mgp.ReLie(manif, m, n_samples, sigma=0.4, diagonal=True)
         kernel = mgp.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgp.likelihoods.Gaussian(n)

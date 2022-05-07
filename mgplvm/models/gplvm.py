@@ -19,7 +19,8 @@ from ..lat_dist import LatentDistribution
 class Gplvm(nn.Module):
     name = "Gplvm"
 
-    def __init__(self, obs, lat_dist: LatentDistribution, prior: Prior, n, m, n_samples):
+    def __init__(self, obs, lat_dist: LatentDistribution, prior: Prior, n, m,
+                 n_samples):
         """
         __init__ method for GPLVM model
         Parameters

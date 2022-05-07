@@ -100,12 +100,12 @@ def test_batch_training():
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
         lat_dist = mgp.ReLie(manif,
-                                   m,
-                                   n_samples,
-                                   diagonal=True,
-                                   initialization='fa',
-                                   Y=Y,
-                                   sigma=0.01)
+                             m,
+                             n_samples,
+                             diagonal=True,
+                             initialization='fa',
+                             Y=Y,
+                             sigma=0.01)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
         prior = mgp.priors.Uniform(manif)
