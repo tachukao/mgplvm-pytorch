@@ -181,6 +181,7 @@ def fit(dataset: Union[Tensor, DataLoader],
                 break
 
     #print('removing hooks')
-    for h in hooks: h.remove()
+    for h in hooks:
+        h.remove()
 
     return progress
