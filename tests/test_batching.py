@@ -34,7 +34,7 @@ def test_svgplvm_batching():
         Y = gen.gen_data()
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgp.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
         prior = mgp.priors.Uniform(manif)
@@ -99,7 +99,7 @@ def test_batch_training():
         np.random.seed(0)
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif,
+        lat_dist = mgp.ReLie(manif,
                                    m,
                                    n_samples,
                                    diagonal=True,
@@ -158,7 +158,7 @@ def test_svgp_batching():
     for tied_samples in [True, False]:
         Y = gen.gen_data()
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgp.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
         z = manif.inducing_points(n, n_z)

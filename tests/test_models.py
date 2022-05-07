@@ -32,7 +32,7 @@ def test_svgplvm_LL():
     Y = gen.gen_data()
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)
-    lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+    lat_dist = mgp.ReLie(manif, m, n_samples, diagonal=False)
     kernel = mgp.kernels.QuadExp(n, manif.distance)
     lik = mgp.likelihoods.Gaussian(n)
     prior = mgp.priors.Uniform(manif)
@@ -85,7 +85,7 @@ def test_lgplvm_LL():
     # specify manifold, kernel and rdist
     for nmod in range(3):
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgp.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
         prior = mgp.priors.Uniform(manif)

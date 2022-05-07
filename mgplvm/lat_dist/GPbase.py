@@ -4,13 +4,14 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 from ..utils import softplus, inv_softplus
 from ..manifolds.base import Manifold
-from .common import Rdist
+from .common import LatentDistribution
 from typing import Optional
 from ..fast_utils.toeplitz import sym_toeplitz_matmul
 
 
-class GPbase(Rdist):
-    name = "GPbase"  # it is important that child classes have "GP" in their name, this is used in control flow
+class GPBaseLatDist(LatentDistribution):
+    """GP latent distribution base class"""
+    name = "GPBase"  # it is important that child classes have "GP" in their name, this is used in control flow
 
     def __init__(self,
                  manif: Manifold,
@@ -42,7 +43,7 @@ class GPbase(Rdist):
         
         """
 
-        super(GPbase, self).__init__(manif, 1)  #kmax = 1
+        super().__init__(manif, 1)  #kmax = 1
 
         self.manif = manif
         self.d = manif.d

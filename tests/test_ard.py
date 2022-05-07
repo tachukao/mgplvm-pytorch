@@ -42,7 +42,7 @@ def test_linear_ard():
 
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)  #over-parameterize
-    lat_dist = mgp.rdist.ReLie(manif,
+    lat_dist = mgp.ReLie(manif,
                                m,
                                n_samples,
                                diagonal=True,
@@ -90,7 +90,7 @@ def test_rbf_ard():
 
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)
-    lat_dist = mgp.rdist.ReLie(manif,
+    lat_dist = mgp.ReLie(manif,
                                m,
                                n_samples,
                                diagonal=True,

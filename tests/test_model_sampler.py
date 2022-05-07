@@ -44,7 +44,7 @@ def test_sampling():
             Y = np.round(Y)
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgp.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)

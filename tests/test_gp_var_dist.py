@@ -24,7 +24,7 @@ def test_K_half():
 
     manif = mgp.manifolds.Euclid(m, dfit)
     #initialize with ground truth parameters
-    lat_dist = mgp.rdist.GPbase(manif,
+    lat_dist = mgp.GPBaseLatDist(manif,
                                 m,
                                 n_samples,
                                 torch.Tensor(ts),
@@ -68,7 +68,7 @@ def test_GP_lat_prior():
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
 
     names = ['Diagonal', 'Circulant']
-    for nGP, GP in enumerate([mgp.rdist.GP_diag, mgp.rdist.GP_circ]):
+    for nGP, GP in enumerate([mgp.GPDiagLatDist, mgp.GPCircLatDist]):
         print('\n', names[nGP])
 
         # specify manifold, kernel and rdist

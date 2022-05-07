@@ -3,7 +3,7 @@ from mgplvm.kernels import QuadExp, Linear, Matern
 import numpy as np
 from torch import optim
 import mgplvm
-from mgplvm import rdist, models, optimisers, syndata, likelihoods, priors
+from mgplvm import models, optimisers, syndata, likelihoods, priors
 from mgplvm.manifolds import Torus, Euclid
 import sklearn.gaussian_process.kernels as sklkernels
 
@@ -74,7 +74,7 @@ def test_kernels_run():
     for kernel in kernels:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d)
-        lat_dist = mgplvm.rdist.ReLie(manif,
+        lat_dist = mgplvm.ReLie(manif,
                                       m,
                                       n_samples,
                                       initialization='random')

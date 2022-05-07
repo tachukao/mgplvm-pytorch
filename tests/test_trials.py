@@ -2,7 +2,8 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, rdist, models, optimisers, syndata, likelihoods
+from mgplvm import kernels, models, optimisers, syndata, likelihoods
+from mgplvm import lat_dist as lat_dist_lib
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 
@@ -29,9 +30,9 @@ def test_trial_structure():
     zs = torch.randn((n, d, n_z))
     sig0 = 0.1
 
-    # specify manifold, kernel and rdist
+    # specify manifold, kernel and lat_dist
     manif1 = Euclid(m, d)
-    lat_dist1 = mgplvm.rdist.ReLie(manif1,
+    lat_dist1 = lat_dist_lib.ReLie(manif1,
                                    m,
                                    n_samples,
                                    diagonal=False,
@@ -56,7 +57,7 @@ def test_trial_structure():
     n_samples2, n2, m2 = Y2.shape
     print(Y2.shape)
     manif2 = Euclid(m2, d)
-    lat_dist2 = mgplvm.rdist.ReLie(manif2,
+    lat_dist2 = lat_dist_lib.ReLie(manif2,
                                    m2,
                                    n_samples2,
                                    diagonal=False,

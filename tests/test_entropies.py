@@ -1,5 +1,4 @@
 import mgplvm
-from mgplvm import rdist
 from mgplvm.utils import get_device
 from mgplvm.manifolds import So3, Torus, Euclid, S3
 from torch.distributions.multivariate_normal import MultivariateNormal
@@ -18,7 +17,7 @@ def test_euclid(kmax=5, savefig=False):
 
         manif = Euclid(m, d)
         sigmas = 10**np.linspace(-2, 1, num=m).reshape(m, 1)
-        q = mgplvm.rdist.ReLie(manif, m, n_samples,
+        q = mgplvm.ReLie(manif, m, n_samples,
                                sigma=torch.tensor(sigmas)).mvn()
         x = q.rsample(torch.Size([200]))
         lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
@@ -52,7 +51,7 @@ def test_torus(kmax=5, savefig=False):
 
         manif = Torus(m, d)
         sigmas = 10**np.linspace(-2, 1, num=m).reshape(m, 1)
-        q = mgplvm.rdist.ReLie(manif, m, n_samples,
+        q = mgplvm.ReLie(manif, m, n_samples,
                                sigma=torch.tensor(sigmas)).mvn()
         x = q.rsample(torch.Size([200]))
         lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
@@ -85,7 +84,7 @@ def test_so3(kmax=5, savefig=False):
     manif = So3(m)
     n_samples = 2
     sigmas = 10**np.linspace(-2, 1, num=m).reshape(m, 1)
-    q = mgplvm.rdist.ReLie(manif, m, n_samples,
+    q = mgplvm.ReLie(manif, m, n_samples,
                            sigma=torch.tensor(sigmas)).mvn()
     x = q.rsample(torch.Size([200]))
     lq = manif.log_q(q.log_prob, x, manif.d, kmax=kmax)
@@ -115,7 +114,7 @@ def test_s3(kmax=5, savefig=False):
 
     manif = S3(m)
     sigmas = 10**np.linspace(-2, 1, num=m).reshape(m, 1)
-    q = mgplvm.rdist.ReLie(manif, m, n_samples,
+    q = mgplvm.ReLie(manif, m, n_samples,
                            sigma=torch.tensor(sigmas)).mvn()
 
     x = q.rsample(torch.Size([200]))

@@ -1,5 +1,5 @@
 import mgplvm
-from mgplvm import manifolds, rdist, kernels, likelihoods, priors, models, optimisers
+from mgplvm import manifolds, kernels, likelihoods, priors, models, optimisers
 import numpy as np
 import torch
 from torch import optim
@@ -131,7 +131,7 @@ def test_manifs_runs():
         [manifolds.Torus, manifolds.So3, manifolds.S3]):
         manif = manif_type(m, d)
         print(manif.name)
-        lat_dist = mgplvm.rdist.ReLie(manif,
+        lat_dist = mgplvm.ReLie(manif,
                                       m,
                                       n_samples,
                                       sigma=0.4,

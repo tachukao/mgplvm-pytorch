@@ -1,4 +1,5 @@
-from .. import priors, kernels, models, rdist, likelihoods, utils
+from .. import priors, kernels, models, likelihoods, utils
+from .. import lat_dist as lat_dist_lib
 from ..manifolds import Euclid, Torus, So3
 from ..manifolds.base import Manifold
 from ..likelihoods import Likelihood
@@ -68,7 +69,7 @@ def load_model(params):
         params['diagonal'] = False
 
     #### specify latent distribution ####
-    lat_dist: rdist.Rdist = rdist.ReLie(manif,
+    lat_dist: lat_dist_lib.LatentDistribution = lat_dist_lib.ReLie(manif,
                                         m,
                                         n_samples,
                                         sigma=params['latent_sigma'],
@@ -109,7 +110,7 @@ def load_model(params):
                                     n_z=n_z,
                                     ts=params['ts'])
         """
-        lat_dist = rdist.GP_diag(manif,
+        lat_dist = lat_dist_lib.GP_diag(manif,
                                  m,
                                  n_samples,
                                  params['ts'].to(device),

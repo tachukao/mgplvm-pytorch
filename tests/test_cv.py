@@ -2,7 +2,8 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, rdist, models, optimisers, syndata, likelihoods
+from mgplvm import kernels, models, optimisers, syndata, likelihoods
+from mgplvm import lat_dist as lat_dist_lib
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 
@@ -29,9 +30,9 @@ def test_cv_runs():
                       variability=0.25,
                       n_samples=n_samples)
     Y = gen.gen_data()
-    # specify manifold, kernel and rdist
+    # specify manifold, kernel and lat_dist
     manif = Euclid(m, d)
-    lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, diagonal=False)
+    lat_dist = lat_dist_lib.ReLie(manif, m, n_samples, diagonal=False)
     kernel = kernels.QuadExp(n, manif.distance)
     lik = likelihoods.Gaussian(n)
     prior = mgplvm.priors.Uniform(manif)

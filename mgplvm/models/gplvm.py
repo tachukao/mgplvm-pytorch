@@ -2,7 +2,7 @@ from __future__ import print_function
 import numpy as np
 from ..utils import softplus
 from . import svgp
-from .. import rdist, kernels, utils
+from .. import lat_dist, kernels, utils
 import torch
 from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
@@ -13,20 +13,20 @@ from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
 from ..priors.common import Prior
-from ..rdist import Rdist
+from ..lat_dist import LatentDistribution
 
 
 class Gplvm(nn.Module):
     name = "Gplvm"
 
-    def __init__(self, obs, lat_dist: Rdist, prior: Prior, n, m, n_samples):
+    def __init__(self, obs, lat_dist: LatentDistribution, prior: Prior, n, m, n_samples):
         """
         __init__ method for GPLVM model
         Parameters
         ----------
         obs : Module
             observation model defining p(Y|X)
-        lat_dist : Rdist
+        lat_dist : LatentDistribution
             variational distirbution q(x)
         prior : prior
             prior p(x) (or null prior if q(x) directly computes KL[q||p])

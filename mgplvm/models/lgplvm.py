@@ -2,7 +2,7 @@ from __future__ import print_function
 import numpy as np
 from ..utils import softplus
 from . import svgp
-from .. import rdist, kernels, utils
+from .. import lat_dist, kernels, utils
 import torch
 from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
@@ -13,7 +13,7 @@ from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
 from ..priors.common import Prior
-from ..rdist import Rdist
+from ..lat_dist import LatentDistribution
 from .gp_base import GpBase
 
 from .bfa import Fa, Bfa, Bvfa, vFa
@@ -28,7 +28,7 @@ class Lgplvm(Gplvm):
                  m: int,
                  d: int,
                  n_samples: int,
-                 lat_dist: Rdist,
+                 lat_dist: LatentDistribution,
                  prior: Prior,
                  Bayesian=True,
                  Y=None,
@@ -63,7 +63,7 @@ class Lvgplvm(Gplvm):
                  m: int,
                  d: int,
                  n_samples: int,
-                 lat_dist: Rdist,
+                 lat_dist: LatentDistribution,
                  prior: Prior,
                  likelihood: Likelihood,
                  tied_samples=True,

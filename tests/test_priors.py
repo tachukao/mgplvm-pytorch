@@ -34,8 +34,8 @@ def test_GP_prior():
     sigma = np.mean(np.std(Y, axis=-1), axis=0)  # initialize noise
     kernel = mgp.kernels.QuadExp(n, manif.distance, scale=scale)
 
-    #lat_dist = mgp.rdist.MVN(m, d, sigma=sig0)
-    lat_dist = mgp.rdist.ReLie(manif,
+    #lat_dist = mgp.MVN(m, d, sigma=sig0)
+    lat_dist = mgp.ReLie(manif,
                                m,
                                n_samples,
                                sigma=sig0,
@@ -116,7 +116,7 @@ def test_ARP_runs():
         [mgp.manifolds.Euclid, mgp.manifolds.Torus, mgp.manifolds.So3]):
         manif = manif_type(m, d)
         print(manif.name)
-        lat_dist = mgp.rdist.ReLie(manif,
+        lat_dist = mgp.ReLie(manif,
                                    m,
                                    n_samples,
                                    sigma=0.4,
@@ -167,7 +167,7 @@ def test_LDS_prior_runs():
     for i, fio in enumerate([fio_id, fio_ReLU, fio_tanh]):
         print('fio', i)
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif,
+        lat_dist = mgp.ReLie(manif,
                                    m,
                                    n_samples,
                                    sigma=0.4,

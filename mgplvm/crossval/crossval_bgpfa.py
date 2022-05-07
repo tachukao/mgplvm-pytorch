@@ -5,7 +5,7 @@ from .train_model import train_model
 from .crossval import not_in, update_params
 from ..manifolds import Euclid
 from ..likelihoods import Gaussian, NegativeBinomial, Poisson
-from ..rdist import GP_circ, GP_diag
+from ..lat_dist import GP_circ, GP_diag
 from ..priors import Null
 from ..models import Lvgplvm, Lgplvm
 
@@ -116,7 +116,7 @@ def train_cv_bgpfa(Y,
     Y2 = Y
     n_samples, n, T = Y2.shape
 
-    ###rdist: ell
+    ###lat_dist: ell
     manif = Euclid(T, d_fit)
     prior = Null(manif)
     ell0 = mod.lat_dist.ell.detach().cpu()

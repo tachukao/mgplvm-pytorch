@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, rdist, models, optimisers, syndata, likelihoods
+from mgplvm import kernels, models, optimisers, syndata, likelihoods
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 
@@ -43,7 +43,7 @@ def test_likelihood_runs():
     ]:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d)
-        lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgplvm.ReLie(manif, m, n_samples, diagonal=False)
         # initialize signal variance
         kernel = kernels.QuadExp(n, manif.distance)
         # generate model
