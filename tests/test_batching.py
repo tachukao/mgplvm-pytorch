@@ -34,21 +34,21 @@ def test_svgplvm_batching():
         Y = gen.gen_data()
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgp.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.Uniform(manif)
+        prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
-                                 m,
-                                 n_samples,
-                                 z,
-                                 kernel,
-                                 lik,
-                                 lat_dist,
-                                 lprior,
-                                 whiten=True,
-                                 tied_samples=tied_samples).to(device)
+        mod = mgp.SVGPLVM(n,
+                          m,
+                          n_samples,
+                          z,
+                          kernel,
+                          lik,
+                          lat_dist,
+                          prior,
+                          whiten=True,
+                          tied_samples=tied_samples).to(device)
 
         data = torch.tensor(Y).to(device)
         n_mc = 16
@@ -99,28 +99,28 @@ def test_batch_training():
         np.random.seed(0)
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif,
-                                   m,
-                                   n_samples,
-                                   diagonal=True,
-                                   initialization='fa',
-                                   Y=Y,
-                                   sigma=0.01)
+        lat_dist = mgp.ReLie(manif,
+                             m,
+                             n_samples,
+                             diagonal=True,
+                             initialization='fa',
+                             Y=Y,
+                             sigma=0.01)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.Uniform(manif)
+        prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mods.append(
-            mgp.models.SvgpLvm(n,
-                               m,
-                               n_samples,
-                               z,
-                               kernel,
-                               lik,
-                               lat_dist,
-                               lprior,
-                               whiten=True,
-                               tied_samples=False).to(device))
+            mgp.SVGPLVM(n,
+                        m,
+                        n_samples,
+                        z,
+                        kernel,
+                        lik,
+                        lat_dist,
+                        prior,
+                        whiten=True,
+                        tied_samples=False).to(device))
         m0s.append(mods[-1].lat_dist.prms[0].detach().cpu().numpy().flatten())
         print(m0s[-1][:10])
         train_ps = mgp.crossval.training_params(max_steps=21,
@@ -158,18 +158,18 @@ def test_svgp_batching():
     for tied_samples in [True, False]:
         Y = gen.gen_data()
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgp.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
         z = manif.inducing_points(n, n_z)
-        svgp = mgp.models.svgp.Svgp(kernel,
-                                    n,
-                                    m,
-                                    n_samples,
-                                    z,
-                                    lik,
-                                    whiten=True,
-                                    tied_samples=tied_samples)
+        svgp = mgp.SVGP(kernel,
+                        n,
+                        m,
+                        n_samples,
+                        z,
+                        lik,
+                        whiten=True,
+                        tied_samples=tied_samples)
         mod = svgp.to(device)
         lat_dist = lat_dist.to(device)
         data = torch.tensor(Y).to(device)

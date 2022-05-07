@@ -12,7 +12,7 @@ from typing import Tuple, List, Optional, Union
 from torch.distributions import MultivariateNormal, LowRankMultivariateNormal, kl_divergence, transform_to, constraints, Normal
 from ..likelihoods import Likelihood
 from sklearn import decomposition
-from .gp_base import GpBase
+from .gp_base import GPBase
 import itertools
 
 jitter: float = 1E-8
@@ -32,9 +32,9 @@ def batch_capacitance_tril(W, D):
     return torch.cholesky(K)
 
 
-class Bfa(GpBase):
-    """
-    Bayesian Factor Analysis
+class BFA(GPBase):
+    """Bayesian Factor Analysis
+
     Assumes Gaussian observation noise
     Computes log_prob and posterior predictions exactly
     """
@@ -217,7 +217,7 @@ class Bfa(GpBase):
              self.dim_scale.mean()).item())
 
 
-class Bvfa(GpBase):
+class BVFA(GPBase):
     name = "Bvfa"
 
     def __init__(self,
@@ -530,9 +530,9 @@ class Bvfa(GpBase):
         return newmsg + self.likelihood.msg
 
 
-class Fa(GpBase):
-    """
-    Standard non-Bayesian Factor Analysis
+class FA(GPBase):
+    """Standard non-Bayesian Factor Analysis
+
     Assumes Gaussian observation noise
     Computes log_prob and posterior predictions exactly
     """
@@ -686,9 +686,9 @@ class Fa(GpBase):
         return ''
 
 
-class vFa(GpBase):
-    """
-    Variational non-Bayesian Factor Analysis
+class VFA(GPBase):
+    """Variational non-Bayesian Factor Analysis
+
     Allows for non-Gaussian noise
     """
 
@@ -815,7 +815,8 @@ class vFa(GpBase):
 
         if noise:
             #sample from observation function p(y|f)
-            dist = Normal(loc=f_samps, scale=self.sigma[..., None])
+            sigma = self.sigma[..., None]  # type: ignore
+            dist = Normal(loc=f_samps, scale=sigma)
             y_samps = dist.sample(n_mc)  #n_mc x n_samples x n x m
         else:
             #compute mean observations mu(f) for each f

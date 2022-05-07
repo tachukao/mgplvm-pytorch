@@ -2,33 +2,34 @@ from __future__ import print_function
 import numpy as np
 from ..utils import softplus
 from . import svgp
-from .. import rdist, kernels, utils
+from .. import lat_dist, kernels, utils
 import torch
 from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
-from .. import lpriors
+from .. import priors
 from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
-from ..lpriors.common import Lprior
-from ..rdist import Rdist
+from ..priors.common import Prior
+from ..lat_dist import LatentDistribution
 
 
-class Gplvm(nn.Module):
-    name = "Gplvm"
+class GPLVM(nn.Module):
+    name: str = "Gplvm"
 
-    def __init__(self, obs, lat_dist: Rdist, lprior: Lprior, n, m, n_samples):
+    def __init__(self, obs, lat_dist: LatentDistribution, prior: Prior, n, m,
+                 n_samples):
         """
         __init__ method for GPLVM model
         Parameters
         ----------
         obs : Module
             observation model defining p(Y|X)
-        lat_dist : Rdist
+        lat_dist : LatentDistribution
             variational distirbution q(x)
-        lprior : Lprior
+        prior : prior
             prior p(x) (or null prior if q(x) directly computes KL[q||p])
         n : int
             number of neurons
@@ -47,7 +48,7 @@ class Gplvm(nn.Module):
 
         # latent distribution
         self.lat_dist = lat_dist  #Q(X)
-        self.lprior = lprior  #P(X)
+        self.prior = prior  #P(X)
 
     def elbo(self,
              data,
@@ -105,7 +106,7 @@ class Gplvm(nn.Module):
                                      sample_idxs=sample_idxs,
                                      kmax=kmax,
                                      analytic_kl=analytic_kl,
-                                     prior=self.lprior)
+                                     prior=self.prior)
         # g is shape (n_mc, n_samples, m, d)
         # lq is shape (n_mc x n_samples x m)
 
@@ -130,7 +131,7 @@ class Gplvm(nn.Module):
             kl = (torch.ones(n_mc).to(data.device)) * lq.sum()
         else:
             # compute kl term for the latents (n_mc, n_samples) per batch
-            prior = self.lprior(g, batch_idxs)  #(n_mc)
+            prior = self.prior(g, batch_idxs)  #(n_mc)
             #print('prior, lq shapes:', prior.shape, lq.shape)
             kl = lq.sum(-1).sum(
                 -1) - prior  #(n_mc) (sum q(g) over samples, conditions)

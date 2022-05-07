@@ -24,12 +24,12 @@ def test_K_half():
 
     manif = mgp.manifolds.Euclid(m, dfit)
     #initialize with ground truth parameters
-    lat_dist = mgp.rdist.GPbase(manif,
-                                m,
-                                n_samples,
-                                torch.Tensor(ts),
-                                ell=ell,
-                                _scale=1)
+    lat_dist = mgp.GPBaseLatDist(manif,
+                                 m,
+                                 n_samples,
+                                 torch.Tensor(ts),
+                                 ell=ell,
+                                 _scale=1)
 
     K_half = lat_dist.K_half(None).detach().cpu()  # (n_samples x d x m)
     K_half = sym_toeplitz(K_half[0, 0, :])  #m x m
@@ -68,7 +68,7 @@ def test_GP_lat_prior():
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
 
     names = ['Diagonal', 'Circulant']
-    for nGP, GP in enumerate([mgp.rdist.GP_diag, mgp.rdist.GP_circ]):
+    for nGP, GP in enumerate([mgp.GPDiagLatDist, mgp.GPCircLatDist]):
         print('\n', names[nGP])
 
         # specify manifold, kernel and rdist
@@ -83,25 +83,25 @@ def test_GP_lat_prior():
                                        requires_grad=True)
 
         ###construct prior
-        lprior = mgp.lpriors.Null(manif)
+        prior = mgp.priors.Null(manif)
 
         # generate model
         likelihood = mgp.likelihoods.Gaussian(n, Y=Y, d=dfit)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood,
-                                 lat_dist, lprior).to(device)
+        mod = mgp.SVGPLVM(n, m, n_samples, z, kernel, likelihood, lat_dist,
+                          prior).to(device)
 
         ### test that training runs ###
         n_mc = 16
 
-        mgp.optimisers.svgp.fit(data,
-                                mod,
-                                optimizer=optim.Adam,
-                                n_mc=n_mc,
-                                max_steps=50,
-                                burnin=50,
-                                lrate=10e-2,
-                                print_every=20)
+        mgp.fit(data,
+                mod,
+                optimizer=optim.Adam,
+                n_mc=n_mc,
+                max_steps=50,
+                burnin=50,
+                lrate=10e-2,
+                print_every=20)
 
         print('lat ell, scale:',
               mod.lat_dist.ell.detach().flatten(),

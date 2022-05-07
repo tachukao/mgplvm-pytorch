@@ -4,9 +4,10 @@ import torch
 from torch import Tensor, optim
 from torch.optim.lr_scheduler import LambdaLR
 from .data import DataLoader
-from ..models import SvgpLvm
 import itertools
 from typing import Union, List, Optional
+
+Dataset = Union[Tensor, DataLoader]
 
 
 def sort_params(model, hook):
@@ -32,7 +33,7 @@ def sort_params(model, hook):
     params1 = list(
         itertools.chain.from_iterable([
             model.lat_dist.concentration_parameters(),
-            model.lprior.parameters(),
+            model.prior.parameters(),
             model.svgp.g1_parameters()
         ]))
 
@@ -60,11 +61,11 @@ def print_progress(model,
 
         print(
             msg + lat_dist.msg(Y, batch_idxs, sample_idxs) + model.svgp.msg +
-            model.lprior.msg,)
+            model.prior.msg,)
 
 
-def fit(dataset: Union[Tensor, DataLoader],
-        model: SvgpLvm,
+def fit(dataset: Dataset,
+        model,
         optimizer=optim.Adam,
         n_mc: int = 32,
         burnin: int = 100,
@@ -78,12 +79,16 @@ def fit(dataset: Union[Tensor, DataLoader],
         analytic_kl=False,
         accumulate_gradient=True,
         batch_mc=None):
-    '''
+    '''Swiss army knife optimizer. 
+
+    Used to fit almost all models. Specialized optimizers will most likely
+    work better for individual models.
+
     Parameters
     ----------
     dataset : Union[Tensor,DataLoader]
         data matrix of dimensions (n_samples x n x m)
-    model : SvgpLvm
+    model : SVGPLVM
         model to be trained
     n_mc : int
         number of MC samples for estimating the ELBO 

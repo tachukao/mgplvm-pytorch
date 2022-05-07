@@ -4,12 +4,13 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 from ..utils import softplus, inv_softplus
 from ..manifolds.base import Manifold
-from .GPbase import GPbase
+from .GPbase import GPBaseLatDist
 from typing import Optional
 from ..fast_utils.toeplitz import sym_toeplitz_matmul
 
 
-class GP_diag(GPbase):
+class GPDiagLatDist(GPBaseLatDist):
+    """GP latent distribution with diagonal parameterization"""
     name = "GP_diag"
 
     def __init__(
@@ -37,12 +38,7 @@ class GP_diag(GPbase):
         -----
         We parameterize our posterior as N(K2 v, K2 S^2 K2) where K2@K2 = Kprior and S is diagonal
         """
-        super(GP_diag, self).__init__(manif,
-                                      m,
-                                      n_samples,
-                                      ts,
-                                      _scale=_scale,
-                                      ell=ell)
+        super().__init__(manif, m, n_samples, ts, _scale=_scale, ell=ell)
 
     def I_v(self, v, sample_idxs=None):
         """

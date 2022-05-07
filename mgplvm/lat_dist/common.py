@@ -5,10 +5,13 @@ from ..manifolds.base import Manifold
 from typing import Tuple
 
 
-class Rdist(Module, metaclass=abc.ABCMeta):
+class LatentDistribution(Module, metaclass=abc.ABCMeta):
+    """LatentDistribution base class."""
+
+    name: str
 
     def __init__(self, manif: Manifold, kmax: int):
-        super(Rdist, self).__init__()
+        super().__init__()
         self.manif = manif
         self.d = manif.d
         self.kmax = kmax

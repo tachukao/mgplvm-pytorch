@@ -5,8 +5,8 @@ import abc
 from typing import Tuple, List, Optional, Union
 
 
-class GpBase(Module, metaclass=abc.ABCMeta):
-    """Base p(Y|X) class"""
+class GPBase(Module, metaclass=abc.ABCMeta):
+    """Base GP model class."""
 
     def __init__(self):
         super().__init__()

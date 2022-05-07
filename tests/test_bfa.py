@@ -11,7 +11,7 @@ def test_fa():
     sigma = 1E-3
     xtrain = torch.randn(n_samples, d, m)
     ytrain = c.matmul(xtrain) + sigma * torch.randn(n_samples, n, m)
-    fa = mgp.models.Fa(n, d)
+    fa = mgp.FA(n, d)
     optimizer = torch.optim.Adam(fa.parameters(), lr=0.002)
     for k in range(5000):
         optimizer.zero_grad()
@@ -37,7 +37,7 @@ def test_bfa():
     sigma = 1E-3
     xtrain = torch.randn(n_samples, d, m)
     ytrain = c.matmul(xtrain) + sigma * torch.randn(n_samples, n, m)
-    bfa = mgp.models.Bfa(n, d)
+    bfa = mgp.BFA(n, d)
     optimizer = torch.optim.Adam(bfa.parameters(), lr=0.001)
     for k in range(100):
         optimizer.zero_grad()
@@ -64,7 +64,7 @@ def test_bfa_cov():
     x = torch.randn(n_samples, d, m)
     xstar = torch.randn(n_samples, d, m)
     y = c.matmul(x)
-    bfa = mgp.models.Bfa(n, d)
+    bfa = mgp.BFA(n, d)
     prec = bfa._dist(x).precision_matrix
     _, v = bfa.predict(xstar, y, x, full_cov=False)
     _, cov = bfa.predict(xstar, y, x, full_cov=True)
@@ -88,17 +88,14 @@ def test_bvfa():
     ytrain = c.matmul(xtrain) + sigma * torch.randn(n_samples, n, m)
     lik = mgp.likelihoods.Gaussian(n)
 
-    model = mgp.models.Bvfa(n, d, m, n_samples, lik, learn_scale=False)
+    model = mgp.BVFA(n, d, m, n_samples, lik, learn_scale=False)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.008)
     for k in range(1000):
         optimizer.zero_grad()
         loglik, kl = model.elbo(ytrain, xtrain)
         loss = -(loglik - kl).sum()
-        bfa = mgp.models.Bfa(n,
-                             d,
-                             model.likelihood.sigma.data,
-                             learn_sigma=False)
+        bfa = mgp.BFA(n, d, model.likelihood.sigma.data, learn_sigma=False)
         true_log_prob = bfa.log_prob(ytrain, xtrain).sum()
         if k % 200 == 0:
             xtest = torch.randn(n_samples, d, m)

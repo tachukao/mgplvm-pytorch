@@ -42,35 +42,35 @@ def test_linear_ard():
 
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)  #over-parameterize
-    lat_dist = mgp.rdist.ReLie(manif,
-                               m,
-                               n_samples,
-                               diagonal=True,
-                               sigma=0.3,
-                               initialization='fa',
-                               Y=Y)
+    lat_dist = mgp.ReLie(manif,
+                         m,
+                         n_samples,
+                         diagonal=True,
+                         sigma=0.3,
+                         initialization='fa',
+                         Y=Y)
     kernel = mgp.kernels.Linear(n, d, ard=True, learn_scale=False)
     lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.5)
-    lprior = mgp.lpriors.Uniform(manif)
+    prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n,
-                             m,
-                             n_samples,
-                             z,
-                             kernel,
-                             lik,
-                             lat_dist,
-                             lprior,
-                             whiten=True).to(device)
+    mod = mgp.SVGPLVM(n,
+                      m,
+                      n_samples,
+                      z,
+                      kernel,
+                      lik,
+                      lat_dist,
+                      prior,
+                      whiten=True).to(device)
 
-    trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),
-                                          mod,
-                                          optimizer=optim.Adam,
-                                          max_steps=700,
-                                          burnin=50,
-                                          n_mc=5,
-                                          lrate=20E-2,
-                                          print_every=50)
+    trained_mod = mgp.fit(torch.tensor(Y).to(device),
+                          mod,
+                          optimizer=optim.Adam,
+                          max_steps=700,
+                          burnin=50,
+                          n_mc=5,
+                          lrate=20E-2,
+                          print_every=50)
 
     ells = (mod.svgp.kernel.input_scale)**(-1)
     ells = np.sort(ells.detach().cpu().numpy())
@@ -90,13 +90,13 @@ def test_rbf_ard():
 
     # specify manifold, kernel and rdist
     manif = mgp.manifolds.Euclid(m, d)
-    lat_dist = mgp.rdist.ReLie(manif,
-                               m,
-                               n_samples,
-                               diagonal=True,
-                               sigma=0.5,
-                               initialization='fa',
-                               Y=Y)
+    lat_dist = mgp.ReLie(manif,
+                         m,
+                         n_samples,
+                         diagonal=True,
+                         sigma=0.5,
+                         initialization='fa',
+                         Y=Y)
     kernel = mgp.kernels.QuadExp(n,
                                  manif.distance,
                                  Y=Y,
@@ -104,26 +104,26 @@ def test_rbf_ard():
                                  ell_byneuron=False)
     print(d, kernel.ell.shape)
     lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.25)
-    lprior = mgp.lpriors.Uniform(manif)
+    prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n,
-                             m,
-                             n_samples,
-                             z,
-                             kernel,
-                             lik,
-                             lat_dist,
-                             lprior,
-                             whiten=True).to(device)
+    mod = mgp.SVGPLVM(n,
+                      m,
+                      n_samples,
+                      z,
+                      kernel,
+                      lik,
+                      lat_dist,
+                      prior,
+                      whiten=True).to(device)
 
-    trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),
-                                          mod,
-                                          optimizer=optim.Adam,
-                                          max_steps=700,
-                                          burnin=50,
-                                          n_mc=12,
-                                          lrate=15E-2,
-                                          print_every=50)
+    trained_mod = mgp.fit(torch.tensor(Y).to(device),
+                          mod,
+                          optimizer=optim.Adam,
+                          max_steps=700,
+                          burnin=50,
+                          n_mc=12,
+                          lrate=15E-2,
+                          print_every=50)
 
     ells = np.sort(mod.svgp.kernel.ell.detach().cpu().numpy()[0, :])
     print('\n', ells)

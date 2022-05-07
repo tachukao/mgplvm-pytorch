@@ -6,12 +6,12 @@ from torch.distributions.normal import Normal
 from torch.distributions import transform_to, constraints
 from ..utils import softplus, inv_softplus
 from ..manifolds.base import Manifold
-from .common import Rdist
+from .common import LatentDistribution
 from typing import Optional
 from ..base import Module
 
 
-class ReLieBase(Rdist):
+class ReLieBase(LatentDistribution):
     name = "ReLieBase"
 
     def __init__(self,

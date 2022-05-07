@@ -2,23 +2,23 @@ from __future__ import print_function
 import numpy as np
 from ..utils import softplus
 from . import svgp
-from .. import rdist, kernels, utils
+from .. import lat_dist, kernels, utils
 import torch
 from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
-from .. import lpriors
+from .. import priors
 from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
-from ..lpriors.common import Lprior
-from ..rdist import Rdist
+from ..priors.common import Prior
+from ..lat_dist import LatentDistribution
 
-from .gplvm import Gplvm
+from .gplvm import GPLVM
 
 
-class SvgpLvm(Gplvm):
+class SVGPLVM(GPLVM):
     name = "Svgplvm"
 
     def __init__(self,
@@ -28,8 +28,8 @@ class SvgpLvm(Gplvm):
                  z: InducingPoints,
                  kernel: Kernel,
                  likelihood: Likelihood,
-                 lat_dist: Rdist,
-                 lprior: Lprior,
+                 lat_dist: LatentDistribution,
+                 prior: Prior,
                  whiten: bool = True,
                  tied_samples=True):
         """
@@ -48,16 +48,16 @@ class SvgpLvm(Gplvm):
             kernel used for GP regression
         likelihood : Likelihood
             likelihood p(y|f)
-        lat_dist : rdist
+        lat_dist : LatentDistribution
             latent distribution
-        lprior: Lprior
-            log prior over the latents
+        prior: Prior
+            prior over the latents
         whiten: bool
             parameter passed to Svgp
         """
 
         #p(Y|X)
-        obs = svgp.Svgp(kernel,
+        obs = svgp.SVGP(kernel,
                         n,
                         m,
                         n_samples,
@@ -66,4 +66,4 @@ class SvgpLvm(Gplvm):
                         whiten=whiten,
                         tied_samples=tied_samples)
 
-        super().__init__(obs, lat_dist, lprior, n, m, n_samples)
+        super().__init__(obs, lat_dist, prior, n, m, n_samples)

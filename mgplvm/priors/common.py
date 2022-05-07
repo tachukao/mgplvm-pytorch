@@ -10,9 +10,8 @@ from ..base import Module
 from ..manifolds.base import Manifold
 
 
-class Lprior(Module, metaclass=abc.ABCMeta):
-    """
-    Base kernel class
+class Prior(Module, metaclass=abc.ABCMeta):
+    """Priors base class
     """
 
     def __init__(self, manif: Manifold):
@@ -26,13 +25,15 @@ class Lprior(Module, metaclass=abc.ABCMeta):
         pass
 
 
-class Uniform(Lprior):
+class Uniform(Prior):
+    '''Uniform prior 
+    
+    By default, uniform for closed manifolds, and Normal for Euclidean space.
+    '''
+
     name = "uniform"
 
     def __init__(self, manif):
-        '''
-        uniform prior for closed manifolds, Gaussian prior for Euclidean space
-        '''
         super().__init__(manif)
 
     def forward(self, g: Tensor, batch_idxs=None):
@@ -47,13 +48,14 @@ class Uniform(Lprior):
         return ""
 
 
-class Null(Lprior):
+class Null(Prior):
+    '''Null prior 
+    
+    Returns 0, non-Bayesian point prior.
+    '''
     name = "null"
 
     def __init__(self, manif):
-        '''
-        return 0; non-Bayesian point prior
-        '''
         super().__init__(manif)
 
     def forward(self, g: Tensor, batch_idxs=None):
@@ -71,16 +73,19 @@ class Null(Lprior):
         return ""
 
 
-class Gaussian(Lprior):
+class Gaussian(Prior):
+    '''Gaussian Prior 
+    
+    Defines a Normal distribution for Euclidean space and wrapped 
+    Gaussian for other manifolds Euclidean is fixed N(0, I) since 
+    the space can be scaled and rotated freely non-Euclidean manifolds 
+    are parameterized as ReLie[N(0, Sigma)] 'sigma = value' initializes 
+    the sqrt diagonal elements of Sigma.
+    '''
+
     name = "gaussian"
 
     def __init__(self, manif, sigma: float = 1.5):
-        '''
-        Gaussian prior for Euclidean space and wrapped Gaussian for other manifolds
-        Euclidean is fixed N(0, I) since the space can be scaled and rotated freely
-        non-Euclidean manifolds are parameterized as ReLie[N(0, Sigma)]
-        'sigma = value' initializes the sqrt diagonal elements of Sigma
-        '''
         super().__init__(manif)
 
         #N(0,I) can always be recovered from a scaling/rotation of the space
@@ -130,7 +135,12 @@ class Gaussian(Lprior):
         return (' prior_sig {:.3f} |').format(sig)
 
 
-class Brownian(Lprior):
+class Brownian(Prior):
+    """Brownian motion prior.
+    
+        x_t = c + w_t
+        w_t = N(0, eta)
+    """
     name = "Brownian"
 
     def __init__(self,
@@ -140,10 +150,6 @@ class Brownian(Lprior):
                  brownian_c=None,
                  fixed_brownian_eta=False,
                  fixed_brownian_c=False):
-        '''
-        x_t = c + w_t
-        w_t = N(0, eta)
-        '''
         super().__init__(manif)
         self.kmax = kmax
         d = self.d
@@ -180,7 +186,16 @@ class Brownian(Lprior):
             brownian_eta.detach().cpu().numpy().mean())
 
 
-class ARP(Lprior):
+class ARP(Prior):
+    """Autoregressive prior of order p.
+
+    ..math::
+      :nowrap:
+      \\begin{eqnarray}
+      x_t &= c + \\sum_{j=1}^p phi_j x_{t-1} + w_t \\\\
+      w_t &= N(0, eta)
+      \\end{eqnarray}
+    """
     name = "ARP"
 
     def __init__(self,
@@ -194,14 +209,7 @@ class ARP(Lprior):
                  learn_eta=True,
                  learn_c=True,
                  diagonal=True):
-        '''
-        ..math::
-          :nowrap:
-          \\begin{eqnarray}
-          x_t &= c + \\sum_{j=1}^p phi_j x_{t-1} + w_t \\\\
-          w_t &= N(0, eta)
-          \\end{eqnarray}
-        '''
+
         super().__init__(manif)
         d = self.d
         self.p = p

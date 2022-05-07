@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, rdist, models, optimisers, syndata, likelihoods
+from mgplvm import kernels, syndata, likelihoods
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 
@@ -43,31 +43,31 @@ def test_likelihood_runs():
     ]:
         # specify manifold, kernel and rdist
         manif = Euclid(m, d)
-        lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgplvm.ReLie(manif, m, n_samples, diagonal=False)
         # initialize signal variance
         kernel = kernels.QuadExp(n, manif.distance)
         # generate model
-        lprior = mgplvm.lpriors.Uniform(manif)
+        prior = mgplvm.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = models.SvgpLvm(n,
+        mod = mgplvm.SVGPLVM(n,
                              m,
                              n_samples,
                              z,
                              kernel,
                              lik,
                              lat_dist,
-                             lprior,
+                             prior,
                              whiten=True).to(device)
 
         # train model
-        optimisers.svgp.fit(data,
-                            mod,
-                            optimizer=optim.Adam,
-                            max_steps=5,
-                            burnin=5 / 2E-2,
-                            n_mc=64,
-                            lrate=2E-2,
-                            print_every=1000)
+        mgplvm.fit(data,
+                   mod,
+                   optimizer=optim.Adam,
+                   max_steps=5,
+                   burnin=5 / 2E-2,
+                   n_mc=64,
+                   lrate=2E-2,
+                   print_every=1000)
 
         ### test burda log likelihood ###
         LL = mod.calc_LL(data, 128)

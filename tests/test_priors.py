@@ -34,60 +34,60 @@ def test_GP_prior():
     sigma = np.mean(np.std(Y, axis=-1), axis=0)  # initialize noise
     kernel = mgp.kernels.QuadExp(n, manif.distance, scale=scale)
 
-    #lat_dist = mgp.rdist.MVN(m, d, sigma=sig0)
-    lat_dist = mgp.rdist.ReLie(manif,
-                               m,
-                               n_samples,
-                               sigma=sig0,
-                               initialization='random',
-                               Y=Y)
+    #lat_dist = mgp.MVN(m, d, sigma=sig0)
+    lat_dist = mgp.ReLie(manif,
+                         m,
+                         n_samples,
+                         sigma=sig0,
+                         initialization='random',
+                         Y=Y)
 
     ###construct prior
-    lprior_manif = mgp.manifolds.Euclid(m, d2)
-    lprior_kernel = mgp.kernels.QuadExp(d,
-                                        lprior_manif.distance,
-                                        learn_scale=False)
+    prior_manif = mgp.manifolds.Euclid(m, d2)
+    prior_kernel = mgp.kernels.QuadExp(d,
+                                       prior_manif.distance,
+                                       learn_scale=False)
     ts = torch.arange(m, device=device,
                       dtype=torch.get_default_dtype())[None, None, :].repeat(
                           n_samples, d2, 1)
-    lprior = mgp.lpriors.GP(d,
-                            m,
-                            n_samples,
-                            lprior_manif,
-                            lprior_kernel,
-                            n_z=20,
-                            ts=ts,
-                            d=d2)
-    #lprior = lpriors.Gaussian(manif)
+    prior = mgp.priors.GP(d,
+                          m,
+                          n_samples,
+                          prior_manif,
+                          prior_kernel,
+                          n_z=20,
+                          ts=ts,
+                          d=d2)
+    #prior = priors.Gaussian(manif)
 
     # generate model
     likelihood = mgp.likelihoods.Gaussian(n, sigma=torch.Tensor(sigma))
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
-                             lprior).to(device)
+    mod = mgp.SVGPLVM(n, m, n_samples, z, kernel, likelihood, lat_dist,
+                      prior).to(device)
 
     ### test that training runs ###
     n_mc = 64
 
-    mgp.optimisers.svgp.fit(data,
-                            mod,
-                            optimizer=optim.Adam,
-                            n_mc=n_mc,
-                            max_steps=5,
-                            burnin=1,
-                            lrate=10E-2,
-                            print_every=50)
+    mgp.fit(data,
+            mod,
+            optimizer=optim.Adam,
+            n_mc=n_mc,
+            max_steps=5,
+            burnin=1,
+            lrate=10E-2,
+            print_every=50)
 
     # check that we are indeed optimizing different q_mu in the GP prior for each sample
-    assert (not (torch.allclose(mod.lprior.svgp.q_mu[0].detach().data,
-                                mod.lprior.svgp.q_mu[1].detach().data)))
+    assert (not (torch.allclose(mod.prior.svgp.q_mu[0].detach().data,
+                                mod.prior.svgp.q_mu[1].detach().data)))
 
     ### test that two ways of computing the prior agree ###
     g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
     g = g.transpose(-1, -2)
 
     def for_batch(i):
-        svgp_lik, svgp_kl = mod.lprior.svgp.elbo(g[i:i + 1], ts)
+        svgp_lik, svgp_kl = mod.prior.svgp.elbo(g[i:i + 1], ts)
         elbo = svgp_lik - svgp_kl
         return elbo
 
@@ -96,7 +96,7 @@ def test_GP_prior():
     elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
     ##### try to batch things ####
-    lik, kl = mod.lprior.svgp.elbo(g, ts)
+    lik, kl = mod.prior.svgp.elbo(g, ts)
     elbo2_b = (lik - kl).sum(-1)
 
     #### print comparison ###
@@ -116,35 +116,35 @@ def test_ARP_runs():
         [mgp.manifolds.Euclid, mgp.manifolds.Torus, mgp.manifolds.So3]):
         manif = manif_type(m, d)
         print(manif.name)
-        lat_dist = mgp.rdist.ReLie(manif,
-                                   m,
-                                   n_samples,
-                                   sigma=0.4,
-                                   diagonal=(True if i in [0, 1] else False))
+        lat_dist = mgp.ReLie(manif,
+                             m,
+                             n_samples,
+                             sigma=0.4,
+                             diagonal=(True if i in [0, 1] else False))
         kernel = mgp.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.ARP(p,
-                                 manif,
-                                 diagonal=(True if i in [0, 1] else False))
+        prior = mgp.priors.ARP(p,
+                               manif,
+                               diagonal=(True if i in [0, 1] else False))
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
-                                 m,
-                                 n_samples,
-                                 z,
-                                 kernel,
-                                 lik,
-                                 lat_dist,
-                                 lprior,
-                                 whiten=True).to(device)
+        mod = mgp.SVGPLVM(n,
+                          m,
+                          n_samples,
+                          z,
+                          kernel,
+                          lik,
+                          lat_dist,
+                          prior,
+                          whiten=True).to(device)
 
         # train model
-        mgp.optimisers.svgp.fit(data,
-                                mod,
-                                max_steps=5,
-                                n_mc=64,
-                                optimizer=optim.Adam,
-                                print_every=1000)
+        mgp.fit(data,
+                mod,
+                max_steps=5,
+                n_mc=64,
+                optimizer=optim.Adam,
+                print_every=1000)
 
 
 def fio_id(x):
@@ -167,35 +167,31 @@ def test_LDS_prior_runs():
     for i, fio in enumerate([fio_id, fio_ReLU, fio_tanh]):
         print('fio', i)
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif,
-                                   m,
-                                   n_samples,
-                                   sigma=0.4,
-                                   diagonal=True)
+        lat_dist = mgp.ReLie(manif, m, n_samples, sigma=0.4, diagonal=True)
         kernel = mgp.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.DS(manif, fio=fio)
+        prior = mgp.priors.DS(manif, fio=fio)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
-                                 m,
-                                 n_samples,
-                                 z,
-                                 kernel,
-                                 lik,
-                                 lat_dist,
-                                 lprior,
-                                 whiten=True).to(device)
+        mod = mgp.SVGPLVM(n,
+                          m,
+                          n_samples,
+                          z,
+                          kernel,
+                          lik,
+                          lat_dist,
+                          prior,
+                          whiten=True).to(device)
 
         # train model
-        mgp.optimisers.svgp.fit(data,
-                                mod,
-                                max_steps=10,
-                                n_mc=16,
-                                optimizer=optim.Adam,
-                                print_every=1000)
+        mgp.fit(data,
+                mod,
+                max_steps=10,
+                n_mc=16,
+                optimizer=optim.Adam,
+                print_every=1000)
 
-        A, Q = mod.lprior.prms
+        A, Q = mod.prior.prms
         A = A.detach().cpu().numpy()
         eigs = np.linalg.eigvals(A)
         print(eigs, np.amax(eigs))

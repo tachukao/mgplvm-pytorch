@@ -44,29 +44,29 @@ def test_sampling():
             Y = np.round(Y)
         # specify manifold, kernel and rdist
         manif = mgp.manifolds.Euclid(m, d)
-        lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
+        lat_dist = mgp.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
-        lprior = mgp.lpriors.Uniform(manif)
+        prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
-                                 m,
-                                 n_samples,
-                                 z,
-                                 kernel,
-                                 lik,
-                                 lat_dist,
-                                 lprior,
-                                 whiten=True).to(device)
+        mod = mgp.SVGPLVM(n,
+                          m,
+                          n_samples,
+                          z,
+                          kernel,
+                          lik,
+                          lat_dist,
+                          prior,
+                          whiten=True).to(device)
 
         # train model
-        mgp.optimisers.svgp.fit(data,
-                                mod,
-                                optimizer=optim.Adam,
-                                max_steps=50,
-                                burnin=5 / 2E-2,
-                                n_mc=n_mc,
-                                lrate=5E-2,
-                                print_every=1000)
+        mgp.fit(data,
+                mod,
+                optimizer=optim.Adam,
+                max_steps=50,
+                burnin=5 / 2E-2,
+                n_mc=n_mc,
+                lrate=5E-2,
+                print_every=1000)
 
         #sample from the model
         query = mod.lat_dist.prms[0].detach().transpose(

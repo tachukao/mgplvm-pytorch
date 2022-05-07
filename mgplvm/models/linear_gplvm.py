@@ -1,26 +1,26 @@
 from __future__ import print_function
+from typing import Union
 import numpy as np
 from ..utils import softplus
 from . import svgp
-from .. import rdist, kernels, utils
+from .. import lat_dist, kernels, utils
 import torch
 from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
-from .. import lpriors
+from .. import priors
 from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
-from ..lpriors.common import Lprior
-from ..rdist import Rdist
-from .gp_base import GpBase
+from ..priors.common import Prior
+from ..lat_dist import LatentDistribution
+from .gp_base import GPBase
+from .factor_analysis import FA, BFA, BVFA, VFA
+from .gplvm import GPLVM
 
-from .bfa import Fa, Bfa, Bvfa, vFa
-from .gplvm import Gplvm
 
-
-class Lgplvm(Gplvm):
+class LGPLVM(GPLVM):
     name = "Lgplvm"
 
     def __init__(self,
@@ -28,8 +28,8 @@ class Lgplvm(Gplvm):
                  m: int,
                  d: int,
                  n_samples: int,
-                 lat_dist: Rdist,
-                 lprior: Lprior,
+                 lat_dist: LatentDistribution,
+                 prior: Prior,
                  Bayesian=True,
                  Y=None,
                  learn_neuron_scale=False,
@@ -44,18 +44,21 @@ class Lgplvm(Gplvm):
         """
 
         #observation model (P(Y|X))
-        obs = Bfa(n,
+        obs = BFA(n,
                   d,
                   Y=Y,
                   learn_neuron_scale=learn_neuron_scale,
                   ard=ard,
-                  learn_scale=learn_scale) if Bayesian else Fa(
+                  learn_scale=learn_scale) if Bayesian else FA(
                       n, d, Y=Y, sigma=sigma, C=C)
 
-        super().__init__(obs, lat_dist, lprior, n, m, n_samples)
+        super().__init__(obs, lat_dist, prior, n, m, n_samples)
 
 
-class Lvgplvm(Gplvm):
+LVGPLVM_OBSERVATION = Union[BVFA, VFA]
+
+
+class LVGPLVM(GPLVM):
     name = "Lvgplvm"
 
     def __init__(self,
@@ -63,8 +66,8 @@ class Lvgplvm(Gplvm):
                  m: int,
                  d: int,
                  n_samples: int,
-                 lat_dist: Rdist,
-                 lprior: Lprior,
+                 lat_dist: LatentDistribution,
+                 prior: Prior,
                  likelihood: Likelihood,
                  tied_samples=True,
                  learn_neuron_scale=False,
@@ -88,24 +91,25 @@ class Lvgplvm(Gplvm):
         #observation model (P(Y|X))
 
         if Bayesian:
-            obs = Bvfa(n,
-                       d,
-                       m,
-                       n_samples,
-                       likelihood,
-                       tied_samples=tied_samples,
-                       Y=Y,
-                       learn_neuron_scale=learn_neuron_scale,
-                       ard=ard,
-                       learn_scale=learn_scale,
-                       rel_scale=rel_scale,
-                       q_mu=q_mu,
-                       q_sqrt=q_sqrt,
-                       scale=scale,
-                       dim_scale=dim_scale,
-                       neuron_scale=neuron_scale)
+            obs: LVGPLVM_OBSERVATION = BVFA(
+                n,
+                d,
+                m,
+                n_samples,
+                likelihood,
+                tied_samples=tied_samples,
+                Y=Y,
+                learn_neuron_scale=learn_neuron_scale,
+                ard=ard,
+                learn_scale=learn_scale,
+                rel_scale=rel_scale,
+                q_mu=q_mu,
+                q_sqrt=q_sqrt,
+                scale=scale,
+                dim_scale=dim_scale,
+                neuron_scale=neuron_scale)
         else:
-            obs = vFa(n,
+            obs = VFA(n,
                       d,
                       m,
                       n_samples,
@@ -114,4 +118,4 @@ class Lvgplvm(Gplvm):
                       Y=Y,
                       C=C)
 
-        super().__init__(obs, lat_dist, lprior, n, m, n_samples)
+        super().__init__(obs, lat_dist, prior, n, m, n_samples)

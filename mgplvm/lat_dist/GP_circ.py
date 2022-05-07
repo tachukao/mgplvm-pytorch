@@ -4,13 +4,15 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 from ..utils import softplus, inv_softplus
 from ..manifolds.base import Manifold
-from .GPbase import GPbase
+from .GPbase import GPBaseLatDist
 from typing import Optional
 from ..fast_utils.toeplitz import sym_toeplitz_matmul
 from torch.fft import rfft, irfft
 
 
-class GP_circ(GPbase):
+class GPCircLatDist(GPBaseLatDist):
+    """GP latent distribution with circulant parameterization.
+    """
     name = "GP_circ"
 
     def __init__(self,
@@ -37,12 +39,7 @@ class GP_circ(GPbase):
         We parameterize our posterior as N(K2 v, K2 SCCS K2) where K2@K2 = Kprior, S is diagonal and C is circulant
         """
 
-        super(GP_circ, self).__init__(manif,
-                                      m,
-                                      n_samples,
-                                      ts,
-                                      _scale=_scale,
-                                      ell=ell)
+        super().__init__(manif, m, n_samples, ts, _scale=_scale, ell=ell)
 
         #initialize circulant parameters
         if self.m % 2 == 0:
