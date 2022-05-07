@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, optimisers, syndata, likelihoods
+from mgplvm import kernels, syndata, likelihoods
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 
@@ -60,7 +60,7 @@ def test_likelihood_runs():
                              whiten=True).to(device)
 
         # train model
-        optimisers.svgp.fit(data,
+        mgplvm.fit(data,
                             mod,
                             optimizer=optim.Adam,
                             max_steps=5,

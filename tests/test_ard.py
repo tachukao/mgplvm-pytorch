@@ -63,7 +63,7 @@ def test_linear_ard():
                              prior,
                              whiten=True).to(device)
 
-    trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),
+    trained_mod = mgp.fit(torch.tensor(Y).to(device),
                                           mod,
                                           optimizer=optim.Adam,
                                           max_steps=700,
@@ -116,7 +116,7 @@ def test_rbf_ard():
                              prior,
                              whiten=True).to(device)
 
-    trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),
+    trained_mod = mgp.fit(torch.tensor(Y).to(device),
                                           mod,
                                           optimizer=optim.Adam,
                                           max_steps=700,

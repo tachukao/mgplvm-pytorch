@@ -69,7 +69,7 @@ def test_GP_prior():
     ### test that training runs ###
     n_mc = 64
 
-    mgp.optimisers.svgp.fit(data,
+    mgp.fit(data,
                             mod,
                             optimizer=optim.Adam,
                             n_mc=n_mc,
@@ -139,7 +139,7 @@ def test_ARP_runs():
                                  whiten=True).to(device)
 
         # train model
-        mgp.optimisers.svgp.fit(data,
+        mgp.fit(data,
                                 mod,
                                 max_steps=5,
                                 n_mc=64,
@@ -184,7 +184,7 @@ def test_LDS_prior_runs():
                                  whiten=True).to(device)
 
         # train model
-        mgp.optimisers.svgp.fit(data,
+        mgp.fit(data,
                                 mod,
                                 max_steps=10,
                                 n_mc=16,

@@ -1,5 +1,5 @@
 import mgplvm as mgp
-from mgplvm import kernels, likelihoods, priors, optimisers
+from mgplvm import kernels, likelihoods, priors 
 import numpy as np
 import torch
 from torch import optim
@@ -152,7 +152,7 @@ def test_manifs_runs():
                                     whiten=True).to(device)
 
         # train model
-        trained_model = optimisers.svgp.fit(data,
+        trained_model = mgp.fit(data,
                                             mod,
                                             max_steps=5,
                                             n_mc=64,

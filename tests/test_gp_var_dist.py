@@ -94,7 +94,7 @@ def test_GP_lat_prior():
         ### test that training runs ###
         n_mc = 16
 
-        mgp.optimisers.svgp.fit(data,
+        mgp.fit(data,
                                 mod,
                                 optimizer=optim.Adam,
                                 n_mc=n_mc,

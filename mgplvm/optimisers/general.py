@@ -4,7 +4,6 @@ import torch
 from torch import Tensor, optim
 from torch.optim.lr_scheduler import LambdaLR
 from .data import DataLoader
-from ..models import SVGPLVM
 import itertools
 from typing import Union, List, Optional
 
@@ -64,7 +63,7 @@ def print_progress(model,
 
 
 def fit(dataset: Union[Tensor, DataLoader],
-        model: SVGPLVM,
+        model,
         optimizer=optim.Adam,
         n_mc: int = 32,
         burnin: int = 100,
@@ -78,7 +77,11 @@ def fit(dataset: Union[Tensor, DataLoader],
         analytic_kl=False,
         accumulate_gradient=True,
         batch_mc=None):
-    '''
+    '''Swiss army knife optimizer. 
+
+    Used to fit almost all models. Specialized optimizers will most likely
+    work better for individual models.
+
     Parameters
     ----------
     dataset : Union[Tensor,DataLoader]

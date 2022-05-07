@@ -49,7 +49,7 @@ def test_svgplvm_LL():
 
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
     # train model
-    mgp.optimisers.svgp.fit(data,
+    mgp.fit(data,
                             mod,
                             optimizer=optim.Adam,
                             max_steps=5,
@@ -105,7 +105,7 @@ def test_lgplvm_LL():
 
         data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
         # train model
-        mgp.optimisers.svgp.fit(data,
+        mgp.fit(data,
                                 mod,
                                 optimizer=optim.Adam,
                                 max_steps=5,

@@ -3,7 +3,7 @@ from mgplvm.kernels import QuadExp, Linear, Matern
 import numpy as np
 from torch import optim
 import mgplvm
-from mgplvm import optimisers, syndata, likelihoods, priors
+from mgplvm import syndata, likelihoods, priors
 from mgplvm.manifolds import Torus, Euclid
 import sklearn.gaussian_process.kernels as sklkernels
 
@@ -90,7 +90,7 @@ def test_kernels_run():
                              whiten=True).to(device)
 
         ### test that training runs ###
-        trained_mod = optimisers.svgp.fit(data,
+        trained_mod = mgplvm.fit(data,
                                           mod,
                                           optimizer=optim.Adam,
                                           max_steps=5,

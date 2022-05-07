@@ -59,7 +59,7 @@ def test_sampling():
                                  whiten=True).to(device)
 
         # train model
-        mgp.optimisers.svgp.fit(data,
+        mgp.fit(data,
                                 mod,
                                 optimizer=optim.Adam,
                                 max_steps=50,

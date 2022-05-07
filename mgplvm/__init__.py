@@ -27,3 +27,5 @@ from .likelihoods import NegativeBinomial as NegativeBinomialLikelihood
 
 from .models import SVGPLVM, LGPLVM, LVGPLVM
 from .models import SVGP, FA, BFA, BVFA
+
+from .optimisers import fit
