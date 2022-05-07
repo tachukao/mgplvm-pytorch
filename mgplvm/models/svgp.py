@@ -10,14 +10,14 @@ from ..inducing_variables import InducingPoints
 from typing import Tuple, List, Optional, Union
 from torch.distributions import MultivariateNormal, kl_divergence, transform_to, constraints, Normal
 from ..likelihoods import Likelihood
-from .gp_base import GpBase
+from .gp_base import GPBase
 import itertools
 
 jitter: float = 1E-8
 log2pi: float = np.log(2 * np.pi)
 
 
-class SvgpBase(GpBase):
+class SVGPBase(GPBase):
 
     def __init__(self,
                  kernel: Kernel,
@@ -311,7 +311,7 @@ class SvgpBase(GpBase):
         return mu.squeeze(-1), v
 
 
-class Svgp(SvgpBase):
+class SVGP(SVGPBase):
 
     name = "Svgp"
 

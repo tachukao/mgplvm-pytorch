@@ -1,9 +1,8 @@
 import numpy as np
 import torch
 from torch import optim
-import mgplvm
-from mgplvm import kernels, models, optimisers, syndata, likelihoods
-from mgplvm import lat_dist as lat_dist_lib
+import mgplvm as mgp
+from mgplvm import kernels, optimisers, syndata, likelihoods
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 
@@ -32,7 +31,7 @@ def test_trial_structure():
 
     # specify manifold, kernel and lat_dist
     manif1 = Euclid(m, d)
-    lat_dist1 = lat_dist_lib.ReLie(manif1,
+    lat_dist1 = mgp.ReLie(manif1,
                                    m,
                                    n_samples,
                                    diagonal=False,
@@ -41,9 +40,9 @@ def test_trial_structure():
                                    sigma=sig0)
     kernel1 = kernels.QuadExp(n, manif1.distance, Y=Y)
     lik1 = likelihoods.Gaussian(n)
-    prior1 = mgplvm.priors.Uniform(manif1)
+    prior1 = mgp.priors.Uniform(manif1)
     z1 = manif1.inducing_points(n, n_z, z=zs)
-    mod1 = models.SvgpLvm(n,
+    mod1 = mgp.SVGPLVM(n,
                           m,
                           n_samples,
                           z1,
@@ -57,7 +56,7 @@ def test_trial_structure():
     n_samples2, n2, m2 = Y2.shape
     print(Y2.shape)
     manif2 = Euclid(m2, d)
-    lat_dist2 = lat_dist_lib.ReLie(manif2,
+    lat_dist2 = mgp.ReLie(manif2,
                                    m2,
                                    n_samples2,
                                    diagonal=False,
@@ -66,9 +65,9 @@ def test_trial_structure():
                                    sigma=sig0)
     kernel2 = kernels.QuadExp(n2, manif2.distance, Y=Y2)
     lik2 = likelihoods.Gaussian(n2)
-    prior2 = mgplvm.priors.Uniform(manif2)
+    prior2 = mgp.priors.Uniform(manif2)
     z2 = manif2.inducing_points(n2, n_z, z=zs)
-    mod2 = models.SvgpLvm(n2,
+    mod2 = mgp.SVGPLVM(n2,
                           m2,
                           1,
                           z2,

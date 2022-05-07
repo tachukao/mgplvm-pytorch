@@ -48,7 +48,7 @@ def test_sampling():
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
+        mod = mgp.SVGPLVM(n,
                                  m,
                                  n_samples,
                                  z,

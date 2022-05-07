@@ -63,7 +63,7 @@ def test_GP_prior():
     # generate model
     likelihood = mgp.likelihoods.Gaussian(n, sigma=torch.Tensor(sigma))
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
+    mod = mgp.SVGPLVM(n, m, n_samples, z, kernel, likelihood, lat_dist,
                              prior).to(device)
 
     ### test that training runs ###
@@ -128,7 +128,7 @@ def test_ARP_runs():
                                manif,
                                diagonal=(True if i in [0, 1] else False))
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
+        mod = mgp.SVGPLVM(n,
                                  m,
                                  n_samples,
                                  z,
@@ -173,7 +173,7 @@ def test_LDS_prior_runs():
         lik = mgp.likelihoods.Gaussian(n)
         prior = mgp.priors.DS(manif, fio=fio)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
+        mod = mgp.SVGPLVM(n,
                                  m,
                                  n_samples,
                                  z,

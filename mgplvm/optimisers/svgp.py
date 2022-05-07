@@ -4,7 +4,7 @@ import torch
 from torch import Tensor, optim
 from torch.optim.lr_scheduler import LambdaLR
 from .data import DataLoader
-from ..models import SvgpLvm
+from ..models import SVGPLVM
 import itertools
 from typing import Union, List, Optional
 
@@ -64,7 +64,7 @@ def print_progress(model,
 
 
 def fit(dataset: Union[Tensor, DataLoader],
-        model: SvgpLvm,
+        model: SVGPLVM,
         optimizer=optim.Adam,
         n_mc: int = 32,
         burnin: int = 100,
@@ -83,7 +83,7 @@ def fit(dataset: Union[Tensor, DataLoader],
     ----------
     dataset : Union[Tensor,DataLoader]
         data matrix of dimensions (n_samples x n x m)
-    model : SvgpLvm
+    model : SVGPLVM
         model to be trained
     n_mc : int
         number of MC samples for estimating the ELBO 

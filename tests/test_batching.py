@@ -39,7 +39,7 @@ def test_svgplvm_batching():
         lik = mgp.likelihoods.Gaussian(n)
         prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
+        mod = mgp.SVGPLVM(n,
                                  m,
                                  n_samples,
                                  z,
@@ -111,7 +111,7 @@ def test_batch_training():
         prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mods.append(
-            mgp.models.SvgpLvm(n,
+            mgp.SVGPLVM(n,
                                m,
                                n_samples,
                                z,
@@ -162,7 +162,7 @@ def test_svgp_batching():
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
         z = manif.inducing_points(n, n_z)
-        svgp = mgp.models.svgp.Svgp(kernel,
+        svgp = mgp.SVGP(kernel,
                                     n,
                                     m,
                                     n_samples,

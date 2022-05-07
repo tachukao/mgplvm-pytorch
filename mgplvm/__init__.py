@@ -24,3 +24,6 @@ from .manifolds import S3 as S3Manifold
 from .likelihoods import Gaussian as GaussianLikelihood
 from .likelihoods import Poisson as PoissonLikelihood
 from .likelihoods import NegativeBinomial as NegativeBinomialLikelihood
+
+from .models import SVGPLVM, LGPLVM, LVGPLVM
+from .models import SVGP, FA, BFA, BVFA

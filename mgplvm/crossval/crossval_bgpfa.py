@@ -7,7 +7,7 @@ from ..manifolds import Euclid
 from ..likelihoods import Gaussian, NegativeBinomial, Poisson
 from ..lat_dist import GP_circ, GP_diag
 from ..priors import Null
-from ..models import Lvgplvm, Lgplvm
+from ..models import LVGPLVM
 
 
 def train_cv_bgpfa(Y,
@@ -96,7 +96,7 @@ def train_cv_bgpfa(Y,
             #print('poisson lik')
             lik = Poisson(n)
 
-        mod = Lvgplvm(n,
+        mod = LVGPLVM(n,
                       T,
                       d_fit,
                       n_samples,
@@ -152,7 +152,7 @@ def train_cv_bgpfa(Y,
             scale, dim_scale, neuron_scale = mod.obs.scale.detach().cpu(
             ), mod.obs.dim_scale.detach().cpu().flatten(
             ), mod.obs.neuron_scale.detach().cpu().flatten()
-            mod = Lvgplvm(n,
+            mod = LVGPLVM(n,
                           T,
                           d_fit,
                           n_samples,
@@ -172,7 +172,7 @@ def train_cv_bgpfa(Y,
             #print('not bayesian')
             ###obs: C
             lat_C = mod.obs.C.detach().cpu()
-            mod = Lvgplvm(n,
+            mod = LVGPLVM(n,
                           T,
                           d_fit,
                           n_samples,

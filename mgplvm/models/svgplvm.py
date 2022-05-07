@@ -15,10 +15,10 @@ from ..likelihoods import Likelihood
 from ..priors.common import Prior
 from ..lat_dist import LatentDistribution
 
-from .gplvm import Gplvm
+from .gplvm import GPLVM
 
 
-class SvgpLvm(Gplvm):
+class SVGPLVM(GPLVM):
     name = "Svgplvm"
 
     def __init__(self,
@@ -57,7 +57,7 @@ class SvgpLvm(Gplvm):
         """
 
         #p(Y|X)
-        obs = svgp.Svgp(kernel,
+        obs = svgp.SVGP(kernel,
                         n,
                         m,
                         n_samples,

@@ -37,7 +37,7 @@ def test_svgplvm_LL():
     lik = mgp.likelihoods.Gaussian(n)
     prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n,
+    mod = mgp.SVGPLVM(n,
                              m,
                              n_samples,
                              z,
@@ -91,7 +91,7 @@ def test_lgplvm_LL():
         prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         if nmod in [0, 1]:
-            mod = mgp.models.Lgplvm(n,
+            mod = mgp.LGPLVM(n,
                                     m,
                                     d,
                                     n_samples,
@@ -100,7 +100,7 @@ def test_lgplvm_LL():
                                     Bayesian=(nmod == 1),
                                     Y=Y).to(device)
         else:
-            mod = mgp.models.Lvgplvm(n, m, d, n_samples, lat_dist, prior,
+            mod = mgp.LVGPLVM(n, m, d, n_samples, lat_dist, prior,
                                      lik).to(device)
 
         data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())

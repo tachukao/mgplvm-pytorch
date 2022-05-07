@@ -14,13 +14,12 @@ from ..kernels import Kernel
 from ..likelihoods import Likelihood
 from ..priors.common import Prior
 from ..lat_dist import LatentDistribution
-from .gp_base import GpBase
+from .gp_base import GPBase
+from .factor_analysis import FA, BFA, BVFA, VFA
+from .gplvm import GPLVM
 
-from .bfa import Fa, Bfa, Bvfa, vFa
-from .gplvm import Gplvm
 
-
-class Lgplvm(Gplvm):
+class LGPLVM(GPLVM):
     name = "Lgplvm"
 
     def __init__(self,
@@ -44,18 +43,18 @@ class Lgplvm(Gplvm):
         """
 
         #observation model (P(Y|X))
-        obs = Bfa(n,
+        obs = BFA(n,
                   d,
                   Y=Y,
                   learn_neuron_scale=learn_neuron_scale,
                   ard=ard,
-                  learn_scale=learn_scale) if Bayesian else Fa(
+                  learn_scale=learn_scale) if Bayesian else FA(
                       n, d, Y=Y, sigma=sigma, C=C)
 
         super().__init__(obs, lat_dist, prior, n, m, n_samples)
 
 
-class Lvgplvm(Gplvm):
+class LVGPLVM(GPLVM):
     name = "Lvgplvm"
 
     def __init__(self,
@@ -88,7 +87,7 @@ class Lvgplvm(Gplvm):
         #observation model (P(Y|X))
 
         if Bayesian:
-            obs = Bvfa(n,
+            obs = BVFA(n,
                        d,
                        m,
                        n_samples,
@@ -105,7 +104,7 @@ class Lvgplvm(Gplvm):
                        dim_scale=dim_scale,
                        neuron_scale=neuron_scale)
         else:
-            obs = vFa(n,
+            obs = VFA(n,
                       d,
                       m,
                       n_samples,

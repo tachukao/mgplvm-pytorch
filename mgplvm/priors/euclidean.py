@@ -6,7 +6,7 @@ from torch.distributions import transform_to, constraints
 from ..kernels import Kernel
 from ..manifolds import Euclid
 from ..manifolds.base import Manifold
-from ..models import Svgp
+from ..models import SVGP
 from ..inducing_variables import InducingPoints
 from ..likelihoods import Gaussian
 from .common import Prior
@@ -75,7 +75,7 @@ class GP(PriorEuclid):
         self.lik = Gaussian(n,
                             sigma=torch.ones(n) * 0.2,
                             learn_sigma=learn_sigma)
-        self.svgp = Svgp(kernel,
+        self.svgp = SVGP(kernel,
                          n,
                          m,
                          n_samples,

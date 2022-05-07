@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import optim
 import mgplvm
-from mgplvm import kernels, models, optimisers, syndata, likelihoods
+from mgplvm import kernels, optimisers, syndata, likelihoods
 from mgplvm.manifolds import Torus, Euclid, So3
 import matplotlib.pyplot as plt
 
@@ -49,7 +49,7 @@ def test_likelihood_runs():
         # generate model
         prior = mgplvm.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = models.SvgpLvm(n,
+        mod = mgplvm.SVGPLVM(n,
                              m,
                              n_samples,
                              z,

@@ -53,7 +53,7 @@ def test_linear_ard():
     lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.5)
     prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n,
+    mod = mgp.SVGPLVM(n,
                              m,
                              n_samples,
                              z,
@@ -106,7 +106,7 @@ def test_rbf_ard():
     lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.25)
     prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
-    mod = mgp.models.SvgpLvm(n,
+    mod = mgp.SVGPLVM(n,
                              m,
                              n_samples,
                              z,

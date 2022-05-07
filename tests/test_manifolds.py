@@ -1,5 +1,5 @@
 import mgplvm as mgp
-from mgplvm import kernels, likelihoods, priors, models, optimisers
+from mgplvm import kernels, likelihoods, priors, optimisers
 import numpy as np
 import torch
 from torch import optim
@@ -138,10 +138,10 @@ def test_manifs_runs():
                                 diagonal=(True if i == 0 else False))
         kernel = mgp.QuadExpKernel(n, manif.distance, Y=Y)
         # generate model
-        lik = mgp.likelihoods.Gaussian(n)
+        lik = mgp.GaussianLikelihood(n)
         prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
-        mod = mgp.models.SvgpLvm(n,
+        mod = mgp.SVGPLVM(n,
                                     m,
                                     n_samples,
                                     z,

@@ -16,7 +16,7 @@ from ..priors.common import Prior
 from ..lat_dist import LatentDistribution
 
 
-class Gplvm(nn.Module):
+class GPLVM(nn.Module):
     name = "Gplvm"
 
     def __init__(self, obs, lat_dist: LatentDistribution, prior: Prior, n, m,
