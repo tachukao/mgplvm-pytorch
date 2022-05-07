@@ -34,7 +34,7 @@ def test_cv_runs():
     lat_dist = mgplvm.rdist.ReLie(manif, m, n_samples, diagonal=False)
     kernel = kernels.QuadExp(n, manif.distance)
     lik = likelihoods.Gaussian(n)
-    lprior = mgplvm.lpriors.Uniform(manif)
+    prior = mgplvm.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = models.SvgpLvm(n,
                          m,
@@ -43,7 +43,7 @@ def test_cv_runs():
                          kernel,
                          lik,
                          lat_dist,
-                         lprior,
+                         prior,
                          whiten=True).to(device)
 
     ### run cv ###

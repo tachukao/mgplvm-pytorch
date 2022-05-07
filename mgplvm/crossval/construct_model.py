@@ -1,8 +1,8 @@
-from .. import lpriors, kernels, models, rdist, likelihoods, utils
+from .. import priors, kernels, models, rdist, likelihoods, utils
 from ..manifolds import Euclid, Torus, So3
 from ..manifolds.base import Manifold
 from ..likelihoods import Likelihood
-from ..lpriors.common import Lprior
+from ..priors.common import Prior
 from ..kernels import Kernel
 import torch
 import pickle
@@ -97,15 +97,15 @@ def load_model(params):
     #### speciy prior ####
     if params['prior'] == 'GP':
         """
-        lprior_kernel = kernels.QuadExp(d,
+        prior_kernel = kernels.QuadExp(d,
                                         manif.distance,
                                         learn_scale=False,
                                         ell=np.ones(d) * m / 10)
-        lprior: Lprior = lpriors.GP(d,
+        prior: Prior = priors.GP(d,
                                     m,
                                     n_samples,
                                     manif,
-                                    lprior_kernel,
+                                    prior_kernel,
                                     n_z=n_z,
                                     ts=params['ts'])
         """
@@ -114,19 +114,19 @@ def load_model(params):
                                  n_samples,
                                  params['ts'].to(device),
                                  ell=params['prior_ell'])
-        lprior: Lprior = lpriors.Null(manif)
+        prior: Prior = priors.Null(manif)
 
     elif params['prior'] == 'ARP':
-        lprior = lpriors.ARP(params['arp_p'],
+        prior = priors.ARP(params['arp_p'],
                              manif,
                              ar_eta=torch.tensor(params['arp_eta']),
                              learn_eta=params['arp_learn_eta'],
                              learn_c=params['arp_learn_c'],
                              diagonal=params['diagonal'])
     elif params['prior'] == 'LDS':
-        lprior = lpriors.DS(manif)
+        prior = priors.DS(manif)
     else:
-        lprior = lpriors.Uniform(manif)
+        prior = priors.Uniform(manif)
 
     #### specify likelihood ####
     if params['likelihood'] == 'Gaussian':
@@ -142,6 +142,6 @@ def load_model(params):
 
     #### construct model ####
     mod = models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
-                         lprior).to(device)
+                         prior).to(device)
 
     return mod

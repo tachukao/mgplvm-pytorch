@@ -47,7 +47,7 @@ def test_likelihood_runs():
         # initialize signal variance
         kernel = kernels.QuadExp(n, manif.distance)
         # generate model
-        lprior = mgplvm.lpriors.Uniform(manif)
+        prior = mgplvm.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mod = models.SvgpLvm(n,
                              m,
@@ -56,7 +56,7 @@ def test_likelihood_runs():
                              kernel,
                              lik,
                              lat_dist,
-                             lprior,
+                             prior,
                              whiten=True).to(device)
 
         # train model

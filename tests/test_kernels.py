@@ -3,7 +3,7 @@ from mgplvm.kernels import QuadExp, Linear, Matern
 import numpy as np
 from torch import optim
 import mgplvm
-from mgplvm import rdist, models, optimisers, syndata, likelihoods, lpriors
+from mgplvm import rdist, models, optimisers, syndata, likelihoods, priors
 from mgplvm.manifolds import Torus, Euclid
 import sklearn.gaussian_process.kernels as sklkernels
 
@@ -80,7 +80,7 @@ def test_kernels_run():
                                       initialization='random')
         # generate model
         lik = likelihoods.Gaussian(n)
-        lprior = lpriors.Uniform(manif)
+        prior = priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mod = models.SvgpLvm(n,
                              m,
@@ -89,7 +89,7 @@ def test_kernels_run():
                              kernel,
                              lik,
                              lat_dist,
-                             lprior,
+                             prior,
                              whiten=True).to(device)
 
         ### test that training runs ###

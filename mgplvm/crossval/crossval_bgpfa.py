@@ -6,7 +6,7 @@ from .crossval import not_in, update_params
 from ..manifolds import Euclid
 from ..likelihoods import Gaussian, NegativeBinomial, Poisson
 from ..rdist import GP_circ, GP_diag
-from ..lpriors import Null
+from ..priors import Null
 from ..models import Lvgplvm, Lgplvm
 
 
@@ -79,7 +79,7 @@ def train_cv_bgpfa(Y,
     n_samples, n, T = Y1.shape
 
     manif = Euclid(T, d_fit)
-    lprior = Null(manif)
+    prior = Null(manif)
     lat_dist = GP_circ(manif,
                        T,
                        n_samples,
@@ -101,7 +101,7 @@ def train_cv_bgpfa(Y,
                       d_fit,
                       n_samples,
                       lat_dist,
-                      lprior,
+                      prior,
                       lik,
                       ard=ard,
                       learn_scale=(not ard),
@@ -118,7 +118,7 @@ def train_cv_bgpfa(Y,
 
     ###rdist: ell
     manif = Euclid(T, d_fit)
-    lprior = Null(manif)
+    prior = Null(manif)
     ell0 = mod.lat_dist.ell.detach().cpu()
     lat_dist = GP_circ(manif, T, n_samples, fit_ts, _scale=lat_scale, ell=ell0)
 
@@ -157,7 +157,7 @@ def train_cv_bgpfa(Y,
                           d_fit,
                           n_samples,
                           lat_dist,
-                          lprior,
+                          prior,
                           lik,
                           ard=ard,
                           learn_scale=(not ard),
@@ -177,7 +177,7 @@ def train_cv_bgpfa(Y,
                           d_fit,
                           n_samples,
                           lat_dist,
-                          lprior,
+                          prior,
                           lik,
                           C=lat_C,
                           Bayesian=False).to(device)

@@ -1,5 +1,5 @@
 from . import kernels
-from . import lpriors
+from . import priors
 from . import models
 from . import optimisers
 from . import rdist

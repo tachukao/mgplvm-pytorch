@@ -51,7 +51,7 @@ def test_linear_ard():
                                Y=Y)
     kernel = mgp.kernels.Linear(n, d, ard=True, learn_scale=False)
     lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.5)
-    lprior = mgp.lpriors.Uniform(manif)
+    prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
                              m,
@@ -60,7 +60,7 @@ def test_linear_ard():
                              kernel,
                              lik,
                              lat_dist,
-                             lprior,
+                             prior,
                              whiten=True).to(device)
 
     trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),
@@ -104,7 +104,7 @@ def test_rbf_ard():
                                  ell_byneuron=False)
     print(d, kernel.ell.shape)
     lik = mgp.likelihoods.Gaussian(n, sigma=torch.ones(n) * 0.25)
-    lprior = mgp.lpriors.Uniform(manif)
+    prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
                              m,
@@ -113,7 +113,7 @@ def test_rbf_ard():
                              kernel,
                              lik,
                              lat_dist,
-                             lprior,
+                             prior,
                              whiten=True).to(device)
 
     trained_mod = mgp.optimisers.svgp.fit(torch.tensor(Y).to(device),

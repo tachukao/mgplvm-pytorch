@@ -3,10 +3,10 @@ import torch
 import torch.nn as nn
 import torch.distributions as dists
 from ..manifolds import Torus
-from .common import Lprior
+from .common import Prior
 
 
-class LpriorTorus(Lprior):
+class PriorTorus(Prior):
 
     def __init__(self, manif):
         if not isinstance(manif, Torus):
@@ -15,7 +15,9 @@ class LpriorTorus(Lprior):
         super().__init__(manif)
 
 
-class VonMises(LpriorTorus):
+class VonMises(PriorTorus):
+    """VonMises Prior.
+    """
     name = "VonMises"
 
     def __init__(self, manif, concentration=None, fixed_concentration=False):
@@ -48,7 +50,9 @@ class VonMises(LpriorTorus):
         return ('concentration {:.3f}').format(concentration.item())
 
 
-class IARP(LpriorTorus):
+class IARP(PriorTorus):
+    """IARP Prior
+    """
     name = "IARP"
 
     def __init__(self,
@@ -114,7 +118,8 @@ class IARP(LpriorTorus):
             torch.mean(phi).item(), concentration.item())
 
 
-class LARP(LpriorTorus):
+class LARP(PriorTorus):
+    """Linked ARP Prior"""
     name = "LinkedARP"
 
     def __init__(self,

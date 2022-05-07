@@ -1,5 +1,5 @@
 import mgplvm
-from mgplvm import manifolds, rdist, kernels, likelihoods, lpriors, models, optimisers
+from mgplvm import manifolds, rdist, kernels, likelihoods, priors, models, optimisers
 import numpy as np
 import torch
 from torch import optim
@@ -139,7 +139,7 @@ def test_manifs_runs():
         kernel = mgplvm.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgplvm.likelihoods.Gaussian(n)
-        lprior = mgplvm.lpriors.Uniform(manif)
+        prior = mgplvm.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mod = mgplvm.models.SvgpLvm(n,
                                     m,
@@ -148,7 +148,7 @@ def test_manifs_runs():
                                     kernel,
                                     lik,
                                     lat_dist,
-                                    lprior,
+                                    prior,
                                     whiten=True).to(device)
 
         # train model

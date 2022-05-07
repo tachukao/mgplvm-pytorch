@@ -83,13 +83,13 @@ def test_GP_lat_prior():
                                        requires_grad=True)
 
         ###construct prior
-        lprior = mgp.lpriors.Null(manif)
+        prior = mgp.priors.Null(manif)
 
         # generate model
         likelihood = mgp.likelihoods.Gaussian(n, Y=Y, d=dfit)
         z = manif.inducing_points(n, n_z)
         mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood,
-                                 lat_dist, lprior).to(device)
+                                 lat_dist, prior).to(device)
 
         ### test that training runs ###
         n_mc = 16

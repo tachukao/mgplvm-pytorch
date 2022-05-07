@@ -32,7 +32,7 @@ def sort_params(model, hook):
     params1 = list(
         itertools.chain.from_iterable([
             model.lat_dist.concentration_parameters(),
-            model.lprior.parameters(),
+            model.prior.parameters(),
             model.svgp.g1_parameters()
         ]))
 
@@ -60,7 +60,7 @@ def print_progress(model,
 
         print(
             msg + lat_dist.msg(Y, batch_idxs, sample_idxs) + model.svgp.msg +
-            model.lprior.msg,)
+            model.prior.msg,)
 
 
 def fit(dataset: Union[Tensor, DataLoader],

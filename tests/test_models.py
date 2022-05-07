@@ -35,7 +35,7 @@ def test_svgplvm_LL():
     lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
     kernel = mgp.kernels.QuadExp(n, manif.distance)
     lik = mgp.likelihoods.Gaussian(n)
-    lprior = mgp.lpriors.Uniform(manif)
+    prior = mgp.priors.Uniform(manif)
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n,
                              m,
@@ -44,7 +44,7 @@ def test_svgplvm_LL():
                              kernel,
                              lik,
                              lat_dist,
-                             lprior,
+                             prior,
                              whiten=True).to(device)
 
     data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())
@@ -88,7 +88,7 @@ def test_lgplvm_LL():
         lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.Uniform(manif)
+        prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         if nmod in [0, 1]:
             mod = mgp.models.Lgplvm(n,
@@ -96,11 +96,11 @@ def test_lgplvm_LL():
                                     d,
                                     n_samples,
                                     lat_dist,
-                                    lprior,
+                                    prior,
                                     Bayesian=(nmod == 1),
                                     Y=Y).to(device)
         else:
-            mod = mgp.models.Lvgplvm(n, m, d, n_samples, lat_dist, lprior,
+            mod = mgp.models.Lvgplvm(n, m, d, n_samples, lat_dist, prior,
                                      lik).to(device)
 
         data = torch.tensor(Y, device=device, dtype=torch.get_default_dtype())

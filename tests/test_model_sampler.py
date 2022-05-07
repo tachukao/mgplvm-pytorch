@@ -46,7 +46,7 @@ def test_sampling():
         manif = mgp.manifolds.Euclid(m, d)
         lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
-        lprior = mgp.lpriors.Uniform(manif)
+        prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mod = mgp.models.SvgpLvm(n,
                                  m,
@@ -55,7 +55,7 @@ def test_sampling():
                                  kernel,
                                  lik,
                                  lat_dist,
-                                 lprior,
+                                 prior,
                                  whiten=True).to(device)
 
         # train model

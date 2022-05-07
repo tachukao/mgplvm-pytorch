@@ -37,7 +37,7 @@ def test_svgplvm_batching():
         lat_dist = mgp.rdist.ReLie(manif, m, n_samples, diagonal=False)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.Uniform(manif)
+        prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mod = mgp.models.SvgpLvm(n,
                                  m,
@@ -46,7 +46,7 @@ def test_svgplvm_batching():
                                  kernel,
                                  lik,
                                  lat_dist,
-                                 lprior,
+                                 prior,
                                  whiten=True,
                                  tied_samples=tied_samples).to(device)
 
@@ -108,7 +108,7 @@ def test_batch_training():
                                    sigma=0.01)
         kernel = mgp.kernels.QuadExp(n, manif.distance)
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.Uniform(manif)
+        prior = mgp.priors.Uniform(manif)
         z = manif.inducing_points(n, n_z)
         mods.append(
             mgp.models.SvgpLvm(n,
@@ -118,7 +118,7 @@ def test_batch_training():
                                kernel,
                                lik,
                                lat_dist,
-                               lprior,
+                               prior,
                                whiten=True,
                                tied_samples=False).to(device))
         m0s.append(mods[-1].lat_dist.prms[0].detach().cpu().numpy().flatten())

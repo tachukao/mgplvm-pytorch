@@ -40,7 +40,7 @@ def test_trial_structure():
                                    sigma=sig0)
     kernel1 = kernels.QuadExp(n, manif1.distance, Y=Y)
     lik1 = likelihoods.Gaussian(n)
-    lprior1 = mgplvm.lpriors.Uniform(manif1)
+    prior1 = mgplvm.priors.Uniform(manif1)
     z1 = manif1.inducing_points(n, n_z, z=zs)
     mod1 = models.SvgpLvm(n,
                           m,
@@ -49,7 +49,7 @@ def test_trial_structure():
                           kernel1,
                           lik1,
                           lat_dist1,
-                          lprior1,
+                          prior1,
                           whiten=True).to(device)
 
     Y2 = Y.transpose(1, 0, 2).reshape(n, -1)[None, ...]
@@ -65,7 +65,7 @@ def test_trial_structure():
                                    sigma=sig0)
     kernel2 = kernels.QuadExp(n2, manif2.distance, Y=Y2)
     lik2 = likelihoods.Gaussian(n2)
-    lprior2 = mgplvm.lpriors.Uniform(manif2)
+    prior2 = mgplvm.priors.Uniform(manif2)
     z2 = manif2.inducing_points(n2, n_z, z=zs)
     mod2 = models.SvgpLvm(n2,
                           m2,
@@ -74,7 +74,7 @@ def test_trial_structure():
                           kernel2,
                           lik2,
                           lat_dist2,
-                          lprior2,
+                          prior2,
                           whiten=True).to(device)
 
     assert torch.allclose(mod1.svgp.kernel.prms[0], mod2.svgp.kernel.prms[0])

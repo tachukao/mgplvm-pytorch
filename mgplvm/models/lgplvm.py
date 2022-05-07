@@ -8,11 +8,11 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
-from .. import lpriors
+from .. import priors
 from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
-from ..lpriors.common import Lprior
+from ..priors.common import Prior
 from ..rdist import Rdist
 from .gp_base import GpBase
 
@@ -29,7 +29,7 @@ class Lgplvm(Gplvm):
                  d: int,
                  n_samples: int,
                  lat_dist: Rdist,
-                 lprior: Lprior,
+                 prior: Prior,
                  Bayesian=True,
                  Y=None,
                  learn_neuron_scale=False,
@@ -52,7 +52,7 @@ class Lgplvm(Gplvm):
                   learn_scale=learn_scale) if Bayesian else Fa(
                       n, d, Y=Y, sigma=sigma, C=C)
 
-        super().__init__(obs, lat_dist, lprior, n, m, n_samples)
+        super().__init__(obs, lat_dist, prior, n, m, n_samples)
 
 
 class Lvgplvm(Gplvm):
@@ -64,7 +64,7 @@ class Lvgplvm(Gplvm):
                  d: int,
                  n_samples: int,
                  lat_dist: Rdist,
-                 lprior: Lprior,
+                 prior: Prior,
                  likelihood: Likelihood,
                  tied_samples=True,
                  learn_neuron_scale=False,
@@ -114,4 +114,4 @@ class Lvgplvm(Gplvm):
                       Y=Y,
                       C=C)
 
-        super().__init__(obs, lat_dist, lprior, n, m, n_samples)
+        super().__init__(obs, lat_dist, prior, n, m, n_samples)

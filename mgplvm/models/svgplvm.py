@@ -8,11 +8,11 @@ from torch import nn, Tensor
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn.functional as F
 import pickle
-from .. import lpriors
+from .. import priors
 from ..inducing_variables import InducingPoints
 from ..kernels import Kernel
 from ..likelihoods import Likelihood
-from ..lpriors.common import Lprior
+from ..priors.common import Prior
 from ..rdist import Rdist
 
 from .gplvm import Gplvm
@@ -29,7 +29,7 @@ class SvgpLvm(Gplvm):
                  kernel: Kernel,
                  likelihood: Likelihood,
                  lat_dist: Rdist,
-                 lprior: Lprior,
+                 prior: Prior,
                  whiten: bool = True,
                  tied_samples=True):
         """
@@ -50,8 +50,8 @@ class SvgpLvm(Gplvm):
             likelihood p(y|f)
         lat_dist : rdist
             latent distribution
-        lprior: Lprior
-            log prior over the latents
+        prior: Prior
+            prior over the latents
         whiten: bool
             parameter passed to Svgp
         """
@@ -66,4 +66,4 @@ class SvgpLvm(Gplvm):
                         whiten=whiten,
                         tied_samples=tied_samples)
 
-        super().__init__(obs, lat_dist, lprior, n, m, n_samples)
+        super().__init__(obs, lat_dist, prior, n, m, n_samples)

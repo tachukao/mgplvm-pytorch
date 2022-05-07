@@ -9,12 +9,13 @@ from ..manifolds.base import Manifold
 from ..models import Svgp
 from ..inducing_variables import InducingPoints
 from ..likelihoods import Gaussian
-from .common import Lprior
+from .common import Prior
 from ..utils import softplus, inv_softplus
 from typing import Optional
 
 
-class LpriorEuclid(Lprior):
+class PriorEuclid(Prior):
+    """Euclidean Prior"""
 
     def __init__(self, manif):
         if not isinstance(manif, Euclid):
@@ -23,7 +24,9 @@ class LpriorEuclid(Lprior):
         super().__init__(manif)
 
 
-class GP(LpriorEuclid):
+class GP(PriorEuclid):
+    """GP prior."""
+
     name = "GP"
 
     def __init__(self,
@@ -130,7 +133,13 @@ def fio_tanh(x):
     return torch.tanh(x)
 
 
-class DS(LpriorEuclid):
+class DS(PriorEuclid):
+    """DS Prior
+
+        x_t = f(A*x_(t-1)) + N(0, Q)
+        where A is Hurwitz and Q is diagonal
+        f can be the identity (default; LDS prior) or some non-linear function.
+    """
     name = "DS"
 
     def __init__(
@@ -138,11 +147,7 @@ class DS(LpriorEuclid):
         manif: Manifold,
         fio=fio_id,
     ):
-        """
-        x_t = f(A*x_(t-1)) + N(0, Q)
-        where A is Hurwitz and Q is diagonal
-        f can be the identity (default; LDS prior) or some non-linear function.
-        """
+        
         super().__init__(manif)
         d = self.d
 

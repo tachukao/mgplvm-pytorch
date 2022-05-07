@@ -43,28 +43,28 @@ def test_GP_prior():
                                Y=Y)
 
     ###construct prior
-    lprior_manif = mgp.manifolds.Euclid(m, d2)
-    lprior_kernel = mgp.kernels.QuadExp(d,
-                                        lprior_manif.distance,
+    prior_manif = mgp.manifolds.Euclid(m, d2)
+    prior_kernel = mgp.kernels.QuadExp(d,
+                                        prior_manif.distance,
                                         learn_scale=False)
     ts = torch.arange(m, device=device,
                       dtype=torch.get_default_dtype())[None, None, :].repeat(
                           n_samples, d2, 1)
-    lprior = mgp.lpriors.GP(d,
+    prior = mgp.priors.GP(d,
                             m,
                             n_samples,
-                            lprior_manif,
-                            lprior_kernel,
+                            prior_manif,
+                            prior_kernel,
                             n_z=20,
                             ts=ts,
                             d=d2)
-    #lprior = lpriors.Gaussian(manif)
+    #prior = priors.Gaussian(manif)
 
     # generate model
     likelihood = mgp.likelihoods.Gaussian(n, sigma=torch.Tensor(sigma))
     z = manif.inducing_points(n, n_z)
     mod = mgp.models.SvgpLvm(n, m, n_samples, z, kernel, likelihood, lat_dist,
-                             lprior).to(device)
+                             prior).to(device)
 
     ### test that training runs ###
     n_mc = 64
@@ -79,15 +79,15 @@ def test_GP_prior():
                             print_every=50)
 
     # check that we are indeed optimizing different q_mu in the GP prior for each sample
-    assert (not (torch.allclose(mod.lprior.svgp.q_mu[0].detach().data,
-                                mod.lprior.svgp.q_mu[1].detach().data)))
+    assert (not (torch.allclose(mod.prior.svgp.q_mu[0].detach().data,
+                                mod.prior.svgp.q_mu[1].detach().data)))
 
     ### test that two ways of computing the prior agree ###
     g, lq = mod.lat_dist.sample(torch.Size([n_mc]), data, None)
     g = g.transpose(-1, -2)
 
     def for_batch(i):
-        svgp_lik, svgp_kl = mod.lprior.svgp.elbo(g[i:i + 1], ts)
+        svgp_lik, svgp_kl = mod.prior.svgp.elbo(g[i:i + 1], ts)
         elbo = svgp_lik - svgp_kl
         return elbo
 
@@ -96,7 +96,7 @@ def test_GP_prior():
     elbo1_b = torch.stack([LL.sum() for LL in LLs1], dim=0)
 
     ##### try to batch things ####
-    lik, kl = mod.lprior.svgp.elbo(g, ts)
+    lik, kl = mod.prior.svgp.elbo(g, ts)
     elbo2_b = (lik - kl).sum(-1)
 
     #### print comparison ###
@@ -124,7 +124,7 @@ def test_ARP_runs():
         kernel = mgp.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.ARP(p,
+        prior = mgp.priors.ARP(p,
                                  manif,
                                  diagonal=(True if i in [0, 1] else False))
         z = manif.inducing_points(n, n_z)
@@ -135,7 +135,7 @@ def test_ARP_runs():
                                  kernel,
                                  lik,
                                  lat_dist,
-                                 lprior,
+                                 prior,
                                  whiten=True).to(device)
 
         # train model
@@ -175,7 +175,7 @@ def test_LDS_prior_runs():
         kernel = mgp.kernels.QuadExp(n, manif.distance, Y=Y)
         # generate model
         lik = mgp.likelihoods.Gaussian(n)
-        lprior = mgp.lpriors.DS(manif, fio=fio)
+        prior = mgp.priors.DS(manif, fio=fio)
         z = manif.inducing_points(n, n_z)
         mod = mgp.models.SvgpLvm(n,
                                  m,
@@ -184,7 +184,7 @@ def test_LDS_prior_runs():
                                  kernel,
                                  lik,
                                  lat_dist,
-                                 lprior,
+                                 prior,
                                  whiten=True).to(device)
 
         # train model
@@ -195,7 +195,7 @@ def test_LDS_prior_runs():
                                 optimizer=optim.Adam,
                                 print_every=1000)
 
-        A, Q = mod.lprior.prms
+        A, Q = mod.prior.prms
         A = A.detach().cpu().numpy()
         eigs = np.linalg.eigvals(A)
         print(eigs, np.amax(eigs))
