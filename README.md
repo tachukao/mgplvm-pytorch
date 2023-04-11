@@ -57,7 +57,7 @@ py.test
 
 ## References
 
-1. [mGPLVM paper](https://papers.nips.cc/paper/2020/file/fedc604da8b0f9af74b6cfc0fab2163c-Paper.pdf)
+1. [mGPLVM paper](https://proceedings.neurips.cc/paper/2020/hash/fedc604da8b0f9af74b6cfc0fab2163c-Abstract.html)
 
 ```
 @inproceedings{jensen2020manifold,
@@ -71,7 +71,7 @@ py.test
 }
 ```
 
-2. [bGPFA paper](https://www.biorxiv.org/content/10.1101/2021.06.03.446788v1)
+2. [bGPFA paper](https://www.biorxiv.org/content/10.1101/2021.06.03.446788v2)
 
 ```
 @inproceedings{
