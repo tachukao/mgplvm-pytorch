@@ -8,6 +8,8 @@
 ![schematic](docsrc/source/_static/small_lvm_fig.png)
 
 This repository contains code for running both the manifold GPLVM (Jensen et al. 2020) and Bayesian GPFA (Jensen and Kao et al. 2021) and is currently still in active development.
+In addition to these two recently published models, the codebase also faciliates the construction of a wide range of other models that combine different latent priors and linear/nonlinear tuning functions with Gaussian or discrete noise models (schematic) - all under the general framework of the _Gaussian process latent variable model_.
+The primary focus of this library is the analysis of neural population recordings, but the methods generalize to other domains as well.
 
 ## Examples
 
@@ -16,7 +18,7 @@ To illustrate the use cases of these methods and provide a starting point for in
 Bayesian GPFA with automatic relevance determination applied to recordings from monkey M1:\
 https://colab.research.google.com/drive/1Q-Qy8LM_Xn52g4dYycPRaBx0sMsti4_U?usp=sharing
 
-mGPLVM for unsupervised learning, applied to data from the _Drosophila_ head direction circuit:\
+mGPLVM for unsupervised learning on non-Euclidean manifolds, applied to data from the _Drosophila_ head direction circuit:\
 https://colab.research.google.com/drive/1SoZGqYoPFSz-VQ6woo9QsoCzw3b1Pwut?usp=sharing
 
 Adaption of mGPLVM for _supervised_ learning on non-Euclidean manifolds, applied to synthetic data on the ring and group of 3D rotations:\
@@ -63,7 +65,7 @@ py.test
  booktitle = {Advances in Neural Information Processing Systems},
  editor = {H. Larochelle and M. Ranzato and R. Hadsell and M. F. Balcan and H. Lin},
  pages = {22580--22592},
- title = {Manifold GPLVMs for discovering non-Euclidean latent structure in neural data},
+ title = {Manifold {GPLVM}s for discovering non-{E}uclidean latent structure in neural data},
  volume = {33},
  year = {2020}
 }
@@ -74,10 +76,23 @@ py.test
 ```
 @inproceedings{
    jensen2021scalable,
-   title={Scalable Bayesian {GPFA} with automatic relevance determination and discrete noise models},
+   title={Scalable {B}ayesian {GPFA} with automatic relevance determination and discrete noise models},
    author={Kristopher T Jensen and Ta-Chu Kao and Jasmine Talia Stone and Guillaume Hennequin},
    booktitle={Advances in Neural Information Processing Systems},
    editor={A. Beygelzimer and Y. Dauphin and P. Liang and J. Wortman Vaughan},
    year={2021},
+}
+```
+
+3. [non-Euclidean AR priors and discrete noise models](https://www.biorxiv.org/content/10.1101/2022.05.11.490308v2)
+
+```
+@article{
+  jensen2022beyond,
+  title={Beyond the {E}uclidean brain: inferring non-{E}uclidean latent trajectories from spike trains},
+  author={Jensen, Kristopher T and Liu, David and Kao, Ta-Chu and Lengyel, M{\'a}t{\'e} and Hennequin, Guillaume},
+  journal={bioRxiv},
+  year={2022},
+  publisher={Cold Spring Harbor Laboratory}
 }
 ```
