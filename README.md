@@ -64,14 +64,12 @@ py.test
  author = {Jensen, Kristopher and Kao, Ta-Chu and Tripodi, Marco and Hennequin, Guillaume},
  booktitle = {Advances in Neural Information Processing Systems},
  editor = {H. Larochelle and M. Ranzato and R. Hadsell and M. F. Balcan and H. Lin},
- pages = {22580--22592},
  title = {Manifold {GPLVM}s for discovering non-{E}uclidean latent structure in neural data},
- volume = {33},
- year = {2020}
+ year = {2020},
 }
 ```
 
-2. [bGPFA paper](https://www.biorxiv.org/content/10.1101/2021.06.03.446788v2)
+2. [bGPFA paper](https://proceedings.neurips.cc/paper/2021/hash/58238e9ae2dd305d79c2ebc8c1883422-Abstract.html)
 
 ```
 @inproceedings{
