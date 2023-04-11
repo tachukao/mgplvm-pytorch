@@ -11,7 +11,16 @@ This repository contains code for running both the manifold GPLVM (Jensen et al.
 
 ## Examples
 
-We provide three example notebooks that run on Google Colab.
+To illustrate the use cases of these methods and provide a starting point for interested users, we have generated three example notebooks that run on Google Colab.
+
+Bayesian GPFA with automatic relevance determination applied to recordings from monkey M1:\
+https://colab.research.google.com/drive/1Q-Qy8LM_Xn52g4dYycPRaBx0sMsti4_U?usp=sharing
+
+mGPLVM for unsupervised learning, applied to data from the _Drosophila_ head direction circuit:\
+https://colab.research.google.com/drive/1SoZGqYoPFSz-VQ6woo9QsoCzw3b1Pwut?usp=sharing
+
+Adaption of mGPLVM for _supervised_ learning on non-Euclidean manifolds, applied to synthetic data on the ring and group of 3D rotations:\
+https://colab.research.google.com/drive/1C7x5u4cMsH5f4i261Yz81zgDHgcJ-_MY?usp=sharing
 
 ## Setup
 
